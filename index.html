@@ -10,43 +10,56 @@
         color: #000080; /* Navy blue text */
         font-family: "Courier New", Courier, monospace;
         margin: 0;
-        padding: 70px 20px 20px 20px; /* Top, Right, Bottom, Left */
+        padding: 0; /* Removed default body padding */
         text-align: center;
-        min-height: calc(
-          100vh - 90px
-        ); /* Viewport height minus top/bottom padding */
       }
-      /* --- Announcement Bar Styles --- */
-      .announcement-bar {
+
+      /* Navigation Menu Styles */
+      .top-nav {
         background-color: #000080; /* Navy blue background */
-        color: #ffcc00; /* Yellow text */
-        padding: 12px 0; /* Vertical padding */
-        text-align: center;
-        font-size: 1.1em; /* Slightly larger text */
-        font-weight: bold;
-        position: fixed; /* Keep it at the top */
-        top: 0;
-        left: 0;
+        padding: 10px 0;
         width: 100%;
-        z-index: 1000; /* Ensure it's above other content */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Optional shadow */
+        margin-bottom: 20px; /* Space below nav */
       }
-      .announcement-bar a {
-        color: #ffdd44; /* Brighter yellow for link */
+      .top-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex; /* Use flexbox for alignment */
+        justify-content: center; /* Center items horizontally */
+        gap: 20px; /* Space between items */
+      }
+      .top-nav li {
+        /* No specific styling needed when using flexbox on ul */
+      }
+      .top-nav a {
+        color: #ffcc00; /* Yellow text */
         text-decoration: none;
-        transition: color 0.2s ease;
+        font-size: 20px; /* Slightly smaller for nav */
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: background-color 0.2s ease, color 0.2s ease;
       }
-      .announcement-bar a:hover {
-        color: #ffffff; /* White on hover */
-        text-decoration: underline;
+      .top-nav a:hover {
+        background-color: #ff0000; /* Red background on hover */
+        color: #ffffff; /* White text on hover */
       }
-      /* --- End Announcement Bar Styles --- */
+      /* End Navigation Menu Styles */
+
+      .content-wrapper {
+        /* Added wrapper for main content padding */
+        padding: 0 20px 20px 20px; /* Add padding back for content, removed top padding */
+        max-width: 900px; /* Limit content width */
+        margin: 0 auto; /* Center content */
+      }
 
       h1 {
         font-size: 48px;
         text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
         margin-bottom: 20px;
-        margin-top: 0; /* Adjust since body padding handles top space */
+        margin-top: 0; /* Removed top margin as nav provides spacing */
+        color: #000080; /* Keep h1 navy */
       }
       h2 {
         font-size: 32px;
@@ -57,7 +70,7 @@
         font-size: 20px;
         line-height: 1.5;
         max-width: 800px;
-        margin: 10px auto; /* Added top/bottom margin */
+        margin: 10px auto;
       }
       .quarter-img {
         width: 150px;
@@ -72,72 +85,27 @@
         justify-content: center;
         gap: 20px;
         margin-top: 40px;
-        margin-bottom: 40px; /* Added bottom margin */
-      }
-      .button {
-        /* Generic button style, currently unused */
-        background-color: #ff0000; /* Red button */
-        color: #ffffff; /* White text */
-        padding: 10px 20px;
-        font-size: 24px;
-        border: none;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        margin-top: 40px;
-      }
-      .button:hover {
-        background-color: #000080; /* Navy blue on hover */
-      }
-
-      /* Combined styles for link buttons */
-      .party-link,
-      .updates-link,
-      .gambling-link {
-        margin-top: 15px;
-        font-size: 24px;
-        color: #ffffff;
-        text-decoration: none;
-        display: inline-block;
-        padding: 15px 30px;
-        background-color: #ff0000;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        transition: transform 0.2s ease, box-shadow 0.2s ease,
-          background-color 0.2s ease;
-      }
-      .party-link:hover,
-      .updates-link:hover,
-      .gambling-link:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
-        background-color: #000080;
-      }
-
-      .link-container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-top: 40px;
         margin-bottom: 40px;
       }
+
+      /* REMOVED .button, .party-link, .updates-link, .gambling-link, and .link-container styles */
+
       footer {
         margin-top: 60px;
         font-size: 16px;
-        color: #ff0000;
-        padding-bottom: 100px; /* Ensure space above corner N */
+        color: #ff0000; /* Red text */
+        padding-bottom: 20px; /* Add padding at the very bottom */
       }
       .user-info {
-        position: fixed;
-        top: 10px; /* Adjusted slightly below announcement bar */
+        position: absolute;
+        top: 10px; /* Adjusted position relative to nav */
         right: 20px;
-        font-size: 18px;
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 8px 12px;
+        font-size: 16px; /* Slightly smaller */
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px 10px;
         border-radius: 5px;
         border: 1px solid #000080;
-        z-index: 1001; /* Ensure above other content but below fixed bar */
+        z-index: 10; /* Ensure it's above nav if needed */
       }
       .user-info a {
         color: #000080;
@@ -203,132 +171,86 @@
         background-color: #000080;
         color: #ffcc00;
       }
-
-      /* --- Style for the Corner N - UPDATED --- */
-      #corner-n {
-        position: fixed;
-        bottom: 15px;
-        right: 20px;
-        font-family: "Courier New", Courier, monospace;
-        font-size: 130px; /* Adjust size if needed */
-        font-weight: bold;
-        /* Apply gradient as background */
-        background: linear-gradient(
-          to right,
-          #ffcc00,
-          #000000
-        ); /* Yellow to Black */
-        /* Clip background to text shape */
-        -webkit-background-clip: text; /* For Safari/Chrome */
-        background-clip: text;
-        /* Make text color transparent so background shows through */
-        color: transparent;
-        z-index: 999;
-        line-height: 1;
-        pointer-events: none;
-        /* Remove the old text-shadow outline */
-        /* text-shadow: ... ; */
-      }
-      /* --- End Corner N Style --- */
-
-      /* Style to make a link look like normal text */
-      .hidden-link,
-        .hidden-link:visited, /* Style for visited links too */
-        .hidden-link:hover,   /* Style on hover */
-        .hidden-link:active,  /* Style when clicked */
-        .hidden-link:focus {
-        /* Style when focused (e.g., tabbed to) */
-        color: inherit; /* Use the parent element's text color */
-        text-decoration: none; /* Remove the underline */
-        cursor: inherit; /* Use the parent element's cursor (usually 'text' or 'default') */
-        background: none; /* Ensure no background changes */
-        border: none; /* Ensure no border appears */
-        outline: none; /* Remove focus outline (use with caution for accessibility) */
-      }
     </style>
   </head>
   <body>
-    <!-- Announcement Bar -->
-    <div class="announcement-bar">
-      <a href="voting.html">Go vote on the new homepage directory design!</a>
-    </div>
+    <!-- Top Navigation Menu -->
+    <nav class="top-nav">
+      <ul>
+        <li><a href="party.html">🎉 Party Timer! 🎉</a></li>
+        <li><a href="updates.html">📰 View Updates! 📰</a></li>
+        <li><a href="gambling.html">🎰 GAMBLE!!! 🎰</a></li>
+      </ul>
+    </nav>
 
-    <!-- User Info -->
     <div class="user-info" id="user-info"></div>
 
-    <!-- Main Content -->
-    <h1>AMERICAN QUARTERS ARE COOL!</h1>
-    <p>
-      Welcome to the quarter website! (It's barely about quarters—it was just a
-      server test) but I WILL be including some quarter love in here from time
-      to time! Feel free to make an account, log in,
-      <a href="stories.html">view my personal stories</a>,
-      <a href="gallery.html">Look at the Daniel Larson Gallery</a>, or even chat
-      in the chat room down below!
-    </p>
-
-    <h2>Why Quarters Rule</h2>
-    <!-- *** THIS IS THE MODIFIED PARAGRAPH *** -->
-    <p>
-      BECAUSE QUARTERS ARE THE
-      <a href="juunat.html" class="hidden-link">SUPERIOR</a> COIN WITH HISTORY,
-      RARITY, AND SOMETIMES YOU CAN FIND A SWEET STATE COIN! HOW COOL IS THAT!
-    </p>
-
-    <h2>Check Out These Cool Quarters</h2>
-    <div class="grid">
-      <img
-        src="https://i.ebayimg.com/00/s/MTYwMFgxNTkw/z/0dcAAOSwZSNkW-dH/$_57.JPG?set_id=880000500F"
-        alt="George Washington Quarter"
-        class="quarter-img"
-      />
-      <img
-        src="https://kids.usmint.gov/system/files/2016/06/2007-50-state-quarters-coin-utahuncirculated-reverse.jpg"
-        alt="State Quarter"
-        class="quarter-img"
-      />
-      <img
-        src="https://lh4.googleusercontent.com/proxy/dAp0QFMEdUNvEn2bPXEpv6l_d8IVftyowBZkqxqyfyZQuxqh5jlGKuC-wVLfcU3iWbwBv1yp5IN_PehP-bTwNlaxi-wcq-B3dA3hciUWqGTCN8SnhgG5E40gL0BgL8qfZZ3TD7qCfUfH_Q"
-        alt="National Park Quarter"
-        class="quarter-img"
-      />
-    </div>
-
-    <!-- Links Container -->
-    <div class="link-container">
-      <a href="party.html" class="party-link">🎉 Join the Party Timer! 🎉</a>
-      <a href="updates.html" class="updates-link">📰 View Updates! 📰</a>
-      <a href="gambling.html" class="gambling-link">🎰 GAMBLE!!! 🎰</a>
-    </div>
-
-    <!-- Auth Form -->
-    <div class="auth-form" id="auth-form">
-      <h2>Sign In or Create an Account</h2>
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button id="sign-in">Sign In</button>
-      <button id="sign-up">Sign Up</button>
-    </div>
-
-    <!-- Chat Link -->
-    <div id="chat-link-container" style="display: none">
-      <a href="chat.html" class="chat-link">Go to the Cool Chat Room →</a>
-    </div>
-
-    <footer>
+    <!-- Wrapper for main page content -->
+    <div class="content-wrapper">
+      <h1>AMERICAN QUARTERS ARE COOL!</h1>
       <p>
-        © 2025 Cool American Quarters. All rights reserved. Made with ❤️ and my
-        sleepy ass eyes.
+        Welcome to the quarter website! (It's barely about quarters—it was just
+        a server test) but I WILL be including some quarter love in here from
+        time to time! Feel free to make an account, log in,
+        <a href="stories.html">view my personal stories</a>,
+        <a href="gallery.html">Look at the Daniel Larson Gallery</a>, or even
+        chat in the chat room down below!
       </p>
-    </footer>
 
-    <!-- Corner N element -->
-    <div id="corner-n">N</div>
+      <h2>Why Quarters Rule</h2>
+      <p>
+        BECAUSE QUARTERS ARE THE SUPERIOR COIN WITH HISTORY, RARITY, AND
+        SOMETIMES YOU CAN FIND A SWEET STATE COIN! HOW COOL IS THAT!
+      </p>
 
-    <!-- Firebase SDK Script (remains unchanged) -->
+      <h2>Check Out These Cool Quarters</h2>
+      <div class="grid">
+        <img
+          src="https://i.ebayimg.com/00/s/MTYwMFgxNTkw/z/0dcAAOSwZSNkW-dH/$_57.JPG?set_id=880000500F"
+          alt="George Washington Quarter"
+          class="quarter-img"
+        />
+        <img
+          src="https://kids.usmint.gov/system/files/2016/06/2007-50-state-quarters-coin-utahuncirculated-reverse.jpg"
+          alt="State Quarter"
+          class="quarter-img"
+        />
+        <img
+          src="https://lh4.googleusercontent.com/proxy/dAp0QFMEdUNvEn2bPXEpv6l_d8IVftyowBZkqxqyfyZQuxqh5jlGKuC-wVLfcU3iWbwBv1yp5IN_PehP-bTwNlaxi-wcq-B3dA3hciUWqGTCN8SnhgG5E40gL0BgL8qfZZ3TD7qCfUfH_Q"
+          alt="National Park Quarter"
+          class="quarter-img"
+        />
+      </div>
+
+      <!-- Links Container REMOVED -->
+
+      <!-- Auth Form remains the same -->
+      <div class="auth-form" id="auth-form">
+        <h2>Sign In or Create an Account</h2>
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button id="sign-in">Sign In</button>
+        <button id="sign-up">Sign Up</button>
+      </div>
+
+      <!-- Chat Link remains the same -->
+      <div id="chat-link-container" style="display: none">
+        <a href="chat.html" class="chat-link">Go to the Cool Chat Room →</a>
+      </div>
+
+      <footer>
+        <p>
+          © 2025 Cool American Quarters. All rights reserved. Made with ❤️ and
+          my sleepy ass eyes.
+        </p>
+      </footer>
+    </div>
+    <!-- End content-wrapper -->
+
+    <!-- Firebase SDK Script (No changes needed here) -->
     <script type="module">
-      // ... (Firebase script content is the same as before) ...
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      // Import Firebase modules
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; // Use consistent version
       import {
         getAuth,
         createUserWithEmailAndPassword,
@@ -336,17 +258,19 @@
         onAuthStateChanged,
         signOut,
         updateProfile,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; // Use consistent version
+      // Import Realtime Database functions needed for signup default data
       import {
         getDatabase,
         ref,
         set,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js"; // Use consistent version
 
+      // Firebase configuration
       const firebaseConfig = {
-        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg", // Replace with your actual API key if needed
         authDomain: "quaters-5f71d.firebaseapp.com",
-        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
+        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com", // Added for DB operations
         projectId: "quaters-5f71d",
         storageBucket: "quaters-5f71d.firebasestorage.app",
         messagingSenderId: "895009748691",
@@ -354,10 +278,12 @@
         measurementId: "G-7WFJZV9JWT",
       };
 
+      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
-      const db = getDatabase(app);
+      const db = getDatabase(app); // Initialize Database
 
+      // DOM elements
       const userInfo = document.getElementById("user-info");
       const authForm = document.getElementById("auth-form");
       const chatLinkContainer = document.getElementById("chat-link-container");
@@ -366,9 +292,11 @@
       const signInButton = document.getElementById("sign-in");
       const signUpButton = document.getElementById("sign-up");
 
+      // Sign Up - Added default display name and DB entry
       signUpButton.addEventListener("click", () => {
         const email = emailInput.value;
         const password = passwordInput.value;
+
         if (!email || !password) {
           alert("Please enter both email and password.");
           return;
@@ -381,10 +309,12 @@
           alert("Password should be at least 6 characters long.");
           return;
         }
+
         createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             const user = userCredential.user;
             const defaultDisplayName = email.split("@")[0] || "NewUser";
+
             return updateProfile(user, {
               displayName: defaultDisplayName,
             }).then(() => {
@@ -413,13 +343,17 @@
             }
           });
       });
+
+      // Sign In
       signInButton.addEventListener("click", () => {
         const email = emailInput.value;
         const password = passwordInput.value;
+
         if (!email || !password) {
           alert("Please enter both email and password.");
           return;
         }
+
         signInWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             emailInput.value = "";
@@ -438,12 +372,15 @@
             }
           });
       });
+
+      // Auth State Listener
       onAuthStateChanged(auth, (user) => {
         if (user) {
           const displayName = user.displayName || user.email;
           userInfo.innerHTML = `<a href="profile.html" title="View Profile">${displayName}</a> | <a href="#" id="sign-out-link" title="Sign Out">Sign Out</a>`;
           authForm.style.display = "none";
           chatLinkContainer.style.display = "block";
+
           const signOutLink = document.getElementById("sign-out-link");
           if (signOutLink) {
             signOutLink.addEventListener("click", (e) => {
