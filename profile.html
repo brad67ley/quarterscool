@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile</title>
+    <style>
+        body {
+            background-color: #ffcc00; /* Bright yellow background */
+            color: #000080; /* Navy blue text */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex; /* Use flexbox for centering */
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center items horizontally */
+            min-height: calc(100vh - 40px); /* Ensure content can center vertically */
+            justify-content: center; /* Center content vertically */
+        }
+        .container { /* Wrap content for better control */
+            background-color: rgba(255, 248, 220, 0.85); /* Match game container bg */
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #000080;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center; /* Center text inside container */
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 36px; /* Adjusted size */
+            text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
+            margin-top: 0;
+            margin-bottom: 30px; /* Increased spacing */
+        }
+        .profile-info {
+            margin-top: 20px; /* Adjusted margin */
+            margin-bottom: 30px; /* Add space before sign out */
+            line-height: 1.8; /* Increase line spacing for readability */
+        }
+         .profile-info p {
+            margin: 10px 0; /* Space between lines */
+         }
+         .profile-info span { /* Style the data values */
+            font-weight: bold;
+            color: #0000cd; /* Medium blue for values */
+         }
+        .profile-info input {
+            padding: 10px;
+            font-size: 16px;
+            margin: 15px 5px 5px 5px; /* Add top margin */
+            border: 2px solid #000080; /* Navy blue border */
+            display: block; /* Make input take its own line */
+            margin-left: auto; /* Center block element */
+            margin-right: auto; /* Center block element */
+            max-width: 250px; /* Limit width */
+            box-sizing: border-box; /* Include padding in width */
+        }
+        .profile-info button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff0000; /* Red button */
+            color: #ffffff; /* White text */
+            border: none;
+            cursor: pointer;
+            margin-top: 10px; /* Space above button */
+            border-radius: 5px; /* Slightly rounded corners */
+            transition: background-color 0.3s ease; /* Smooth hover */
+        }
+        .profile-info button:hover {
+            background-color: #000080; /* Navy blue on hover */
+        }
+        .sign-out-link {
+            /* margin-top: 20px; No longer needed with container spacing */
+            display: inline-block;
+            color: #000080; /* Navy blue text */
+            text-decoration: none;
+            padding: 8px 15px;
+            border: 1px solid #000080;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent */
+        }
+        .sign-out-link:hover {
+            text-decoration: none; /* Keep underline off */
+            background-color: #000080;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <!-- Added container div -->
+    <div class="container">
+        <h1>Your Profile</h1>
+        <div class="profile-info" id="profile-info">
+            <p>Email: <span id="user-email">Loading...</span></p>
+            <p>Display Name: <span id="user-display-name">Loading...</span></p>
+            <!-- Added Quarters display -->
+            <p>Quarters: <span id="user-quarters">Loading...</span></p>
+
+            <input type="text" id="new-display-name" placeholder="New Display Name">
+            <button id="update-name">Update Name</button>
+        </div>
+        <a href="#" class="sign-out-link" id="sign-out-link">Sign Out</a>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; // Use consistent version
+        import { getAuth, updateProfile, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; // Use consistent version
+        // Import Realtime Database functions
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js"; // Use consistent version
+
+
+        // Firebase configuration (should be identical to your other page)
+        const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+            authDomain: "quaters-5f71d.firebaseapp.com",
+            databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com", // Make sure this is correct
+            projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.firebasestorage.app",
+            messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626",
+            measurementId: "G-7WFJZV9JWT" // Optional
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app); // Initialize Database
+
+        // DOM elements
+        const userEmail = document.getElementById('user-email');
+        const userDisplayName = document.getElementById('user-display-name');
+        const userQuarters = document.getElementById('user-quarters'); // Get quarters span
+        const newDisplayNameInput = document.getElementById('new-display-name');
+        const updateNameButton = document.getElementById('update-name');
+        const signOutLink = document.getElementById('sign-out-link');
+        const profileInfoDiv = document.getElementById('profile-info'); // Get container for showing/hiding
+
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                profileInfoDiv.style.display = 'block'; // Show profile info
+                userEmail.textContent = user.email || 'N/A';
+                userDisplayName.textContent = user.displayName || 'Not set';
+
+                // --- Fetch Quarters from Realtime Database ---
+                const userDbRef = ref(db, 'users/' + user.uid); // Reference to user's data node
+                get(userDbRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        // Access the 'points' field, default to 0 if not found
+                        userQuarters.textContent = userData.points ?? 0;
+                    } else {
+                        // User exists in Auth but not DB (maybe hasn't played game yet)
+                        userQuarters.textContent = '0'; // Display 0 if no DB record found
+                        console.log("No data available in database for this user.");
+                    }
+                }).catch((error) => {
+                    console.error("Error getting user data:", error);
+                    userQuarters.textContent = 'Error'; // Indicate loading error
+                });
+                // ---------------------------------------------
+
+            } else {
+                // User is signed out, redirect to main page (or login page)
+                // Optionally hide profile info before redirecting
+                 profileInfoDiv.style.display = 'none';
+                 userEmail.textContent = '';
+                 userDisplayName.textContent = '';
+                 userQuarters.textContent = '';
+                 alert("You are not signed in. Redirecting..."); // Give feedback
+                // Redirect to index.html (assuming that's your login/game page)
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Update Display Name
+        updateNameButton.addEventListener('click', () => {
+            if (!auth.currentUser) {
+                 alert('You must be logged in to update your name.');
+                 return;
+            }
+
+            const newDisplayName = newDisplayNameInput.value.trim(); // Trim whitespace
+
+            if (newDisplayName && newDisplayName.length > 0) { // Check if not empty
+                updateProfile(auth.currentUser, {
+                    displayName: newDisplayName
+                }).then(() => {
+                    // Success: Update Auth profile
+                    alert('Display name updated successfully!');
+                    userDisplayName.textContent = newDisplayName; // Update UI immediately
+                    newDisplayNameInput.value = ''; // Clear input field
+
+                    // Also update the name in the Realtime Database
+                    const userDbRef = ref(db, 'users/' + auth.currentUser.uid);
+                    return update(userDbRef, { displayName: newDisplayName }); // Chain the promise
+
+                }).then(() => {
+                    console.log("Display name updated in Realtime Database.");
+                }).catch((error) => {
+                     console.error('Error updating profile:', error);
+                     // Differentiate between Auth and DB update errors if needed
+                     if (error.code && error.code.startsWith('auth/')) {
+                        alert('Error updating display name in Authentication: ' + error.message);
+                     } else {
+                        alert('Error updating display name in Database: ' + error.message);
+                     }
+                });
+            } else {
+                alert('Please enter a valid display name.');
+            }
+        });
+
+        // Sign Out
+        signOutLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            signOut(auth).then(() => {
+                // Sign-out successful.
+                // The onAuthStateChanged listener will handle the redirect.
+                // You could add an alert here, but the listener handles the primary logic.
+                console.log('Signed out successfully!');
+                // alert('Signed out successfully!'); // Optional alert
+            }).catch((error) => {
+                // An error happened.
+                console.error('Error signing out:', error);
+                alert('Error signing out: ' + error.message);
+            });
+        });
+
+        // --- Need to import 'update' for the display name DB update ---
+        import { update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    </script>
+</body>
+</html>

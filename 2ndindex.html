@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WARNING!</title>
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%;
+        }
+        h1 {
+            color: #00ff00;
+            font-size: 3em;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glitch 1s linear infinite;
+        }
+        .blink {
+            animation: blink 0.5s step-end infinite alternate;
+        }
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 255, 0, 0.1) 0%,
+                rgba(0, 255, 0, 0) 10%
+            );
+            background-size: 100% 5px;
+            animation: scanline 8s linear infinite;
+            pointer-events: none;
+        }
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB/SURBVGhD7c6xCQAgDETRq/3P2h2cQRAEwQcC4UHI5t7M7D8z+8/M/jOz/8zsPzP7z8z+M7P/zOw/M/vPzP4zs//M7D8z+8/M/jOz/8zsPzP7z8z+M7P/zOw/M/vPzP4zs//M7D8z+8/M/jOz/8zsPzP7z8z+M7P/zOw/M/vPzP4zsw+4AREsTZJQ3AAAAABJRU5ErkJggg==');
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="scanline"></div>
+    <div class="container">
+        <h1>VICTORS LIKES BUTTCHEEKS!<br>SHE REALLY DOES!!!<br>SMH!!</h1>
+        <h2 class="blink" style="color: red;">WARNING! WARNING! WARNING!</h2>
+    </div>
+    <script>
+        // Create random glitch effect
+        setInterval(function() {
+            if (Math.random() > 0.7) {
+                document.querySelector('h1').style.textShadow = '0 0 ' + Math.random() * 20 + 'px #ff0000';
+                document.querySelector('h1').style.color = '#ff0000';
+                setTimeout(function() {
+                    document.querySelector('h1').style.textShadow = '0 0 10px #00ff00';
+                    document.querySelector('h1').style.color = '#00ff00';
+                }, 100);
+            }
+        }, 50);
+        
+        // Create fake terminal text at bottom
+        setTimeout(function() {
+            const terminal = document.createElement('div');
+            terminal.style.position = 'fixed';
+            terminal.style.bottom = '0';
+            terminal.style.left = '0';
+            terminal.style.width = '100%';
+            terminal.style.height = '100px';
+            terminal.style.backgroundColor = 'rgba(0, 50, 0, 0.5)';
+            terminal.style.color = '#00ff00';
+            terminal.style.padding = '10px';
+            terminal.style.fontFamily = 'Courier New, monospace';
+            terminal.style.overflow = 'hidden';
+            terminal.style.borderTop = '1px solid #00ff00';
+            document.body.appendChild(terminal);
+            
+
+            let currentLine = 0;
+            const interval = setInterval(function() {
+                if (currentLine < lines.length) {
+                    terminal.innerHTML += lines[currentLine] + '<br>';
+                    terminal.scrollTop = terminal.scrollHeight;
+                    currentLine++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }, 2000);
+    </script>
+</body>
+</html>

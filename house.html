@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Village Walkthrough - Fiery Car</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+        canvas { display: block; }
+        #blocker { /* ... */ position: absolute; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        #instructions { /* ... */ width: 80%; max-width: 480px; font-size: 18px; text-align: center; color: white; background-color: rgba(50, 50, 50, 0.8); padding: 25px; border-radius: 10px; font-family: Arial, sans-serif; }
+        #instructions p { margin-bottom: 15px; cursor: pointer; line-height: 1.4; } #instructions p:hover { color: #ddd; }
+        #crosshair { /* ... */ position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background-color: rgba(255, 255, 255, 0.7); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none; }
+        #aiControlContainer { /* ... */ margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.2); } #aiControlContainer label { display: inline-block; margin-right: 10px; font-size: 16px; } #aiCountInput { width: 60px; padding: 5px 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; text-align: center; color: #333; margin-right: 10px; } #updateAiButton { padding: 6px 12px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; } #updateAiButton:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div id="crosshair"></div>
+    <div id="blocker">
+        <div id="instructions">
+            <p id="playInstructions">
+                Click here to Play<br />
+                (W, A, S, D = Move/Drive, MOUSE = Look)<br />
+                SPACE = Jump | L = Toggle Car (Careful!)<br />
+                Click smiley balls OR the distant house!<br/>
+                Press G to Explode & Reset Everything!<br/>
+                Press R for a Thunderstorm!
+            </p>
+            <div id="aiControlContainer">
+                <label for="aiCountInput">Number of AI:</label>
+                <input type="number" id="aiCountInput" name="aiCount" min="0" max="50" value="10">
+                <button id="updateAiButton">Update AI</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/" } }
+    </script>
+
+    <script type="module">
+        // Imports
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // --- Scene Variables --- (Unchanged)
+        let scene, camera, renderer, controls; let ground, ambientLight, directionalLight; const objects = []; let houseBoundingBoxes = []; let housePositionsData = [];
+
+        // --- Destructible House Variables --- (Unchanged)
+        const destructibleHouseParts = []; let isDistantHouseFalling = false; const distantHousePosition = new THREE.Vector3(40, 0, -50); const partVelocities = new Map();
+
+        // --- Flag Variables --- (Unchanged)
+        let flagMesh, flagGeometry, originalFlagVertices; const flagpoleHeight = 9; const flagWidth = 3.0; const flagHeight = 2.0; const flagSegmentsW = 15; const flagSegmentsH = 10; const waveAmplitude = 0.15; const waveFrequency = 3.0; const waveSpeed = 2.5;
+
+        // --- AI Variables --- (Unchanged)
+        let aiUnits = []; const aiSpeed = 1.5; const aiReachThreshold = 1.0; const aiRadius = 0.35; let currentAICount = 10;
+
+        // --- Particle System Variables ---
+        const activeExplosions = []; const explosionDuration = 0.7; const particleCount = 100;
+        let carFireParticles = null; // For car fire
+        const carFireParticleCount = 200;
+
+        // --- Weather Variables --- (Unchanged)
+        let isStorming = false; let stormStartTime = 0; const stormDuration = 15000; let rainParticles = null; const rainCount = 5000; const rainAreaSize = 100; const rainHeight = 50; let floodPlane = null; const maxFloodHeight = 0.5; const originalBgColor = new THREE.Color(0x87ceeb); const stormBgColor = new THREE.Color(0x334455); const originalFogColor = new THREE.Color(0x87ceeb); const stormFogColor = new THREE.Color(0x334455); const originalFogNear = 0; const originalFogFar = 100; const stormFogNear = 0; const stormFogFar = 50; let lightningActive = false; let lightningTimeout = null; let nextLightningTime = 0; const originalAmbientIntensity = 0.6; const originalDirectionalIntensity = 0.9; const lightningIntensityFactor = 5;
+
+        // --- Car Variables ---
+        let carMesh = null;
+        const carDimensions = { width: 1.8, height: 1.0, depth: 3.5 };
+        const carMaxSpeed = 25.0; const carAcceleration = 20.0; const carBraking = 30.0; const carFriction = 5.0; const carSteerSpeed = 1.5; const carMaxSteer = Math.PI / 6;
+        let carSpeed = 0; let carSteering = 0; let carWheelRotation = 0;
+        const carCollider = new THREE.Box3();
+        const carCameraOffset = new THREE.Vector3(0, 3, -7);
+        let carDistanceTraveledSinceFire = 0;
+        const carFireTriggerDistance = 15; // Roughly 5 "feet" if 1 unit = 1 meter
+        let carIsOnFire = false;
+        let carFireStartTime = 0;
+        const carFireDuration = 2000; // 2 seconds in ms
+
+        // --- Player State --- (Unchanged)
+        let playerMode = 'walk'; let switchingToCarMode = false;
+
+        // --- Raycasting --- (Unchanged)
+        const raycaster = new THREE.Raycaster(); const mouseCoords = new THREE.Vector2(0, 0);
+
+        // --- World & Physics Variables --- (Unchanged)
+        const groundSize = 150; const worldBounds = groundSize / 2; const gravity = 20.0; const playerHeight = 1.8; const playerWidth = 0.3; const playerCollider = new THREE.Box3(); const jumpVelocity = 8.0;
+
+        // --- Movement Variables --- (Unchanged)
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false; let canJump = false; let prevTime = performance.now(); const velocity = new THREE.Vector3(); const direction = new THREE.Vector3(); const movementSpeed = 60.0; const deceleration = 10.0;
+
+        // --- Cached Resources --- (Unchanged)
+        let smileyTexture = null; let destructibleWallMaterial, destructibleRoofMaterial, destructibleDoorMaterial, destructibleWindowFrameMaterial, destructibleWindowGlassMaterial; const textureLoader = new THREE.TextureLoader();
+
+        // --- DOM Elements --- (Unchanged)
+        let crosshairElement, aiCountInput, updateAiButton, playInstructionsElement, blockerElement;
+
+        // --- Initialization ---
+        init();
+        animate();
+
+        async function init() { /* ... DOM, Scene, Camera, Renderer, Lighting, Controls, Event Listeners, Shared Resources, Environment setup all unchanged ... */
+             crosshairElement = document.getElementById('crosshair'); aiCountInput = document.getElementById('aiCountInput'); updateAiButton = document.getElementById('updateAiButton'); playInstructionsElement = document.getElementById('playInstructions'); blockerElement = document.getElementById('blocker'); scene = new THREE.Scene(); scene.background = originalBgColor.clone(); scene.fog = new THREE.Fog(originalFogColor.clone(), originalFogNear, originalFogFar); camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); camera.position.set(5, playerHeight, 15); renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(window.devicePixelRatio); renderer.setSize(window.innerWidth, window.innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; document.body.appendChild(renderer.domElement); ambientLight = new THREE.AmbientLight(0xffffff, originalAmbientIntensity); scene.add(ambientLight); directionalLight = new THREE.DirectionalLight(0xffffff, originalDirectionalIntensity); directionalLight.position.set(30, 40, 25); directionalLight.castShadow = true; directionalLight.shadow.mapSize.width = 2048; directionalLight.shadow.mapSize.height = 2048; directionalLight.shadow.camera.near = 0.5; directionalLight.shadow.camera.far = 150; directionalLight.shadow.camera.left = -worldBounds - 20; directionalLight.shadow.camera.right = worldBounds + 20; directionalLight.shadow.camera.top = worldBounds + 20; directionalLight.shadow.camera.bottom = -worldBounds - 20; scene.add(directionalLight); controls = new PointerLockControls(camera, document.body); playInstructionsElement.addEventListener('click', () => { if (playerMode === 'walk') { controls.lock(); } }); controls.addEventListener('lock', () => { blockerElement.style.display = 'none'; crosshairElement.style.display = 'block'; }); controls.addEventListener('unlock', () => { if (!switchingToCarMode) { blockerElement.style.display = 'flex'; } switchingToCarMode = false; crosshairElement.style.display = 'none'; }); document.addEventListener('mousedown', onMouseDown, false); updateAiButton.addEventListener('click', handleUpdateAICount); const onKeyDown = (event) => { switch (event.code) { case 'ArrowUp': case 'KeyW': moveForward = true; break; case 'ArrowLeft': case 'KeyA': moveLeft = true; break; case 'ArrowDown': case 'KeyS': moveBackward = true; break; case 'ArrowRight': case 'KeyD': moveRight = true; break; case 'Space': if (playerMode === 'walk' && canJump === true) velocity.y = jumpVelocity; canJump = false; break; case 'KeyG': if (controls.isLocked || playerMode === 'drive') { explodeEverythingAndRespawn(); } break; case 'KeyR': if ((controls.isLocked || playerMode === 'drive') && !isStorming) { startStorm(); } break; case 'KeyL': toggleCarMode(); break; } }; const onKeyUp = (event) => { switch (event.code) { case 'ArrowUp': case 'KeyW': moveForward = false; break; case 'ArrowLeft': case 'KeyA': moveLeft = false; break; case 'ArrowDown': case 'KeyS': moveBackward = false; break; case 'ArrowRight': case 'KeyD': moveRight = false; break; } }; document.addEventListener('keydown', onKeyDown); document.addEventListener('keyup', onKeyUp); window.addEventListener('resize', onWindowResize, false); smileyTexture = createSmileyTexture(); createDestructibleMaterials(); createGround(); createVillage(); createDestructibleHouse(distantHousePosition); await createFlagAndPole(new THREE.Vector3(2, 0, -3)); currentAICount = parseInt(aiCountInput.value, 10); if (isNaN(currentAICount) || currentAICount < 0) currentAICount = 10; aiCountInput.value = currentAICount; spawnAIUnits(currentAICount); if (playerMode === 'walk') { scene.add(controls.getObject()); }
+        }
+
+
+        // --- Ground, Path, House, Village Creation (Unchanged) ---
+        function createGround() { /* ... */ const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize); const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x556B2F, roughness: 0.95, metalness: 0.1 }); ground = new THREE.Mesh(groundGeometry, groundMaterial); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground); }
+        function createPath(startVec, endVec) { /* ... */ const pathMaterial = new THREE.MeshStandardMaterial({ color: 0x966F33, roughness: 1.0, metalness: 0.0 }); const pathWidth = 2.5; const direction = new THREE.Vector3().subVectors(endVec, startVec); const length = direction.length(); if (length < 0.1) return; direction.normalize(); const pathGeometry = new THREE.PlaneGeometry(pathWidth, length); const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial); pathMesh.rotation.x = -Math.PI / 2; pathMesh.rotation.z = Math.atan2(direction.x, direction.z); pathMesh.position.lerpVectors(startVec, endVec, 0.5); pathMesh.position.y = 0.01; pathMesh.receiveShadow = true; scene.add(pathMesh); }
+        function createHouse(position = new THREE.Vector3(0, 0, 0), rotationY = 0) { /* ... */ housePositionsData.push({ x: position.x, z: position.z }); const houseGroup = new THREE.Group(); const houseWidth = 4; const houseHeight = 2.5; const houseDepth = 5; const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 0.8, metalness: 0.2, side: THREE.DoubleSide }); const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.7, metalness: 0.1 }); const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.6, metalness: 0.2 }); const windowFrameMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.3 }); const windowGlassMaterial = new THREE.MeshStandardMaterial({ color: 0xadd8e6, transparent: true, opacity: 0.5, roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide }); const wallGeometry = new THREE.BoxGeometry(houseWidth, houseHeight, houseDepth); const walls = new THREE.Mesh(wallGeometry, wallMaterial); walls.position.y = houseHeight / 2; walls.castShadow = true; walls.receiveShadow = true; houseGroup.add(walls); const roofHeight = 1.5; const roofOverhang = 0.3; const roofGeometry = new THREE.BufferGeometry(); const roofVertices = new Float32Array([ -houseWidth/2 - roofOverhang, houseHeight, houseDepth/2 + roofOverhang, houseWidth/2 + roofOverhang, houseHeight, houseDepth/2 + roofOverhang, 0, houseHeight + roofHeight, houseDepth/2 + roofOverhang, -houseWidth/2 - roofOverhang, houseHeight, -houseDepth/2 - roofOverhang, houseWidth/2 + roofOverhang, houseHeight, -houseDepth/2 - roofOverhang, 0, houseHeight + roofHeight, -houseDepth/2 - roofOverhang ]); const roofIndices = new Uint16Array([ 0, 1, 2,  3, 5, 4, 0, 2, 5,  0, 5, 3, 1, 5, 2,  1, 4, 5 ]); roofGeometry.setAttribute('position', new THREE.BufferAttribute(roofVertices, 3)); roofGeometry.setIndex(new THREE.BufferAttribute(roofIndices, 1)); roofGeometry.computeVertexNormals(); const roof = new THREE.Mesh(roofGeometry, roofMaterial); roof.castShadow = true; roof.receiveShadow = true; houseGroup.add(roof); const doorWidth = 0.9; const doorHeight = 1.9; const doorDepth = 0.1; const doorGeometry = new THREE.BoxGeometry(doorWidth, doorHeight, doorDepth); const door = new THREE.Mesh(doorGeometry, doorMaterial); door.position.set(0, doorHeight / 2, houseDepth / 2 + doorDepth / 2); door.castShadow = true; houseGroup.add(door); const windowWidth = 1.2; const windowHeight = 1.0; const windowDepth = 0.1; const frameThickness = 0.08; const windowGroup = new THREE.Group(); const glassGeometry = new THREE.BoxGeometry(windowWidth - frameThickness * 2, windowHeight - frameThickness * 2, windowDepth * 0.5); const glass = new THREE.Mesh(glassGeometry, windowGlassMaterial); windowGroup.add(glass); const frameHGeom = new THREE.BoxGeometry(windowWidth, frameThickness, windowDepth); const frameVGeom = new THREE.BoxGeometry(frameThickness, windowHeight - frameThickness * 2, windowDepth); const frameTop = new THREE.Mesh(frameHGeom, windowFrameMaterial); frameTop.position.y = (windowHeight / 2) - (frameThickness / 2); frameTop.castShadow = true; windowGroup.add(frameTop); const frameBottom = new THREE.Mesh(frameHGeom, windowFrameMaterial); frameBottom.position.y = (-windowHeight / 2) + (frameThickness / 2); frameBottom.castShadow = true; windowGroup.add(frameBottom); const frameLeft = new THREE.Mesh(frameVGeom, windowFrameMaterial); frameLeft.position.x = (-windowWidth / 2) + (frameThickness / 2); frameLeft.castShadow = true; windowGroup.add(frameLeft); const frameRight = new THREE.Mesh(frameVGeom, windowFrameMaterial); frameRight.position.x = (windowWidth / 2) - (frameThickness / 2); frameRight.castShadow = true; windowGroup.add(frameRight); windowGroup.position.set(houseWidth / 2 + windowDepth / 2, houseHeight / 2, 0); windowGroup.rotation.y = Math.PI / 2; houseGroup.add(windowGroup); houseGroup.position.copy(position); houseGroup.rotation.y = rotationY; objects.push(houseGroup); const box = new THREE.Box3().setFromObject(houseGroup); box.expandByScalar(0.1); houseBoundingBoxes.push(box); return houseGroup; }
+        function createVillage() { /* ... */ const initialHouseData = [ { x: 0, z: 0, rot: Math.PI / 16 }, { x: 15, z: 5, rot: -Math.PI / 8 }, { x: -10, z: -15, rot: Math.PI / 4 }, { x: 8, z: -25, rot: 0 }, { x: -18, z: 10, rot: Math.PI / 2 }, { x: 25, z: -10, rot: -Math.PI / 16 }, { x: -25, z: -5, rot: -Math.PI/3 }, { x: 10, z: 20, rot: Math.PI/1.5 }, { x: 30, z: 20, rot: Math.PI }, { x: -30, z: 25, rot: -Math.PI/2 }, ]; housePositionsData = []; const createdHouses = []; initialHouseData.forEach(posData => { const house = createHouse(new THREE.Vector3(posData.x, 0, posData.z), posData.rot); scene.add(house); createdHouses.push(house); }); if (housePositionsData.length > 1) { for (let i = 0; i < housePositionsData.length; i++) { const startPos = new THREE.Vector3(housePositionsData[i].x, 0, housePositionsData[i].z); const nextIndex = (i + 1) % housePositionsData.length; const endPos = new THREE.Vector3(housePositionsData[nextIndex].x, 0, housePositionsData[nextIndex].z); createPath(startPos, endPos); } createPath(new THREE.Vector3(housePositionsData[0].x, 0, housePositionsData[0].z), new THREE.Vector3(housePositionsData[3].x, 0, housePositionsData[3].z)); createPath(new THREE.Vector3(housePositionsData[1].x, 0, housePositionsData[1].z), new THREE.Vector3(housePositionsData[4].x, 0, housePositionsData[4].z)); const firstHousePos = new THREE.Vector3(housePositionsData[0].x, 0, housePositionsData[0].z); createPath(new THREE.Vector3(camera.position.x, 0.01, camera.position.z), firstHousePos); } }
+
+        // --- Destructible House Creation (Unchanged) ---
+        function createDestructibleMaterials() { /* ... */ destructibleWallMaterial = new THREE.MeshStandardMaterial({ color: 0xc2a47c, roughness: 0.9, metalness: 0.15, side: THREE.DoubleSide }); destructibleRoofMaterial = new THREE.MeshStandardMaterial({ color: 0x7A3503, roughness: 0.75, metalness: 0.1 }); destructibleDoorMaterial = new THREE.MeshStandardMaterial({ color: 0x553311, roughness: 0.65, metalness: 0.2 }); destructibleWindowFrameMaterial = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.55, metalness: 0.3 }); destructibleWindowGlassMaterial = new THREE.MeshStandardMaterial({ color: 0xaaddf6, transparent: true, opacity: 0.4, roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide }); }
+        function createDestructibleHouse(basePosition) { /* ... REVISED version from previous step ... */ const houseWidth = 5; const houseHeight = 3; const houseDepth = 6; const wallThickness = 0.2; const roofPitch = 1.8; const roofOverhang = 0.4; const addPart = (mesh, localPos = new THREE.Vector3(), localRot = new THREE.Euler()) => { mesh.position.copy(localPos).add(basePosition); mesh.rotation.copy(localRot); mesh.castShadow = true; mesh.receiveShadow = true; mesh.userData = { destructible: true }; scene.add(mesh); destructibleHouseParts.push(mesh); partVelocities.set(mesh, new THREE.Vector3(0, 0, 0)); }; const hw = houseWidth / 2; const hh = houseHeight / 2; const hd = houseDepth / 2; const wt = wallThickness / 2; const doorWidth = 1.0; const doorHeight = 2.2; const frontWallSideWidth = (houseWidth - doorWidth) / 2; addPart(new THREE.Mesh(new THREE.BoxGeometry(frontWallSideWidth, houseHeight, wallThickness), destructibleWallMaterial), new THREE.Vector3(-hw + frontWallSideWidth/2, hh, hd - wt)); addPart(new THREE.Mesh(new THREE.BoxGeometry(frontWallSideWidth, houseHeight, wallThickness), destructibleWallMaterial), new THREE.Vector3( hw - frontWallSideWidth/2, hh, hd - wt)); addPart(new THREE.Mesh(new THREE.BoxGeometry(doorWidth, houseHeight - doorHeight, wallThickness), destructibleWallMaterial), new THREE.Vector3(0, doorHeight + (houseHeight - doorHeight)/2, hd - wt)); addPart(new THREE.Mesh(new THREE.BoxGeometry(houseWidth, houseHeight, wallThickness), destructibleWallMaterial), new THREE.Vector3(0, hh, -hd + wt)); addPart(new THREE.Mesh(new THREE.BoxGeometry(wallThickness, houseHeight, houseDepth), destructibleWallMaterial), new THREE.Vector3(hw - wt, hh, 0)); const windowWidth = 1.5; const windowHeight = 1.2; const windowY = houseHeight * 0.55; const windowZ = 0; const windowSideDepth = (houseDepth - windowWidth) / 2; addPart(new THREE.Mesh(new THREE.BoxGeometry(wallThickness, windowY - windowHeight/2, houseDepth), destructibleWallMaterial), new THREE.Vector3(-hw + wt, (windowY - windowHeight/2)/2, 0)); addPart(new THREE.Mesh(new THREE.BoxGeometry(wallThickness, houseHeight - (windowY + windowHeight/2), houseDepth), destructibleWallMaterial), new THREE.Vector3(-hw + wt, windowY + windowHeight/2 + (houseHeight - (windowY + windowHeight/2))/2 , 0)); addPart(new THREE.Mesh(new THREE.BoxGeometry(wallThickness, windowHeight, windowSideDepth), destructibleWallMaterial), new THREE.Vector3(-hw + wt, windowY, hd - windowSideDepth/2)); addPart(new THREE.Mesh(new THREE.BoxGeometry(wallThickness, windowHeight, windowSideDepth), destructibleWallMaterial), new THREE.Vector3(-hw + wt, windowY, -hd + windowSideDepth/2)); const roofY = houseHeight; const roofPeakY = roofY + roofPitch; const roofSideLength = Math.sqrt(Math.pow(hw + roofOverhang, 2) + Math.pow(roofPitch, 2)); const roofAngle = Math.atan2(roofPitch, hw + roofOverhang); const roofGeo = new THREE.BoxGeometry(houseDepth + roofOverhang * 2, roofSideLength, wallThickness); const roofCenterXOffset = (hw + roofOverhang) / 2; const roofCenterYOffset = roofPitch / 2; const leftRoof = new THREE.Mesh(roofGeo, destructibleRoofMaterial); const leftRoofPos = new THREE.Vector3( -roofCenterXOffset, roofY + roofCenterYOffset, 0 ); addPart(leftRoof, leftRoofPos, new THREE.Euler(0, 0, roofAngle)); const rightRoof = new THREE.Mesh(roofGeo, destructibleRoofMaterial); const rightRoofPos = new THREE.Vector3( roofCenterXOffset, roofY + roofCenterYOffset, 0 ); addPart(rightRoof, rightRoofPos, new THREE.Euler(0, 0, -roofAngle)); addPart(new THREE.Mesh(new THREE.BoxGeometry(doorWidth, doorHeight, wallThickness * 0.8), destructibleDoorMaterial), new THREE.Vector3(0, doorHeight / 2, hd - wt)); const frameThickness = 0.08; const frameDepth = wallThickness * 0.7; const windowBaseX = -hw + wt; addPart(new THREE.Mesh(new THREE.BoxGeometry(frameDepth, windowHeight - frameThickness*2, windowWidth - frameThickness*2), destructibleWindowGlassMaterial), new THREE.Vector3(windowBaseX, windowY, windowZ)); addPart(new THREE.Mesh(new THREE.BoxGeometry(frameDepth, frameThickness, windowWidth), destructibleWindowFrameMaterial), new THREE.Vector3(windowBaseX, windowY + windowHeight/2 - frameThickness/2, windowZ)); addPart(new THREE.Mesh(new THREE.BoxGeometry(frameDepth, frameThickness, windowWidth), destructibleWindowFrameMaterial), new THREE.Vector3(windowBaseX, windowY - windowHeight/2 + frameThickness/2, windowZ)); addPart(new THREE.Mesh(new THREE.BoxGeometry(frameDepth, windowHeight - frameThickness*2, frameThickness), destructibleWindowFrameMaterial), new THREE.Vector3(windowBaseX, windowY, windowZ - windowWidth/2 + frameThickness/2)); addPart(new THREE.Mesh(new THREE.BoxGeometry(frameDepth, windowHeight - frameThickness*2, frameThickness), destructibleWindowFrameMaterial), new THREE.Vector3(windowBaseX, windowY, windowZ + windowWidth/2 - frameThickness/2)); destructibleHouseParts.forEach(p => p.position.y += Math.random()*0.001); }
+        function updateFallingHouse(delta) { /* ... unchanged ... */ if (!isDistantHouseFalling) return; destructibleHouseParts.forEach(part => { if (!part) return; const velocity = partVelocities.get(part); if (!velocity) return; velocity.y -= gravity * delta; part.position.x += velocity.x * delta; part.position.y += velocity.y * delta; part.position.z += velocity.z * delta; if (!part.geometry.boundingBox) part.geometry.computeBoundingBox(); const halfHeight = (part.geometry.boundingBox.max.y - part.geometry.boundingBox.min.y) / 2; const bottomY = part.position.y - halfHeight; if (bottomY <= 0) { part.position.y = halfHeight; velocity.y = 0; velocity.x *= 0.8; velocity.z *= 0.8; } }); }
+
+        // --- Flagpole and Flag Creation (Unchanged) ---
+        async function createFlagAndPole(position) { /* ... unchanged ... */ const poleRadius = 0.1; const poleGeometry = new THREE.CylinderGeometry(poleRadius, poleRadius, flagpoleHeight, 12); const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, metalness: 0.8, roughness: 0.4 }); const flagpole = new THREE.Mesh(poleGeometry, poleMaterial); flagpole.position.copy(position); flagpole.position.y = flagpoleHeight / 2; flagpole.castShadow = true; scene.add(flagpole); const flagTextureURL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Flag_of_the_Democratic_Republic_of_the_Congo.svg/640px-Flag_of_the_Democratic_Republic_of_the_Congo.svg.png'; try { const texture = await textureLoader.loadAsync(flagTextureURL); texture.colorSpace = THREE.SRGBColorSpace; flagGeometry = new THREE.PlaneGeometry(flagWidth, flagHeight, flagSegmentsW, flagSegmentsH); originalFlagVertices = flagGeometry.attributes.position.array.slice(); const flagMaterial = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.9, metalness: 0.1 }); flagMesh = new THREE.Mesh(flagGeometry, flagMaterial); flagMesh.castShadow = true; flagMesh.position.copy(flagpole.position); flagMesh.position.y = flagpole.position.y + flagpoleHeight / 2 - flagHeight / 2; flagMesh.position.x += poleRadius + flagWidth / 2; scene.add(flagMesh); console.log("DRC Flag created successfully."); } catch (error) { console.error("Error loading flag texture:", error); flagGeometry = new THREE.PlaneGeometry(flagWidth, flagHeight); originalFlagVertices = flagGeometry.attributes.position.array.slice(); const flagMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc, side: THREE.DoubleSide }); flagMesh = new THREE.Mesh(flagGeometry, flagMaterial); flagMesh.castShadow = true; flagMesh.position.copy(flagpole.position); flagMesh.position.y = flagpole.position.y + flagpoleHeight / 2 - flagHeight / 2; flagMesh.position.x += poleRadius + flagWidth / 2; scene.add(flagMesh); console.log("Added fallback grey flag."); } }
+        function updateFlagWaving(time) { /* ... unchanged ... */ if (!flagMesh || !flagGeometry || !originalFlagVertices) return; const positionAttribute = flagGeometry.attributes.position; const vertexCount = positionAttribute.count; const timeFactor = time * waveSpeed; for (let i = 0; i < vertexCount; i++) { const originalX = originalFlagVertices[i * 3]; const influence = (originalX + flagWidth / 2) / flagWidth; const wave = Math.sin(originalX * waveFrequency + timeFactor); const zOffset = wave * waveAmplitude * influence; positionAttribute.setZ(i, zOffset); } positionAttribute.needsUpdate = true; }
+
+        // --- AI Creation/Spawning/Update (Unchanged) ---
+        function createSmileyTexture() { /* ... */ const canvas = document.createElement('canvas'); const size = 256; canvas.width = size; canvas.height = size; const context = canvas.getContext('2d'); const center = size / 2; const radius = size / 2 * 0.9; context.fillStyle = 'yellow'; context.beginPath(); context.arc(center, center, radius, 0, Math.PI * 2); context.fill(); context.strokeStyle = 'black'; context.lineWidth = size * 0.04; context.stroke(); context.save(); context.translate(center, center); context.rotate(-Math.PI / 2); context.translate(-center, -center); context.fillStyle = 'black'; const eyeRadius = size * 0.1; const eyeOffsetX = size * 0.22; const eyeOffsetY = center - size * 0.1; context.beginPath(); context.arc(center - eyeOffsetX, eyeOffsetY, eyeRadius, 0, Math.PI * 2); context.fill(); context.beginPath(); context.arc(center + eyeOffsetX, eyeOffsetY, eyeRadius, 0, Math.PI * 2); context.fill(); context.beginPath(); const smileRadius = size * 0.35; const smileOffsetY = center + size * 0.15; context.arc(center, smileOffsetY, smileRadius, 0.15 * Math.PI, 0.85 * Math.PI); context.lineWidth = size * 0.05; context.lineCap = 'round'; context.stroke(); context.restore(); const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.needsUpdate = true; return texture; }
+        function createAIUnit() { /* ... */ const geometry = new THREE.SphereGeometry(aiRadius, 32, 16); const material = new THREE.MeshStandardMaterial({ map: smileyTexture, roughness: 0.8, metalness: 0.1, }); const mesh = new THREE.Mesh(geometry, material); mesh.castShadow = true; mesh.receiveShadow = true; mesh.position.y = aiRadius; return mesh; }
+        function spawnSingleAI(position = null) { /* ... */ if (housePositionsData.length === 0) return null; if (!smileyTexture) return null; const aiMesh = createAIUnit(); if (!position) position = new THREE.Vector3( (Math.random() - 0.5) * 10, aiRadius, (Math.random() - 0.5) * 10 ); aiMesh.position.copy(position); aiMesh.position.y = aiRadius; const halfAIWidth = aiRadius; aiMesh.position.x = Math.max(-worldBounds + halfAIWidth, Math.min(worldBounds - halfAIWidth, aiMesh.position.x)); aiMesh.position.z = Math.max(-worldBounds + halfAIWidth, Math.min(worldBounds - halfAIWidth, aiMesh.position.z)); scene.add(aiMesh); let targetIndex = Math.floor(Math.random() * housePositionsData.length); const targetPos = housePositionsData[targetIndex]; const newAIData = { mesh: aiMesh, target: new THREE.Vector3(targetPos.x, aiRadius, targetPos.z), velocity: new THREE.Vector3(), speed: aiSpeed * (0.8 + Math.random() * 0.4) }; aiUnits.push(newAIData); return newAIData; }
+        function spawnAIUnits(count) { /* ... */ for (let i = 0; i < count; i++) { const startHouseIndex = Math.floor(Math.random() * housePositionsData.length); const startPosData = housePositionsData[startHouseIndex]; const startPos = new THREE.Vector3( startPosData.x + (Math.random() - 0.5) * 4, aiRadius, startPosData.z + (Math.random() - 0.5) * 4 ); spawnSingleAI(startPos); } console.log(`Spawned ${count} AI units.`); }
+        function updateAI(delta) { /* ... */ if (housePositionsData.length === 0) return; const targetDirection = new THREE.Vector3(); for (let i = aiUnits.length - 1; i >= 0; i--) { const ai = aiUnits[i]; if (!ai || !ai.mesh) continue; const currentPos = ai.mesh.position; const targetPos = ai.target; targetDirection.subVectors(targetPos, currentPos); targetDirection.y = 0; const distanceToTarget = targetDirection.length(); if (distanceToTarget < aiReachThreshold) { let currentTargetIndex = -1; for(let j=0; j<housePositionsData.length; j++) { if (Math.abs(housePositionsData[j].x - targetPos.x) < 0.1 && Math.abs(housePositionsData[j].z - targetPos.z) < 0.1) { currentTargetIndex = j; break; } } let newTargetIndex = currentTargetIndex; let attempts = 0; while ((newTargetIndex === currentTargetIndex || typeof housePositionsData[newTargetIndex] === 'undefined') && housePositionsData.length > 1 && attempts < 10) { newTargetIndex = Math.floor(Math.random() * housePositionsData.length); attempts++; } if (typeof housePositionsData[newTargetIndex] !== 'undefined') { const newTargetPosData = housePositionsData[newTargetIndex]; ai.target.set(newTargetPosData.x, aiRadius, newTargetPosData.z); } else if (housePositionsData.length === 1 && typeof housePositionsData[0] !== 'undefined') { const newTargetPosData = housePositionsData[0]; ai.target.set(newTargetPosData.x, aiRadius, newTargetPosData.z); } } else { targetDirection.normalize(); ai.mesh.position.x += targetDirection.x * ai.speed * delta; ai.mesh.position.z += targetDirection.z * ai.speed * delta; ai.mesh.position.y = aiRadius; const lookAtPos = currentPos.clone().addScaledVector(targetDirection, 1.0); lookAtPos.y = aiRadius; ai.mesh.lookAt(lookAtPos); } const halfAIWidth = aiRadius; ai.mesh.position.x = Math.max(-worldBounds + halfAIWidth, Math.min(worldBounds - halfAIWidth, ai.mesh.position.x)); ai.mesh.position.z = Math.max(-worldBounds + halfAIWidth, Math.min(worldBounds - halfAIWidth, ai.mesh.position.z)); } }
+
+        // --- Explosion Creation/Update (Unchanged) ---
+        function createExplosion(position) { /* ... */ const geometry = new THREE.BufferGeometry(); const vertices = []; const velocities = []; const explosionMaterial = new THREE.PointsMaterial({ color: 0xffd700, size: 0.3, sizeAttenuation: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }); for (let i = 0; i < particleCount; i++) { vertices.push(position.x, position.y, position.z); const theta = Math.random() * Math.PI * 2; const phi = Math.acos((Math.random() * 2) - 1); const speed = 2 + Math.random() * 3; velocities.push( speed * Math.sin(phi) * Math.cos(theta), speed * Math.cos(phi), speed * Math.sin(phi) * Math.sin(theta) ); } geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); const points = new THREE.Points(geometry, explosionMaterial); scene.add(points); activeExplosions.push({ points: points, velocities: velocities, startTime: performance.now() }); }
+        function updateExplosions(delta, time) { /* ... */ for (let i = activeExplosions.length - 1; i >= 0; i--) { const explosion = activeExplosions[i]; const points = explosion.points; const geometry = points.geometry; const positionAttribute = geometry.attributes.position; const velocities = explosion.velocities; const elapsedTime = (time - explosion.startTime); if (elapsedTime > explosionDuration * 1000) { scene.remove(points); geometry.dispose(); points.material.dispose(); activeExplosions.splice(i, 1); continue; } points.material.opacity = 1.0 - (elapsedTime / (explosionDuration * 1000)); for (let j = 0; j < particleCount; j++) { const index = j * 3; positionAttribute.array[index] += velocities[index] * delta; positionAttribute.array[index + 1] += velocities[index + 1] * delta; positionAttribute.array[index + 2] += velocities[index + 2] * delta; velocities[index + 1] -= gravity * 0.3 * delta; } positionAttribute.needsUpdate = true; } }
+
+        // --- Player Collision Detection Function (Houses Only) ---
+        function checkHouseCollisions(colliderToCheck) { for (const box of houseBoundingBoxes) { if (colliderToCheck.intersectsBox(box)) return true; } return false; }
+        function onWindowResize() { /* ... */ camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        function onMouseDown(event) { /* ... Mouse Down Handler (Unchanged) ... */ if (playerMode === 'drive' || !controls.isLocked) return; raycaster.setFromCamera(mouseCoords, camera); const aiMeshes = aiUnits.map(ai => ai.mesh).filter(mesh => !!mesh); const targetsToCheck = [...aiMeshes, ...destructibleHouseParts]; const intersects = raycaster.intersectObjects(targetsToCheck, false); if (intersects.length > 0) { const intersectedObject = intersects[0].object; if (intersectedObject.userData.destructible === true) { if (!isDistantHouseFalling) { isDistantHouseFalling = true; console.log("Distant house collapse triggered!"); destructibleHouseParts.forEach(part => { const velocity = partVelocities.get(part); if(velocity) { velocity.x = (Math.random() - 0.5) * 1; velocity.y = Math.random() * 1; velocity.z = (Math.random() - 0.5) * 1; } }); } } else { let hitAiIndex = -1; for (let i = 0; i < aiUnits.length; i++) { if (aiUnits[i].mesh === intersectedObject) { hitAiIndex = i; break; } } if (hitAiIndex !== -1) { const aiToRemove = aiUnits[hitAiIndex]; createExplosion(aiToRemove.mesh.position.clone()); scene.remove(aiToRemove.mesh); if (aiToRemove.mesh.geometry) aiToRemove.mesh.geometry.dispose(); aiUnits.splice(hitAiIndex, 1); spawnSingleAI(); } } } }
+
+        // --- UI Button Handler (Unchanged) ---
+        function handleUpdateAICount() { const newCountStr = aiCountInput.value; const newCount = parseInt(newCountStr, 10); const maxAICount = 50; if (isNaN(newCount) || newCount < 0 || newCount > maxAICount) { alert(`Please enter a valid number between 0 and ${maxAICount}.`); aiCountInput.value = currentAICount; return; } if (newCount !== currentAICount) { console.log(`Updating AI count from ${currentAICount} to ${newCount}`); currentAICount = newCount; resetAIUnits(currentAICount); } else { console.log("AI count is already set to", newCount); } }
+        function resetAIUnits(count) { for (let i = aiUnits.length - 1; i >= 0; i--) { const ai = aiUnits[i]; if (ai.mesh) { scene.remove(ai.mesh); if (ai.mesh.geometry) ai.mesh.geometry.dispose(); } } aiUnits = []; spawnAIUnits(count); }
+
+        // --- Explode All Handler (Unchanged) ---
+        function explodeEverythingAndRespawn() { console.log("G key pressed - Exploding and respawning..."); aiUnits.forEach(ai => { if (ai.mesh) createExplosion(ai.mesh.position.clone()); }); if (!isDistantHouseFalling) { destructibleHouseParts.forEach(part => { if (part) createExplosion(part.position.clone()); }); } for (let i = aiUnits.length - 1; i >= 0; i--) { const ai = aiUnits[i]; if (ai.mesh) { scene.remove(ai.mesh); if (ai.mesh.geometry) ai.mesh.geometry.dispose(); } } for (let i = destructibleHouseParts.length - 1; i >= 0; i--) { const part = destructibleHouseParts[i]; if (part) { scene.remove(part); if (part.geometry) part.geometry.dispose(); } } aiUnits = []; destructibleHouseParts.length = 0; partVelocities.clear(); isDistantHouseFalling = false; currentAICount = parseInt(aiCountInput.value, 10); if (isNaN(currentAICount) || currentAICount < 0) currentAICount = 10; aiCountInput.value = currentAICount; spawnAIUnits(currentAICount); createDestructibleHouse(distantHousePosition); console.log("Respawn complete."); }
+
+        // --- Storm Functions (Unchanged) ---
+        function startStorm() { /* ... */ console.log("Starting storm..."); isStorming = true; stormStartTime = performance.now(); nextLightningTime = stormStartTime + (1000 + Math.random() * 4000); scene.background = stormBgColor.clone(); scene.fog.color = stormFogColor.clone(); scene.fog.near = stormFogNear; scene.fog.far = stormFogFar; const rainGeometry = new THREE.BufferGeometry(); const rainVertices = []; for (let i = 0; i < rainCount; i++) { const x = Math.random() * rainAreaSize - rainAreaSize / 2; const y = Math.random() * rainHeight; const z = Math.random() * rainAreaSize - rainAreaSize / 2; rainVertices.push(x, y, z); } rainGeometry.setAttribute('position', new THREE.Float32BufferAttribute(rainVertices, 3)); const rainMaterial = new THREE.PointsMaterial({ color: 0xaaaaee, size: 0.1, transparent: true, opacity: 0.6, sizeAttenuation: true, depthWrite: false }); rainParticles = new THREE.Points(rainGeometry, rainMaterial); rainParticles.position.y = rainHeight / 2; scene.add(rainParticles); const floodGeometry = new THREE.PlaneGeometry(groundSize, groundSize); const floodMaterial = new THREE.MeshStandardMaterial({ color: 0x226699, transparent: true, opacity: 0.75, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide, depthWrite: false }); floodPlane = new THREE.Mesh(floodGeometry, floodMaterial); floodPlane.rotation.x = -Math.PI / 2; floodPlane.position.y = -1; floodPlane.renderOrder = 1; scene.add(floodPlane); }
+        function stopStorm() { /* ... */ console.log("Stopping storm..."); isStorming = false; scene.background = originalBgColor.clone(); scene.fog.color = originalFogColor.clone(); scene.fog.near = originalFogNear; scene.fog.far = originalFogFar; ambientLight.intensity = originalAmbientIntensity; directionalLight.intensity = originalDirectionalIntensity; clearTimeout(lightningTimeout); lightningActive = false; if (rainParticles) { scene.remove(rainParticles); rainParticles.geometry.dispose(); rainParticles.material.dispose(); rainParticles = null; } if (floodPlane) { scene.remove(floodPlane); floodPlane.geometry.dispose(); floodPlane.material.dispose(); floodPlane = null; } }
+        function updateRainParticles(delta) { /* ... */ if (!rainParticles) return; const positions = rainParticles.geometry.attributes.position.array; const rainSpeed = 40.0; for (let i = 0; i < rainCount; i++) { const index = i * 3; positions[index + 1] -= rainSpeed * delta; if (positions[index + 1] < -rainHeight / 2) { positions[index] = Math.random() * rainAreaSize - rainAreaSize / 2; positions[index + 1] = rainHeight / 2; positions[index + 2] = Math.random() * rainAreaSize - rainAreaSize / 2; } } rainParticles.geometry.attributes.position.needsUpdate = true; }
+        function updateFlood(elapsedTime) { /* ... */ if (!floodPlane) return; const halfDuration = stormDuration / 2; let floodLevel = 0; if (elapsedTime < halfDuration) { floodLevel = THREE.MathUtils.lerp(-1, maxFloodHeight, elapsedTime / halfDuration); } else { floodLevel = THREE.MathUtils.lerp(maxFloodHeight, -1, (elapsedTime - halfDuration) / halfDuration); } floodPlane.position.y = floodLevel; }
+        function triggerLightning(currentTime) { /* ... */ console.log("Lightning Flash!"); lightningActive = true; ambientLight.intensity = originalAmbientIntensity * lightningIntensityFactor; directionalLight.intensity = originalDirectionalIntensity * lightningIntensityFactor; clearTimeout(lightningTimeout); lightningTimeout = setTimeout(() => { ambientLight.intensity = originalAmbientIntensity; directionalLight.intensity = originalDirectionalIntensity; lightningActive = false; nextLightningTime = currentTime + (1500 + Math.random() * 5000); console.log("Next lightning scheduled around:", (nextLightningTime - performance.now())/1000, "s"); }, 100 + Math.random() * 100); }
+
+        // --- Car Functions ---
+        function createCar() { /* ... unchanged ... */ const carGroup = new THREE.Group(); const carBodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, roughness: 0.3, metalness: 0.7 }); const carWindowMaterial = new THREE.MeshStandardMaterial({ color: 0x6699cc, roughness: 0.1, metalness: 0.8, transparent: true, opacity: 0.6 }); const carWheelMaterial = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8, metalness: 0.2 }); const bodyGeo = new THREE.BoxGeometry(carDimensions.width, carDimensions.height * 0.6, carDimensions.depth); const body = new THREE.Mesh(bodyGeo, carBodyMaterial); body.position.y = carDimensions.height * 0.3; carGroup.add(body); const cabinGeo = new THREE.BoxGeometry(carDimensions.width * 0.9, carDimensions.height * 0.5, carDimensions.depth * 0.6); const cabin = new THREE.Mesh(cabinGeo, carBodyMaterial); cabin.position.y = carDimensions.height * 0.6 + carDimensions.height * 0.25; cabin.position.z = -carDimensions.depth * 0.1; carGroup.add(cabin); const windowDepth = 0.05; const frontWindow = new THREE.Mesh(new THREE.BoxGeometry(carDimensions.width * 0.8, carDimensions.height * 0.4, windowDepth), carWindowMaterial); frontWindow.position.set(0, cabin.position.y, cabin.position.z + carDimensions.depth * 0.3 - windowDepth/2); frontWindow.rotation.x = -Math.PI / 8; carGroup.add(frontWindow); const sideWindowGeo = new THREE.BoxGeometry(windowDepth, carDimensions.height * 0.4, carDimensions.depth * 0.5); const leftWindow = new THREE.Mesh(sideWindowGeo, carWindowMaterial); leftWindow.position.set(-carDimensions.width * 0.45 + windowDepth/2, cabin.position.y, cabin.position.z); carGroup.add(leftWindow); const rightWindow = new THREE.Mesh(sideWindowGeo, carWindowMaterial); rightWindow.position.set(carDimensions.width * 0.45 - windowDepth/2, cabin.position.y, cabin.position.z); carGroup.add(rightWindow); const wheelRadius = carDimensions.height * 0.3; const wheelWidth = carDimensions.width * 0.2; const wheelGeo = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelWidth, 16); wheelGeo.rotateZ(Math.PI / 2); const wheels = []; const wheelPositions = [ new THREE.Vector3(carDimensions.width * 0.45, wheelRadius, carDimensions.depth * 0.35), new THREE.Vector3(-carDimensions.width * 0.45, wheelRadius, carDimensions.depth * 0.35), new THREE.Vector3(carDimensions.width * 0.45, wheelRadius, -carDimensions.depth * 0.35), new THREE.Vector3(-carDimensions.width * 0.45, wheelRadius, -carDimensions.depth * 0.35) ]; wheelPositions.forEach(pos => { const wheel = new THREE.Mesh(wheelGeo, carWheelMaterial); wheel.position.copy(pos); wheel.castShadow = true; carGroup.add(wheel); wheels.push(wheel); }); carGroup.userData.wheels = wheels; carGroup.castShadow = true; carGroup.receiveShadow = true; carGroup.position.y = carDimensions.height * 0.2; return carGroup; }
+
+        function toggleCarMode() {
+            if (playerMode === 'walk') {
+                playerMode = 'drive';
+                if (!carMesh) { // First time or after explosion
+                    carMesh = createCar();
+                    scene.add(carMesh);
+                    // Reset car state
+                    carDistanceTraveledSinceFire = 0;
+                    carIsOnFire = false;
+                    if (carFireParticles) { // Remove old fire if any
+                        scene.remove(carFireParticles);
+                        carFireParticles.geometry.dispose();
+                        carFireParticles.material.dispose();
+                        carFireParticles = null;
+                    }
+                }
+                // Position car near player
+                carMesh.position.copy(controls.getObject().position);
+                carMesh.position.y = carDimensions.height * 0.2;
+                carMesh.rotation.y = controls.getObject().rotation.y;
+
+                if (controls.isLocked) {
+                    switchingToCarMode = true;
+                    controls.unlock();
+                } else {
+                    blockerElement.style.display = 'none';
+                }
+                crosshairElement.style.display = 'none';
+                scene.remove(controls.getObject());
+                console.log("Entered car mode.");
+
+            } else if (playerMode === 'drive') {
+                playerMode = 'walk';
+                if (carMesh) { // Only if car exists (not exploded)
+                    const exitOffset = new THREE.Vector3(carDimensions.width, 0, 0);
+                    exitOffset.applyQuaternion(carMesh.quaternion);
+                    controls.getObject().position.copy(carMesh.position).add(exitOffset);
+                    controls.getObject().position.y = playerHeight;
+                } else { // If car exploded, player exits where they are (camera pos)
+                     controls.getObject().position.copy(camera.position);
+                     controls.getObject().position.y = playerHeight;
+                }
+                scene.add(controls.getObject());
+                controls.lock();
+                console.log("Exited car mode.");
+            }
+        }
+
+        // --- MODIFIED updateCar ---
+        function updateCar(delta, currentTime) { // Pass currentTime
+            if (!carMesh) return;
+
+            const prevPosition = carMesh.position.clone(); // For distance calculation
+
+            // Steering, Acceleration, Friction, Speed Clamp (unchanged)
+            if (moveLeft) carSteering += carSteerSpeed * delta; if (moveRight) carSteering -= carSteerSpeed * delta; carSteering = Math.max(-carMaxSteer, Math.min(carMaxSteer, carSteering)); if (moveForward) carSpeed += carAcceleration * delta; if (moveBackward) carSpeed -= carBraking * delta; if (carSpeed > 0) carSpeed -= carFriction * delta; else if (carSpeed < 0) carSpeed += carFriction * delta; if (Math.abs(carSpeed) < carFriction * delta) carSpeed = 0; carSpeed = Math.max(-carMaxSpeed / 2, Math.min(carMaxSpeed, carSpeed));
+
+            // Update Car Orientation and Position (unchanged)
+            if (Math.abs(carSpeed) > 0.01) { carMesh.rotation.y += carSteering * carSpeed * 0.05 * delta; }
+            const moveDirection = new THREE.Vector3(0, 0, 1); moveDirection.applyQuaternion(carMesh.quaternion);
+            carMesh.position.addScaledVector(moveDirection, carSpeed * delta);
+
+            // Visual Wheel Rotation (unchanged)
+            if (carMesh.userData.wheels) { const wheelCircumference = 2 * Math.PI * (carDimensions.height * 0.3); const distanceTraveledThisFrame = carSpeed * delta; const rotationAmount = distanceTraveledThisFrame / wheelCircumference; carMesh.userData.wheels.forEach(wheel => { wheel.rotation.x -= rotationAmount; if (carMesh.userData.wheels.indexOf(wheel) < 2) { wheel.rotation.y = carSteering * 0.8; } }); }
+
+            // Car Boundary Checks (unchanged)
+            const carHalfWidth = carDimensions.width / 2; const carHalfDepth = carDimensions.depth / 2; if (carMesh.position.x < -worldBounds + carHalfWidth) { carMesh.position.x = -worldBounds + carHalfWidth; carSpeed = 0; } else if (carMesh.position.x > worldBounds - carHalfWidth) { carMesh.position.x = worldBounds - carHalfWidth; carSpeed = 0; } if (carMesh.position.z < -worldBounds + carHalfDepth) { carMesh.position.z = -worldBounds + carHalfDepth; carSpeed = 0; } else if (carMesh.position.z > worldBounds - carHalfDepth) { carMesh.position.z = worldBounds - carHalfDepth; carSpeed = 0; }
+            carMesh.position.y = carDimensions.height * 0.2;
+
+            // Car Collision with Houses (unchanged)
+            carCollider.setFromObject(carMesh); if (checkHouseCollisions(carCollider)) { const pushBackAmount = 0.2; carMesh.position.addScaledVector(moveDirection, -Math.sign(carSpeed) * pushBackAmount); carSpeed = 0; }
+
+            // --- NEW: Fiery Car Logic ---
+            if (!carIsOnFire) {
+                const distMoved = carMesh.position.distanceTo(prevPosition);
+                carDistanceTraveledSinceFire += distMoved;
+
+                if (carDistanceTraveledSinceFire >= carFireTriggerDistance) {
+                    carIsOnFire = true;
+                    carFireStartTime = currentTime;
+                    carDistanceTraveledSinceFire = 0; // Reset for next cycle
+                    createCarFireEffect();
+                    console.log("Car caught fire!");
+                }
+            } else {
+                // Car is on fire
+                updateCarFireEffect(delta, carMesh.position); // Update fire to follow car
+                if (currentTime - carFireStartTime > carFireDuration) {
+                    console.log("Car exploding from fire!");
+                    createExplosion(carMesh.position.clone()); // Standard explosion
+                    scene.remove(carMesh);
+                    if (carMesh.geometry) carMesh.geometry.dispose();
+                    if (carMesh.material) carMesh.material.dispose(); // Assuming body material is primary
+                    carMesh.userData.wheels.forEach(w => { w.geometry.dispose(); w.material.dispose(); }); // Dispose wheels
+                    carMesh = null; // Car is gone
+                    carIsOnFire = false;
+                    playerMode = 'walk'; // Force player out
+                    scene.add(controls.getObject()); // Add player controller back
+                    controls.getObject().position.set(camera.position.x, playerHeight, camera.position.z); // Player appears where camera was
+                    controls.lock(); // Attempt to re-lock for walking
+                }
+            }
+        }
+
+        // --- NEW: Car Fire Particle Effect ---
+        function createCarFireEffect() {
+            if (carFireParticles) { // Clean up old one if any
+                scene.remove(carFireParticles);
+                carFireParticles.geometry.dispose();
+                carFireParticles.material.dispose();
+            }
+            const fireGeometry = new THREE.BufferGeometry();
+            const fireVertices = [];
+            for (let i = 0; i < carFireParticleCount; i++) {
+                fireVertices.push(0, 0, 0); // Start at origin (will be positioned with car)
+            }
+            fireGeometry.setAttribute('position', new THREE.Float32BufferAttribute(fireVertices, 3));
+            const fireMaterial = new THREE.PointsMaterial({
+                color: 0xff6600, // Orange
+                size: 0.5,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true
+            });
+            carFireParticles = new THREE.Points(fireGeometry, fireMaterial);
+            // Velocities will be stored per particle if needed, or calculated in update
+            carFireParticles.userData.velocities = [];
+            for (let i = 0; i < carFireParticleCount; i++) {
+                carFireParticles.userData.velocities.push(
+                    (Math.random() - 0.5) * 1.5, // Spread out
+                    Math.random() * 2 + 1,      // Rise up
+                    (Math.random() - 0.5) * 1.5
+                );
+            }
+            scene.add(carFireParticles);
+        }
+
+        function updateCarFireEffect(delta, carPosition) {
+            if (!carFireParticles) return;
+
+            carFireParticles.position.copy(carPosition); // Move particles with car
+            carFireParticles.position.y += carDimensions.height * 0.3; // Originate from body center
+
+            const positions = carFireParticles.geometry.attributes.position.array;
+            const velocities = carFireParticles.userData.velocities;
+
+            for (let i = 0; i < carFireParticleCount; i++) {
+                const index = i * 3;
+                positions[index] += velocities[index] * delta;
+                positions[index + 1] += velocities[index + 1] * delta;
+                positions[index + 2] += velocities[index + 2] * delta;
+
+                // Simple fade/reset logic for fire particles (could be more complex)
+                velocities[index+1] -= gravity * 0.1 * delta; // Less gravity, more floaty
+                if (positions[index + 1] > carDimensions.height * 1.5 || Math.random() < 0.01) { // If too high or randomly
+                    positions[index] = (Math.random() - 0.5) * carDimensions.width * 0.5;  // Reset around car body
+                    positions[index + 1] = 0;
+                    positions[index + 2] = (Math.random() - 0.5) * carDimensions.depth * 0.3;
+                    velocities[index+1] = Math.random() * 2 + 1; // New upward velocity
+                }
+            }
+            carFireParticles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const currentTime = performance.now();
+            const delta = Math.min(0.1, (currentTime - prevTime) / 1000);
+            prevTime = currentTime;
+
+            // Storm Update...
+            if (isStorming) { /* ... */ const elapsedStormTime = currentTime - stormStartTime; if (elapsedStormTime >= stormDuration) { stopStorm(); } else { updateRainParticles(delta); updateFlood(elapsedStormTime); if (currentTime >= nextLightningTime && !lightningActive) { triggerLightning(currentTime); } } }
+
+            // Update Player OR Car
+            if (playerMode === 'walk') {
+                if (controls.isLocked === true) { /* ... player physics ... */ const prevPosition = controls.getObject().position.clone(); velocity.x -= velocity.x * deceleration * delta; velocity.z -= velocity.z * deceleration * delta; velocity.y -= gravity * delta; direction.z = Number(moveForward) - Number(moveBackward); direction.x = Number(moveRight) - Number(moveLeft); direction.normalize(); if (moveForward || moveBackward) velocity.z -= direction.z * movementSpeed * delta; if (moveLeft || moveRight) velocity.x -= direction.x * movementSpeed * delta; controls.moveRight(-velocity.x * delta); controls.moveForward(-velocity.z * delta); controls.getObject().position.y += velocity.y * delta; const playerPos = controls.getObject().position; const halfPlayerWidth = playerWidth / 2; if (playerPos.x < -worldBounds + halfPlayerWidth) { playerPos.x = -worldBounds + halfPlayerWidth; velocity.x = 0; } else if (playerPos.x > worldBounds - halfPlayerWidth) { playerPos.x = worldBounds - halfPlayerWidth; velocity.x = 0; } if (playerPos.z < -worldBounds + halfPlayerWidth) { playerPos.z = -worldBounds + halfPlayerWidth; velocity.z = 0; } else if (playerPos.z > worldBounds - halfPlayerWidth) { playerPos.z = worldBounds - halfPlayerWidth; velocity.z = 0; } if (playerPos.y < playerHeight) { playerPos.y = playerHeight; velocity.y = 0; canJump = true; } playerCollider.setFromCenterAndSize( new THREE.Vector3(playerPos.x, playerPos.y - playerHeight / 2, playerPos.z), new THREE.Vector3(playerWidth, playerHeight, playerWidth) ); if (checkHouseCollisions(playerCollider)) { controls.getObject().position.copy(prevPosition); velocity.x = 0; velocity.z = 0; } }
+            } else if (playerMode === 'drive') {
+                updateCar(delta, currentTime); // Pass currentTime for fire logic
+                if (carMesh) { // Check if car still exists
+                    const relativeCameraOffset = carCameraOffset.clone();
+                    relativeCameraOffset.applyQuaternion(carMesh.quaternion);
+                    camera.position.copy(carMesh.position).add(relativeCameraOffset);
+                    camera.lookAt(carMesh.position.x, carMesh.position.y + carDimensions.height * 0.5, carMesh.position.z);
+                } else {
+                    // If carMesh is null (exploded), ensure player is back in walk mode control
+                    if (playerMode !== 'walk') {
+                         playerMode = 'walk';
+                         scene.add(controls.getObject());
+                         controls.getObject().position.set(camera.position.x, playerHeight, camera.position.z);
+                         if (blockerElement.style.display !== 'none') { // If menu was somehow up
+                             controls.lock(); // try to lock if menu not up
+                         }
+                    }
+                }
+            }
+
+            // Update AI, Explosions, Falling House, Flag Waving...
+            updateAI(delta); updateExplosions(delta, currentTime); updateFallingHouse(delta); updateFlagWaving(currentTime / 1000);
+
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // --- Other Functions (Unchanged from previous correct versions) ---
+        // createSmileyTexture, createAIUnit, spawnSingleAI, spawnAIUnits, updateAI
+        // createExplosion, updateExplosions
+        // checkHouseCollisions, onWindowResize, onMouseDown
+        // handleUpdateAICount, resetAIUnits, explodeEverythingAndRespawn
+        // startStorm, stopStorm, updateRainParticles, updateFlood, triggerLightning
+        // All those helper functions remain as they were.
+    </script>
+</body>
+</html>

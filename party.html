@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Timer Thing</title>
+    <style>
+        body {
+            background-color: #ffcc00; /* Bright yellow background */
+            color: #000080; /* Navy blue text */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            transition: background 1s ease;
+        }
+        h1 {
+            font-size: 48px;
+            text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
+            margin-bottom: 20px;
+        }
+        .counter {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        .timer {
+            font-size: 72px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: #000080; /* Navy blue background */
+            color: #ffffff; /* White text */
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .party-time-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff0000; /* Red text */
+            text-shadow: 2px 2px #000080; /* Navy blue shadow */
+            animation: grow-shrink 1s infinite;
+            display: none;
+        }
+        @keyframes grow-shrink {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .rainbow-background {
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            background-size: 200% 200%;
+            animation: gradient-shift 5s ease infinite;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 24px;
+            background-color: #ff0000; /* Red button */
+            color: #ffffff; /* White text */
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #000080; /* Navy blue on hover */
+        }
+        .video-container {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        .chat-message {
+            background-color: #ffffff;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #000080; /* Navy blue border */
+            border-radius: 10px;
+            position: relative;
+        }
+        .chat-message strong {
+            color: #000000; /* Black text for username */
+        }
+        .chat-message .owner-text {
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-fade 5s ease infinite;
+        }
+        .chat-message .piss-man-badge {
+            color: #0000ff; /* Blue text for "piss man" badge */
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .chat-message .anime-girl-badge {
+            color: #ff69b4; /* Pink text for "anime girl" badge */
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .chat-message .the-real-n-badge {
+            background: linear-gradient(90deg, #000000, #ffcc00); /* Black-yellow gradient */
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-fade 5s ease infinite;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .chat-input {
+            margin-top: 20px;
+        }
+        .chat-input input {
+            padding: 10px;
+            font-size: 16px;
+            width: 70%;
+            border: 2px solid #000080; /* Navy blue border */
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff0000; /* Red button */
+            color: #ffffff; /* White text */
+            border: none;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #000080; /* Navy blue on hover */
+        }
+        .delete-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #ff0000; /* Red button */
+            color: #ffffff; /* White text */
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+        }
+        .delete-button:hover {
+            background-color: #000080; /* Navy blue on hover */
+        }
+        .info-text {
+            font-size: 12px;
+            color: #000080; /* Navy blue text */
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Party Timer Thing</h1>
+    <div class="counter">Global Clicks: <span id="global-clicks">0</span></div>
+    <div class="timer" id="timer">30:00</div>
+    <div class="party-time-text" id="party-time-text">PARTY TIME!</div>
+    <button id="click-button">Click Me!</button>
+
+    <!-- YouTube Video -->
+    <div class="video-container" id="video-container">
+        <iframe
+            id="party-video"
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/O-2DwDG0EqM?autoplay=1&mute=1"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+        </iframe>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-container" id="chat-container">
+        <!-- Chat messages will be dynamically inserted here -->
+    </div>
+    <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <!-- Info Text -->
+    <div class="info-text">
+        Note: You may need to enable autoplay or sound in your browser settings to hear the music.
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, increment, push, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+            authDomain: "quaters-5f71d.firebaseapp.com",
+            projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.firebasestorage.app",
+            messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626",
+            measurementId: "G-7WFJZV9JWT"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // DOM elements
+        const globalClicksElement = document.getElementById('global-clicks');
+        const timerElement = document.getElementById('timer');
+        const partyTimeText = document.getElementById('party-time-text');
+        const clickButton = document.getElementById('click-button');
+        const videoContainer = document.getElementById('video-container');
+        const partyVideo = document.getElementById('party-video');
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Global variables
+        let timer = 1800; // 30 minutes in seconds
+        let isPartyTime = false;
+
+        // Load global click count
+        const clicksRef = ref(db, 'globalClicks');
+        onValue(clicksRef, (snapshot) => {
+            const clicks = snapshot.val() || 0;
+            globalClicksElement.textContent = clicks;
+        });
+
+        // Load timer
+        const timerRef = ref(db, 'timer');
+        onValue(timerRef, (snapshot) => {
+            const savedTimer = snapshot.val();
+            if (savedTimer !== null) {
+                timer = savedTimer;
+                updateTimerDisplay();
+
+                // Check if timer reached 0
+                if (timer === 0 && !isPartyTime) {
+                    startParty();
+                }
+            }
+        });
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timer / 60);
+            const seconds = timer % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Start the timer
+        setInterval(() => {
+            if (!isPartyTime && timer > 0) {
+                timer--;
+                set(ref(db, 'timer'), timer); // Save timer to Firebase
+                updateTimerDisplay();
+
+                // Check if timer reached 0
+                if (timer === 0) {
+                    startParty();
+                }
+            }
+        }, 1000);
+
+        // Start party mode
+        function startParty() {
+            isPartyTime = true;
+
+            // Rainbow background
+            document.body.classList.add('rainbow-background');
+
+            // Show "PARTY TIME!" text
+            partyTimeText.style.display = 'block';
+
+            // Show and play the video
+            videoContainer.style.display = 'block';
+            partyVideo.src = "https://www.youtube.com/embed/O-2DwDG0EqM?autoplay=1&mute=0"; // Unmute and autoplay
+
+            // Reset after 15 seconds
+            setTimeout(() => {
+                endParty();
+            }, 15000); // 15 seconds
+        }
+
+        // End party mode
+        function endParty() {
+            isPartyTime = false;
+
+            // Reset background
+            document.body.classList.remove('rainbow-background');
+
+            // Hide "PARTY TIME!" text
+            partyTimeText.style.display = 'none';
+
+            // Hide the video
+            videoContainer.style.display = 'none';
+            partyVideo.src = ""; // Stop the video
+
+            // Reset timer to 30 minutes
+            timer = 1800;
+            set(ref(db, 'timer'), timer); // Save timer to Firebase
+            updateTimerDisplay();
+        }
+
+        // Handle button click
+        clickButton.addEventListener('click', () => {
+            // Increment global click count
+            set(ref(db, 'globalClicks'), increment(1));
+
+            // Decrease timer by 1 second
+            if (!isPartyTime && timer > 0) {
+                timer--;
+                set(ref(db, 'timer'), timer); // Save timer to Firebase
+                updateTimerDisplay();
+
+                // Check if timer reached 0
+                if (timer === 0) {
+                    startParty();
+                }
+            }
+        });
+
+        // Load chat messages
+        const partyMessagesRef = ref(db, 'partyMessages');
+        onValue(partyMessagesRef, (snapshot) => {
+            chatContainer.innerHTML = ''; // Clear chat container
+            snapshot.forEach((childSnapshot) => {
+                const message = childSnapshot.val();
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('chat-message');
+
+                // Add badges based on email
+                if (message.email === 'brad67ley@gmail.com') {
+                    messageElement.innerHTML = `
+                        <strong>${message.user}</strong>: <span class="owner-text">OWNER</span> ${message.text}
+                    `;
+                } else if (message.email === 'victors.realm1@gmail.com') {
+                    messageElement.innerHTML = `
+                        <strong>${message.user}</strong> <span class="piss-man-badge">piss gal</span>: ${message.text}
+                    `;
+                } else if (message.email === 'jagaimoanimetitties@gmail.com') {
+                    messageElement.innerHTML = `
+                        <strong>${message.user}</strong> <span class="anime-girl-badge">anime girl</span>: ${message.text}
+                    `;
+                } else if (message.email === 'trashcall988110@gmail.com') {
+                    messageElement.innerHTML = `
+                        <strong>${message.user}</strong> <span class="the-real-n-badge">The Real N</span>: ${message.text}
+                    `;
+                } else {
+                    messageElement.innerHTML = `<strong>${message.user}</strong>: ${message.text}`;
+                }
+
+                // Add delete button for the owner
+                if (auth.currentUser && auth.currentUser.email === 'brad67ley@gmail.com') {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.classList.add('delete-button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', () => {
+                        remove(childSnapshot.ref).catch((error) => {
+                            alert('Error deleting message: ' + error.message);
+                        });
+                    });
+                    messageElement.appendChild(deleteButton);
+                }
+
+                chatContainer.appendChild(messageElement);
+            });
+            // Scroll to the bottom of the chat
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+
+        // Send chat message
+        sendButton.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                const user = auth.currentUser;
+                if (user) {
+                    const displayName = user.displayName || user.email;
+                    push(ref(db, 'partyMessages'), {
+                        text: message,
+                        user: displayName,
+                        email: user.email, // Store the user's email
+                        timestamp: new Date().toISOString()
+                    }).then(() => {
+                        chatInput.value = ''; // Clear input
+                    }).catch((error) => {
+                        alert('Error sending message: ' + error.message);
+                    });
+                } else {
+                    alert('You must be signed in to send a message.');
+                }
+            }
+        });
+
+        // Send message on Enter key press
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                const displayName = user.displayName || user.email;
+                // Show "NO MORE SPONGEBOBS!" button and global message maker for brad67ley@gmail.com
+                if (user.email === 'brad67ley@gmail.com') {
+                    clickButton.style.display = 'block';
+                }
+            } else {
+                // User is signed out
+                clickButton.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

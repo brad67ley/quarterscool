@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUUNAT's Slow Drift</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Hide scrollbars and contain bouncing items */
+            background: linear-gradient(65deg, #ff00ff, #ff0000, #00ffff, #ffff00, #00ff00, #0000ff, #ff00ff);
+            background-size: 600% 600%;
+            /* Slow down background animations */
+            animation:
+                gradientShift 15s ease-in-out infinite alternate, /* Slower shift */
+                /* Hue shift now mainly controlled by JS */
+                backgroundPulse 5s ease-in-out infinite alternate; /* Slower pulse */
+            position: relative;
+            /* Apply JS controlled filters here */
+             filter: hue-rotate(var(--hue, 0deg)) saturate(var(--sat, 1.5)) brightness(var(--bright, 1)) blur(var(--blur, 0px));
+             transition: filter 0.1s linear; /* Smooth filter transitions slightly */
+        }
+
+        /* Removed direct hueShift/backgroundPulse from body animation, handled by JS vars */
+
+        .bouncing-image {
+            position: absolute;
+            width: 100px;
+            height: auto;
+            will-change: transform, top, left;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.6));
+            /* Slow down image animations */
+            animation:
+                spin 25s linear infinite alternate, /* Much slower spin */
+                skewShake 8s ease-in-out infinite alternate; /* Slower skew */
+            opacity: 0.85; /* Slightly less opaque */
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg) scale(1); }
+            to { transform: rotate(360deg) scale(1.03); } /* Less scaling */
+        }
+
+        @keyframes skewShake {
+             0% { transform: skewX(-3deg) skewY(1deg) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+             50% { transform: skewX(0deg) skewY(0deg) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+             100% { transform: skewX(3deg) skewY(-1deg) rotate(var(--current-rotation, 0deg)) scale(var(--current-scale, 1)); }
+        }
+
+        /* --- Slow down variations --- */
+        .bouncing-image:nth-child(3n+1) {
+            width: 150px;
+            /* Slower durations */
+            animation-duration: 18s, 6s;
+            animation-direction: normal, alternate-reverse;
+        }
+
+         .bouncing-image:nth-child(3n+2) {
+            width: 120px;
+             animation:
+                spin 30s linear infinite, /* Slower */
+                skewShake 10s ease-in-out infinite alternate, /* Slower */
+                pulse 4s ease-in-out infinite alternate-reverse; /* Slower pulse */
+            filter: drop-shadow(3px 3px 5px rgba(255, 255, 255, 0.4)); /* Dimmer shadow */
+            opacity: 0.9;
+        }
+
+         @keyframes pulse {
+            from { transform: scale(1) rotate(var(--current-rotation, 0deg)) skewX(var(--skewX, 0deg)) skewY(var(--skewY, 0deg)); }
+            to { transform: scale(1.1) rotate(var(--current-rotation, 0deg)) skewX(var(--skewX, 0deg)) skewY(var(--skewY, 0deg)); }
+        }
+
+        /* Keep delays for variation */
+         .bouncing-image:nth-child(4n) { animation-delay: -0.5s; }
+         .bouncing-image:nth-child(5n) { animation-delay: -1.2s; }
+         .bouncing-image:nth-child(7n) { animation-delay: -0.8s; }
+
+
+        /* --- Fading Text --- */
+        .fading-text {
+            position: fixed; /* Use fixed to stay centered regardless of potential scroll */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Georgia', serif; /* A slightly more 'dreamy' standard font */
+            font-size: 8em; /* Large text */
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8); /* White, slightly transparent */
+            text-shadow:
+                0 0 8px rgba(255, 255, 255, 0.5), /* Inner glow */
+                0 0 15px rgba(0, 0, 0, 0.6),    /* Outer shadow */
+                0 0 25px rgba(0, 0, 0, 0.4);    /* Wider outer shadow */
+            z-index: 15; /* Above images, below player */
+            pointer-events: none; /* Text doesn't block interaction with things below (like player) */
+            opacity: 0; /* Start invisible */
+            animation: fadeInOut 6s ease-in-out infinite alternate; /* 6 second fade cycle */
+        }
+
+        @keyframes fadeInOut {
+            from {
+                opacity: 0;
+                /* Optional: add slight blur when faded out */
+                /* filter: blur(5px); */
+            }
+            to {
+                opacity: 0.75; /* Fade to mostly visible */
+                /* filter: blur(0px); */
+            }
+        }
+
+
+        .audio-player {
+            position: fixed;
+            bottom: 15px; /* Slightly higher */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.7); /* Slightly darker */
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+         .audio-player label {
+            color: #ddd; /* Lighter grey */
+            margin-right: 12px;
+            font-size: 1em;
+            text-shadow: 1px 1px 2px black;
+            font-family: 'Consolas', 'Courier New', monospace;
+         }
+         /* Style controls a bit */
+         audio::-webkit-media-controls-panel {
+             background-color: rgba(50, 50, 50, 0.8);
+             border-radius: 5px;
+         }
+          audio::-webkit-media-controls-play-button,
+          audio::-webkit-media-controls-mute-button,
+          audio::-webkit-media-controls-timeline,
+          audio::-webkit-media-controls-current-time-display,
+          audio::-webkit-media-controls-time-remaining-display {
+              filter: brightness(1.2) contrast(1.1);
+          }
+
+
+    </style>
+</head>
+<body>
+
+    <!-- The Fading Text -->
+    <div class="fading-text">JUUNAT</div>
+
+    <!-- Keep the multiple images -->
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/1c869419-20b6-4e7a-9c97-dcf5fff057aa.image.png?v=1745882901991" alt="Fever Dream 1a" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/f3636096-2593-407c-8511-9bf220356e71.image.png?v=1745889678028" alt="Fever Dream 2a" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/dcf43499-ac19-4ac1-ae9f-ee5e533c9ac3.image.png?v=1745889696811" alt="Fever Dream 3a" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/1c869419-20b6-4e7a-9c97-dcf5fff057aa.image.png?v=1745882901991" alt="Fever Dream 1b" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/f3636096-2593-407c-8511-9bf220356e71.image.png?v=1745889678028" alt="Fever Dream 2b" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/dcf43499-ac19-4ac1-ae9f-ee5e533c9ac3.image.png?v=1745889696811" alt="Fever Dream 3b" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/1c869419-20b6-4e7a-9c97-dcf5fff057aa.image.png?v=1745882901991" alt="Fever Dream 1c" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/f3636096-2593-407c-8511-9bf220356e71.image.png?v=1745889678028" alt="Fever Dream 2c" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/dcf43499-ac19-4ac1-ae9f-ee5e533c9ac3.image.png?v=1745889696811" alt="Fever Dream 3c" class="bouncing-image">
+    <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/f3636096-2593-407c-8511-9bf220356e71.image.png?v=1745889678028" alt="Fever Dream 2d" class="bouncing-image">
+
+    <!-- Audio Player -->
+    <div class="audio-player">
+         <label for="dream-audio">Soundtrack:</label>
+        <audio id="dream-audio" controls loop>
+            <source src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/JUUNAT.mp3?v=1745890417095" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <script>
+        const images = document.querySelectorAll('.bouncing-image');
+        let screenWidth = window.innerWidth;
+        let screenHeight = window.innerHeight;
+        const bodyElement = document.body;
+
+        const imageStates = [];
+
+        images.forEach((img, index) => {
+            let initialWidth = parseFloat(window.getComputedStyle(img).width) || 100;
+            let initialHeight = initialWidth;
+
+            const state = {
+                element: img,
+                x: Math.random() * (screenWidth - initialWidth),
+                y: Math.random() * (screenHeight - initialHeight),
+                // --- SLOWER VELOCITY ---
+                dx: (Math.random() * 4 + 1) * (Math.random() < 0.5 ? 1 : -1), // Speed between 1 and 5
+                dy: (Math.random() * 4 + 1) * (Math.random() < 0.5 ? 1 : -1),
+                width: initialWidth,
+                height: initialHeight,
+            };
+
+            img.onload = () => {
+                 state.width = img.offsetWidth;
+                 state.height = img.offsetHeight;
+                 state.x = Math.min(state.x, screenWidth - state.width);
+                 state.y = Math.min(state.y, screenHeight - state.height);
+                 state.x = Math.max(0, state.x);
+                 state.y = Math.max(0, state.y);
+            }
+             if (img.complete && img.naturalWidth > 0) {
+                 img.onload();
+             }
+
+            imageStates.push(state);
+        });
+
+        let hueAngle = 0;
+        let brightnessValue = 1;
+        let blurValue = 0;
+        const baseSaturation = 1.5;
+
+        function updateAnimation() {
+            // --- SLOWER BACKGROUND SHIFTS ---
+            hueAngle = (hueAngle + 0.15) % 360; // Slower hue rotation
+            // More subtle saturation and brightness pulse using sin/cos waves
+            let time = Date.now() / 5000; // Slower time progression for waves
+            let dynamicSaturation = baseSaturation + Math.sin(time) * 0.5; // Ranges 1.0 to 2.0
+            brightnessValue = 1.0 + Math.cos(time * 0.7) * 0.1; // Ranges 0.9 to 1.1
+            blurValue = Math.max(0, Math.sin(time * 1.2) * 1.5); // Ranges 0px to 1.5px blur
+
+            bodyElement.style.setProperty('--hue', `${hueAngle}deg`);
+            bodyElement.style.setProperty('--sat', `${dynamicSaturation}`);
+            bodyElement.style.setProperty('--bright', `${brightnessValue}`);
+            bodyElement.style.setProperty('--blur', `${blurValue}px`);
+
+
+            imageStates.forEach(state => {
+                // Update position
+                state.x += state.dx;
+                state.y += state.dy;
+
+                // Collision Detection
+                let bounced = false;
+                 // --- SLOWER SPEED ADJUSTMENTS ---
+                const bounceFactor = 0.98 + Math.random() * 0.04; // Less dramatic speed change on bounce
+
+                if (state.x + state.width > screenWidth) {
+                    state.x = screenWidth - state.width;
+                    state.dx *= -1 * bounceFactor;
+                    bounced = true;
+                }
+                else if (state.x < 0) {
+                    state.x = 0;
+                    state.dx *= -1 * bounceFactor;
+                     bounced = true;
+                }
+
+                if (state.y + state.height > screenHeight) {
+                    state.y = screenHeight - state.height;
+                    state.dy *= -1 * bounceFactor;
+                     bounced = true;
+                }
+                else if (state.y < 0) {
+                    state.y = 0;
+                    state.dy *= -1 * bounceFactor;
+                     bounced = true;
+                }
+
+                 // Clamp speeds
+                const minSpeed = 0.5; // Allow slower minimum
+                const maxSpeed = 6;   // Lower max speed
+                state.dx = Math.max(-maxSpeed, Math.min(maxSpeed, state.dx));
+                 state.dy = Math.max(-maxSpeed, Math.min(maxSpeed, state.dy));
+
+                 // Ensure minimum speed to prevent stopping (unless very close to 0)
+                 if (Math.abs(state.dx) < minSpeed && Math.abs(state.dx) > 0.01) state.dx = (state.dx >= 0 ? minSpeed : -minSpeed) * (0.9 + Math.random()*0.2);
+                 if (Math.abs(state.dy) < minSpeed && Math.abs(state.dy) > 0.01) state.dy = (state.dy >= 0 ? minSpeed : -minSpeed) * (0.9 + Math.random()*0.2);
+
+                // Apply position
+                 state.element.style.left = `${state.x}px`;
+                 state.element.style.top = `${state.y}px`;
+            });
+
+            requestAnimationFrame(updateAnimation);
+        }
+
+         requestAnimationFrame(updateAnimation);
+
+         window.addEventListener('resize', () => {
+             screenWidth = window.innerWidth;
+             screenHeight = window.innerHeight;
+             imageStates.forEach(state => {
+                 state.x = Math.min(state.x, screenWidth - state.width);
+                 state.y = Math.min(state.y, screenHeight - state.height);
+                 state.x = Math.max(0, state.x);
+                 state.y = Math.max(0, state.y);
+             });
+         });
+
+    </script>
+
+</body>
+</html>

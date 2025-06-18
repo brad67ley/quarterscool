@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amerikanske 25-cent-mynter er kule!</title>
+    <style>
+        body {
+            background-color: #ffcc00; /* Lys gul bakgrunn */
+            color: #000080; /* Marineblå tekst */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 48px;
+            text-shadow: 2px 2px #ff0000; /* Rød skygge for retroeffekt */
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 32px;
+            color: #ff0000; /* Rød tekst */
+            margin-top: 40px;
+        }
+        p {
+            font-size: 20px;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .quarter-img {
+            width: 150px;
+            height: 150px;
+            margin: 20px;
+            border: 5px solid #000080; /* Marineblå ramme */
+            border-radius: 50%;
+        }
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .button {
+            background-color: #ff0000; /* Rød knapp */
+            color: #ffffff; /* Hvit tekst */
+            padding: 10px 20px;
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 40px;
+        }
+        .button:hover {
+            background-color: #000080; /* Marineblå ved hover */
+        }
+        .party-link {
+            margin-top: 40px;
+            font-size: 24px;
+            color: #000080; /* Marineblå tekst */
+            text-decoration: none;
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #ff0000; /* Rød bakgrunn */
+            color: #ffffff; /* Hvit tekst */
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .party-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+            background-color: #000080; /* Marineblå ved hover */
+        }
+        footer {
+            margin-top: 60px;
+            font-size: 16px;
+            color: #ff0000; /* Rød tekst */
+        }
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 18px;
+            color: #000080; /* Marineblå tekst */
+        }
+        .auth-form {
+            margin-top: 20px;
+        }
+        .auth-form input {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+            border: 2px solid #000080; /* Marineblå ramme */
+        }
+        .auth-form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff0000; /* Rød knapp */
+            color: #ffffff; /* Hvit tekst */
+            border: none;
+            cursor: pointer;
+        }
+        .auth-form button:hover {
+            background-color: #000080; /* Marineblå ved hover */
+        }
+        .chat-link {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #000080; /* Marineblå tekst */
+            text-decoration: none;
+        }
+        .chat-link:hover {
+            text-decoration: underline;
+        }
+        /* Språkvelger-stiler */
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+        }
+        .language-selector select {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 2px solid #000080;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #000080;
+            cursor: pointer;
+        }
+        .language-selector select:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <select id="language-select" onchange="changeLanguage()">
+            <option value="en">Engelsk</option>
+            <option value="no">Norsk</option>
+        </select>
+    </div>
+    
+    <div class="user-info" id="user-info"></div>
+    <h1>AMERIKANSKE 25-CENT-MYNTER ER KULE!</h1>
+    <p>Velkommen til 25-cent-myntnettstedet! (Det handler egentlig ikke så mye om mynter - det var bare en servertest) men jeg vil inkludere litt myntkjærlighet her fra tid til annen! Føl deg fri til å opprette en konto, logge inn, eller til og med chatte i chatteområdet nedenfor!</p>
+
+    <h2>Hvorfor 25-cent-mynter er fantastiske</h2>
+    <p>FORDI 25-CENT-MYNTER ER DE BESTE MYNTENE MED HISTORIE, SJELDENHET, OG NOEN GANGER KAN DU TIL OGD MED FINNE EN KUL DELSTATSMYNT! HOR KULT ER DET!</p>
+
+    <h2>Sjekk ut disse kule myntene</h2>
+    <div class="grid">
+        <img src="https://i.ebayimg.com/00/s/MTYwMFgxNTkw/z/0dcAAOSwZSNkW-dH/$_57.JPG?set_id=880000500F" alt="George Washington 25-cent-mynt" class="quarter-img">
+        <img src="https://kids.usmint.gov/system/files/2016/06/2007-50-state-quarters-coin-utahuncirculated-reverse.jpg" alt="Delstatsmynt" class="quarter-img">
+        <img src="https://lh4.googleusercontent.com/proxy/dAp0QFMEdUNvEn2bPXEpv6l_d8IVftyowBZkqxqyfyZQuxqh5jlGKuC-wVLfcU3iWbwBv1yp5IN_PehP-bTwNlaxi-wcq-B3dA3hciUWqGTCN8SnhgG5E40gL0BgL8qfZZ3TD7qCfUfH_Q" alt="Nasjonalparkmynt" class="quarter-img">
+    </div>
+
+    <!-- Morsom lenke til festside -->
+    <a href="party.html" class="party-link">🎉 Bli med på festtidsmåleren! 🎉</a>
+
+    <div class="auth-form" id="auth-form">
+        <h2>Logg inn eller opprett en konto</h2>
+        <input type="email" id="email" placeholder="E-post" required>
+        <input type="password" id="password" placeholder="Passord" required>
+        <button id="sign-in">Logg inn</button>
+        <button id="sign-up">Opprett konto</button>
+    </div>
+
+    <div id="chat-link-container" style="display: none;">
+        <a href="chat.html" class="chat-link">Gå til det kule chatteområdet →</a>
+    </div>
+
+    <footer>
+        <p>© 2025 Kule amerikanske 25-cent-mynter. Alle rettigheter reservert. Laget med ❤️ og mine søte øyne.</p>
+    </footer>
+
+    <script>
+        function changeLanguage() {
+            const languageSelect = document.getElementById('language-select');
+            const selectedLanguage = languageSelect.value;
+            
+            if (selectedLanguage === 'en') {
+                window.location.href = 'index.html';
+            }
+            // Norsk-valg trenger ikke å gjøre noe da vi allerede er på den norske siden
+        }
+    </script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Importer Firebase-moduler
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+        // Firebase-konfigurasjon
+        const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+            authDomain: "quaters-5f71d.firebaseapp.com",
+            projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.firebasestorage.app",
+            messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626",
+            measurementId: "G-7WFJZV9JWT"
+        };
+
+        // Initialiser Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // DOM-elementer
+        const userInfo = document.getElementById('user-info');
+        const authForm = document.getElementById('auth-form');
+        const chatLinkContainer = document.getElementById('chat-link-container');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const signInButton = document.getElementById('sign-in');
+        const signUpButton = document.getElementById('sign-up');
+
+        // Opprett konto
+        signUpButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('Konto opprettet!');
+                })
+                .catch((error) => {
+                    alert('Feil: ' + error.message);
+                });
+        });
+
+        // Logg inn
+        signInButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert('Innlogging vellykket!');
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/invalid-credential') {
+                        alert('Konto ikke funnet!');
+                    } else {
+                        alert('Feil: ' + error.message);
+                    }
+                });
+        });
+
+        // Overvåk påloggingsstatus
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Bruker er logget inn
+                const displayName = user.displayName || user.email;
+                userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Logg ut</a>`;
+                authForm.style.display = 'none'; // Skjul innloggingsskjema
+                chatLinkContainer.style.display = 'block'; // Vis chatteområde-lenke
+
+                // Legg til funksjonalitet for utloggingslenke
+                document.getElementById('sign-out-link').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    signOut(auth).then(() => {
+                        alert('Utlogging vellykket!');
+                    }).catch((error) => {
+                        alert('Feil ved utlogging: ' + error.message);
+                    });
+                });
+            } else {
+                // Bruker er logget ut
+                userInfo.textContent = '';
+                authForm.style.display = 'block'; // Vis innloggingsskjema
+                chatLinkContainer.style.display = 'none'; // Skjul chatteområde-lenke
+            }
+        });
+    </script>
+</body>
+</html>

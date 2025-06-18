@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosey Drama!</title>
+    <!-- Add these scripts to the head -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #333;
+            background-image: linear-gradient(
+                to right, 
+                #555 0%, 
+                #777 20%, 
+                #555 40%, 
+                #777 60%, 
+                #555 80%, 
+                #777 100%
+            );
+            color: #ddd;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #ff6b88;
+            text-shadow: 2px 2px 4px #000, 0 0 10px #ff9eb7;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #444, #666, #444);
+            padding: 15px;
+            border: 2px solid #999;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        
+        .animated-text {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #ff9eb7;
+            animation: colorPulse 3s infinite alternate;
+        }
+        
+        @keyframes colorPulse {
+            0% { color: #ff9eb7; }
+            50% { color: #ff6b88; }
+            100% { color: #ff3d6e; }
+        }
+        
+        .drama-box {
+            background: linear-gradient(to bottom, #555, #444);
+            border: 2px solid #777;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-weight: bold;
+            color: #ff6b88;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #777;
+            padding-bottom: 5px;
+        }
+        
+        .response-text {
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+        
+        .metallic-effect {
+            background: linear-gradient(145deg, #666, #444);
+            border: 1px solid #888;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .box-title {
+            background: linear-gradient(to right, #444, #555, #444);
+            padding: 8px;
+            margin: -15px -15px 15px -15px;
+            border-bottom: 1px solid #777;
+            font-weight: bold;
+        }
+        
+        .misspelling {
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 2px #000;
+        }
+        
+        .grammar-error {
+            color: #ff6666;
+            font-style: italic;
+        }
+        
+        .updates-box {
+            background: linear-gradient(to bottom, #555, #444);
+            border: 2px solid #777;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            border-left: 4px solid #ff6b88;
+        }
+        
+        .updates-title {
+            color: #ff9eb7;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .update-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .update-item:before {
+            content: "•";
+            color: #ff6b88;
+            font-size: 1.5em;
+            position: absolute;
+            left: 0;
+            top: -3px;
+        }
+        
+        .update-date {
+            font-size: 0.8em;
+            color: #aaa;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        .more-updates {
+            text-align: center;
+            font-style: italic;
+            margin-top: 15px;
+            color: #ff9eb7;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .fine-print {
+            font-size: 0.7em;
+            color: #999;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .request-box {
+            background: linear-gradient(to bottom, #444, #333);
+            border: 1px solid #666;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px auto;
+            max-width: 500px;
+        }
+        
+        .request-box input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #555;
+            border: 1px solid #777;
+            color: #fff;
+        }
+        
+        .request-box button {
+            background: linear-gradient(to bottom, #ff6b88, #ff3d6e);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .legal-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #ff9eb7;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="metallic-effect">Rosey Drama!</h1>
+        
+        <div class="animated-text">This rosey drama is cray cray gurl!</div>
+        
+        <div class="drama-box metallic-effect">
+            <div class="box-title">Latest Drama Update</div>
+            <div class="subtitle">Wow, discord drama is crazy with TS victor and TS lissie....</div>
+        </div>
+        
+        <div class="drama-box metallic-effect">
+            <div class="box-title">Official Response</div>
+            <div class="subtitle">Here's the response we got!</div>
+            <div class="response-text">
+                Dear everyone <span class="grammar-error">I'm the GC</span>, this is Rosey.<br><br>
+
+                As I have told you all several times now you will get a response when you get one. <span class="grammar-error">But what you are doing right now isn't helping.</span> It's harassing. I have no clue what you get out of trying to talk to me but right now I don't need <span class="grammar-error">honestly stupid discord drama</span>, I need serious help <span class="grammar-error">irl</span>. <span class="grammar-error">Due current</span> <span class="misspelling">surcumstances</span> regarding my <span class="grammar-error">current safety of my rights as a human being</span> and troubles with what housing I have <span class="grammar-error">I can't</span>. I will tell you all again, leave me alone. You aren't helping and the more you harass me about it the less of a chance you will get a <span class="misspelling">reponce</span>. Whenever I can get into a better situation and my mental and physical state isn't as unstable you'll get a <span class="misspelling">responce</span>. But that might take months to years.<br><br>
+
+                To sum things up, stop harassing me and leave me be, you <span class="misspelling">arnt</span> going to help anything and as soon as I see any of your icons I have a near panic attack. This isn't healthy for my own safety <span class="grammar-error">from myself</span> and this isn't healthy for you guys <span class="grammar-error">be so stuck up on this</span>. Leave me be to <span class="misspelling">Li E</span> my pitiful life <span class="misspelling">amd</span> you continue on with business.<br><br>
+
+                Any texts regarding this in my Discord server, Inner Circle or elsewhere, <strong>WILL BE PURGED</strong> <span class="grammar-error">don't try to</span> <span class="misspelling">fuck etuff</span> up in there, <span class="grammar-error">it's not private, It's a discord server for my YouTube Channel.</span> So don't fuck around in there.<br><br>
+
+                Leave me <span class="misspelling">thw</span> fuck alone, Rosey.
+            </div>
+        </div>
+        
+        <div class="updates-box metallic-effect">
+            <div class="updates-title">🚀 LATEST UPDATES 🚀</div>
+            
+            <div class="update-item">
+                <strong>Rosey gave us a response!</strong>
+                <span class="update-date">[Today, 2:14 PM]</span>
+                <div>Check out the full message above with all the juicy details!</div>
+            </div>
+            
+            <div class="update-item">
+                <strong>Minecraft server ban!</strong>
+                <span class="update-date">[Yesterday, 9:30 PM]</span>
+                <div>Rosey got banned from a major Minecraft server she was prominent in!</div>
+            </div>
+            
+            <div class="more-updates">More updates coming soon...</div>
+        </div>
+
+    
+        <!-- Request Form -->
+        <div class="fine-print">
+            For any requests or takedowns please submit it in this box
+        </div>
+        
+        <div class="request-box metallic-effect">
+            <input type="text" id="requestInput" placeholder="Enter your request...">
+            <button id="submitBtn">Submit</button>
+            <div id="statusMessage" style="color: #ff6b88; font-size: 0.8em; margin-top: 5px;"></div>
+        </div>
+
+        <a href="legalstuffs.html" class="legal-link">Legal Info</a>
+    </div>
+
+    <!-- Firebase Implementation -->
+<script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+        authDomain: "quaters-5f71d.firebaseapp.com",
+        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
+        projectId: "quaters-5f71d",
+        storageBucket: "quaters-5f71d.appspot.com",
+        messagingSenderId: "895009748691",
+        appId: "1:895009748691:web:73dc67aee4db1143e90626",
+        measurementId: "G-7WFJZV9JWT"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    document.getElementById('submitBtn').addEventListener('click', submitRequest);
+
+    function submitRequest() {
+        const requestText = document.getElementById('requestInput').value.trim();
+        const statusMessage = document.getElementById('statusMessage');
+        
+        if (requestText === '') {
+            statusMessage.textContent = "Please enter a request!";
+            return;
+        }
+
+        statusMessage.textContent = "Submitting...";
+        
+        // Push data to Firebase
+        const newRequestRef = database.ref('requests/').push();
+        newRequestRef.set({
+            text: requestText,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            ip: "<?php echo $_SERVER['REMOTE_ADDR']; ?>" // Optional: track IPs
+        })
+        .then(() => {
+            statusMessage.textContent = "Request submitted successfully! We'll review it soon.";
+            document.getElementById('requestInput').value = '';
+        })
+        .catch((error) => {
+            statusMessage.textContent = "Error: " + error.message;
+        });
+    }
+</script>
+</body>
+</html>

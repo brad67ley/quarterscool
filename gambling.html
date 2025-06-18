@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Roulette & Leaderboard</title>
+    <style>
+        body {
+            background-color: #ffcc00; /* Yellow background */
+            color: #000080; /* Navy text */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            /* Changed to allow scrolling if content overflows */
+            flex-direction: column; /* Stack game and leaderboard vertically */
+            align-items: center; /* Center items horizontally */
+            min-height: calc(100vh - 40px);
+            position: relative;
+        }
+
+        #user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #000080;
+            font-size: 0.9em;
+            z-index: 10; /* Ensure it's above other content */
+        }
+
+        #game-container {
+            background-color: rgba(255, 248, 220, 0.85);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #000080;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            margin-bottom: 30px; /* Add space below game */
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        #result-display {
+            font-size: 1.4em;
+            margin: 20px auto;
+            padding: 15px;
+            border: 1px dashed #000080;
+            min-height: 50px;
+            background-color: #fff;
+            border-radius: 5px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        #result-display .number {
+            font-weight: bold;
+            font-size: 1.6em;
+            padding: 5px 10px;
+            border-radius: 50%;
+            color: white;
+            display: inline-block;
+            min-width: 35px;
+            line-height: 35px;
+            margin: 0 5px;
+        }
+
+        #result-display .red { background-color: red; }
+        #result-display .black { background-color: black; }
+        #result-display .green { background-color: green; }
+
+        #betting-controls {
+            margin-top: 20px;
+        }
+
+        #betting-controls label.input-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        #betting-controls input[type="number"] {
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000080;
+            border: 1px solid #000080;
+            border-radius: 4px;
+            width: 100px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #betting-controls .bet-options-label {
+             display: block;
+             font-weight: bold;
+             margin-bottom: 15px;
+        }
+
+        #betting-controls .bet-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        #betting-controls .bet-option {
+            text-align: center;
+        }
+
+        #betting-controls .bet-option label {
+             display: block;
+             margin-bottom: 5px;
+             cursor: pointer;
+        }
+
+        #betting-controls input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+             accent-color: #000080;
+        }
+
+        #spin-button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #000080;
+            color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #spin-button:hover {
+            background-color: #0000cd;
+        }
+
+        #spin-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 20px;
+            color: #000080;
+        }
+        #login-message {
+            font-size: 1.2em;
+            color: #c00000;
+             margin-top: 20px;
+        }
+        .special-message {
+            color: #ff0000; /* Red */
+            font-size: 1.1em;
+            text-shadow: 1px 1px #000080; /* Navy shadow */
+        }
+
+        /* --- Leaderboard Styles --- */
+        #leaderboard-container {
+            background-color: rgba(255, 248, 220, 0.85); /* Same as game container */
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #000080;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 450px; /* Match game container width */
+            width: 90%;
+            margin-top: 20px; /* Space between game and leaderboard */
+        }
+
+        #leaderboard-container h2 {
+             margin-top: 0;
+             margin-bottom: 15px;
+             color: #000080; /* Match body text color */
+             font-size: 1.5em;
+        }
+
+        #leaderboard-list {
+            list-style: decimal; /* Use numbers for ranking */
+            list-style-position: inside; /* Numbers inside the list area */
+            padding: 0;
+            margin: 0;
+            text-align: left; /* Align list items left */
+        }
+
+        #leaderboard-list li {
+            background-color: #fff; /* White background for items */
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex; /* Use flexbox for alignment */
+            justify-content: space-between; /* Space name and score */
+            align-items: center; /* Vertically align items */
+            font-size: 1em;
+        }
+         /* Style odd/even rows differently (optional) */
+        #leaderboard-list li:nth-child(odd) {
+             background-color: #f8f8f8;
+        }
+
+        #leaderboard-list li .lb-name {
+            font-weight: bold;
+            color: #0000cd; /* Medium blue for name */
+            overflow: hidden; /* Prevent long names from breaking layout */
+            text-overflow: ellipsis; /* Add ... for long names */
+            white-space: nowrap; /* Keep name on one line */
+            max-width: 60%; /* Limit name width */
+        }
+
+        #leaderboard-list li .lb-score {
+            font-weight: bold;
+            color: #006400; /* Dark green for score */
+        }
+         #leaderboard-list .no-data {
+             font-style: italic;
+             color: #666;
+             text-align: center;
+         }
+
+    </style>
+</head>
+<body>
+
+    <!-- User Info remains absolutely positioned -->
+    <div id="user-info">
+        <div>Welcome, <span id="username">Guest</span>!</div>
+        <div>Quarters: <span id="points">--</span></div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="game-container">
+        <h1>Roulette Game</h1>
+        <div id="result-display">Place your bet!</div>
+        <div id="betting-controls">
+            <label for="bet-amount" class="input-label">Bet Amount:</label>
+            <input type="number" id="bet-amount" min="1" value="10">
+            <label class="bet-options-label">Choose Bet Type:</label>
+            <div class="bet-options">
+                <div class="bet-option"><label for="bet-red">Red</label><input type="radio" id="bet-red" name="bet-type" value="red"></div>
+                <div class="bet-option"><label for="bet-black">Black</label><input type="radio" id="bet-black" name="bet-type" value="black"></div>
+                <div class="bet-option"><label for="bet-even">Even</label><input type="radio" id="bet-even" name="bet-type" value="even"></div>
+                <div class="bet-option"><label for="bet-odd">Odd</label><input type="radio" id="bet-odd" name="bet-type" value="odd"></div>
+            </div>
+            <button id="spin-button" disabled>Spin!</button>
+        </div>
+        <div id="message"></div>
+        <div id="login-message" style="display: none;">Please log in to play.</div>
+    </div>
+
+    <!-- Leaderboard Container -->
+    <div id="leaderboard-container">
+        <h2>🏆 Leaderboard 🏆</h2>
+        <ol id="leaderboard-list">
+            <!-- Leaderboard items will be populated by JavaScript -->
+             <li class="no-data">Loading leaderboard...</li>
+        </ol>
+    </div>
+
+
+    <!-- Firebase -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      // Import additional DB functions for leaderboard
+      import { getDatabase, ref, set, get, update, serverTimestamp, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+            authDomain: "quaters-5f71d.firebaseapp.com",
+            databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
+            projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.firebasestorage.app",
+            messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626",
+            measurementId: "G-7WFJZV9JWT" // Optional
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const auth = getAuth(app);
+      const db = getDatabase(app);
+
+      // --- DOM Elements ---
+      const usernameElement = document.getElementById('username');
+      const pointsElement = document.getElementById('points');
+      const betAmountInput = document.getElementById('bet-amount');
+      const spinButton = document.getElementById('spin-button');
+      const resultDisplay = document.getElementById('result-display');
+      const messageElement = document.getElementById('message');
+      const loginMessageElement = document.getElementById('login-message');
+      const bettingControls = document.getElementById('betting-controls');
+      const betTypeRadios = document.querySelectorAll('input[name="bet-type"]');
+      const leaderboardList = document.getElementById('leaderboard-list'); // Leaderboard List Element
+
+      // --- Game State ---
+      let currentUser = null;
+      let currentUserPoints = 0;
+      let userRef = null;
+
+      // --- Roulette Config ---
+      const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+      const blackNumbers = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
+      const LEADERBOARD_SIZE = 5; // How many players to show on the leaderboard
+
+      function getNumberColor(number) {
+          if (number === 0) return 'green';
+          if (redNumbers.includes(number)) return 'red';
+          if (blackNumbers.includes(number)) return 'black';
+          return 'unknown';
+      }
+
+       function getNumberParity(number) {
+          if (number === 0) return 'none';
+          return (number % 2 === 0) ? 'even' : 'odd';
+      }
+
+      // --- Authentication Listener ---
+      onAuthStateChanged(auth, (user) => {
+          if (user) {
+              currentUser = user;
+              const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+              usernameElement.textContent = displayName;
+              userRef = ref(db, 'users/' + user.uid);
+              loginMessageElement.style.display = 'none';
+              bettingControls.style.display = 'block';
+              spinButton.disabled = true;
+
+              loadAndInitializeUserData(user);
+
+              // Listener for CURRENT user's points
+              onValue(userRef, (snapshot) => {
+                  if (snapshot.exists()) {
+                      const userData = snapshot.val();
+                      currentUserPoints = userData.points ?? 0;
+                      pointsElement.textContent = currentUserPoints;
+                      spinButton.disabled = false;
+                      betAmountInput.max = currentUserPoints;
+                  } else {
+                       console.log("Current user data listener: No data found (might be initializing).");
+                       spinButton.disabled = true;
+                  }
+              }, (error) => {
+                    console.error("Error listening to current user data:", error);
+                    messageElement.textContent = "Error fetching your Quarters.";
+                    spinButton.disabled = true;
+              });
+
+          } else {
+              // User is signed out
+              currentUser = null;
+              userRef = null;
+              usernameElement.textContent = 'Guest';
+              pointsElement.textContent = '--';
+              currentUserPoints = 0;
+              loginMessageElement.textContent = 'Please log in to play.';
+              loginMessageElement.style.display = 'block';
+              bettingControls.style.display = 'none';
+              spinButton.disabled = true;
+              resultDisplay.textContent = 'Log in to start!';
+              messageElement.textContent = '';
+              messageElement.className = '';
+          }
+      });
+
+      // --- User Data Management ---
+      async function loadAndInitializeUserData(user) {
+          spinButton.disabled = true;
+          messageElement.textContent = "Loading data...";
+          messageElement.className = '';
+
+          try {
+              const snapshot = await get(userRef);
+              if (snapshot.exists()) {
+                  const userData = snapshot.val();
+                  console.log("User data found:", userData);
+                  messageElement.textContent = "";
+                  await checkDailyBonus(user.uid, userData.points ?? 0, userData.lastDailyBonusClaimed);
+              } else {
+                  console.log("No user data found, initializing...");
+                  const specialEmails = ["victors.realm1@gmail.com", "hellotestforthing@co.co.com"];
+                  let startingQuarters = 100;
+                  let welcomeMessage = "Welcome! You start with 100 Quarters.";
+                  let messageClass = '';
+                  const userEmailLower = user.email ? user.email.toLowerCase() : null;
+
+                  if (userEmailLower && specialEmails.includes(userEmailLower)) {
+                      startingQuarters = 200;
+                      welcomeMessage = "SUP VICTOR YOU GET 200 STARTING QUARTERS INSTEAD OF 100 FOR BEING A GOON...";
+                      messageClass = 'special-message';
+                      console.log(`Special user ${user.email} detected. Awarding ${startingQuarters} quarters.`);
+                  }
+
+                  currentUserPoints = startingQuarters;
+                  pointsElement.textContent = currentUserPoints;
+                  messageElement.textContent = welcomeMessage;
+                  messageElement.className = messageClass;
+
+                  const initialData = {
+                      points: startingQuarters,
+                      displayName: user.displayName || user.email?.split('@')[0] || 'User',
+                      email: user.email || 'N/A',
+                      lastDailyBonusClaimed: 0
+                  };
+                  await set(userRef, initialData);
+                  console.log("Initial user data set in DB.");
+              }
+          } catch (error) {
+              console.error("Error loading/initializing user data:", error);
+              messageElement.textContent = "Error loading your data. Please refresh.";
+              pointsElement.textContent = 'Error';
+              spinButton.disabled = true;
+          }
+      }
+
+      // --- Daily Bonus Logic ---
+      async function checkDailyBonus(userId, currentPointsValue, lastClaimTimestamp = 0) {
+            const now = new Date();
+            const lastClaimDate = new Date(lastClaimTimestamp);
+            const todayStr = now.toDateString();
+            const lastClaimDateStr = lastClaimDate.toDateString();
+
+            if (todayStr !== lastClaimDateStr && !messageElement.textContent.includes("bonus claimed")) {
+                console.log("Eligible for daily bonus!");
+                const newPoints = currentPointsValue + 50;
+                try {
+                    const updates = { points: newPoints, lastDailyBonusClaimed: serverTimestamp() };
+                    await update(ref(db, 'users/' + userId), updates);
+                    const oldMessage = messageElement.textContent;
+                    const oldClassName = messageElement.className;
+                     if (!messageElement.className.includes('special-message')) {
+                         messageElement.textContent = `Daily bonus claimed! +50 Quarters.`;
+                         messageElement.className = '';
+                         console.log("Daily bonus awarded.");
+                         setTimeout(() => {
+                             if (messageElement.textContent.includes("Daily bonus claimed")) {
+                                 messageElement.textContent = oldMessage;
+                                 messageElement.className = oldClassName;
+                             }
+                         }, 4000);
+                     } else {
+                         console.log("Daily bonus awarded silently while special message is shown.");
+                     }
+                } catch (error) {
+                    console.error("Error awarding daily bonus:", error);
+                    if (!messageElement.textContent) messageElement.textContent = "Error claiming daily bonus.";
+                }
+            }
+      }
+
+
+      // --- Game Logic (handleSpin) ---
+      // (Function remains the same as before)
+      spinButton.addEventListener('click', handleSpin);
+      async function handleSpin() {
+          if (!currentUser || !userRef) {
+              messageElement.textContent = "You must be logged in to play.";
+              messageElement.className = ''; return;
+          }
+          const betAmount = parseInt(betAmountInput.value, 10);
+          if (isNaN(betAmount) || betAmount <= 0) {
+              messageElement.textContent = "Please enter a valid positive bet amount.";
+              messageElement.className = ''; betAmountInput.focus(); return;
+          }
+          if (betAmount > currentUserPoints) {
+              messageElement.textContent = `Not enough Quarters! You only have ${currentUserPoints}.`;
+              messageElement.className = ''; betAmountInput.focus(); return;
+          }
+          let betType = null;
+          const checkedRadio = document.querySelector('input[name="bet-type"]:checked');
+          if (checkedRadio) { betType = checkedRadio.value; } else {
+              messageElement.textContent = "Please select a bet type (Red, Black, Even, or Odd).";
+              messageElement.className = ''; return;
+          }
+
+          spinButton.disabled = true; betAmountInput.disabled = true;
+          betTypeRadios.forEach(radio => radio.disabled = true);
+          messageElement.textContent = "Spinning..."; messageElement.className = '';
+          resultDisplay.innerHTML = "Spinning... <span class='number black'>?</span>";
+
+          await new Promise(resolve => setTimeout(resolve, 1200));
+
+          const winningNumber = Math.floor(Math.random() * 37);
+          const winningColor = getNumberColor(winningNumber);
+          const winningParity = getNumberParity(winningNumber);
+          resultDisplay.innerHTML = `Landed on: <span class="number ${winningColor}">${winningNumber}</span> (${winningColor.toUpperCase()})`;
+
+          let isWin = false;
+          if (winningNumber !== 0) { if (betType === winningColor || betType === winningParity) { isWin = true; } }
+
+          const pointsChange = isWin ? betAmount : -betAmount;
+          const newPoints = currentUserPoints + pointsChange;
+
+          try {
+              await update(userRef, { points: newPoints });
+              if (isWin) { messageElement.textContent = `WIN! You won ${betAmount} Quarters. New total: ${newPoints}`; }
+              else { messageElement.textContent = `LOSE! You lost ${betAmount} Quarters. New total: ${newPoints}`;
+                  if (winningNumber === 0) { messageElement.textContent += ` (Landed on Green ${winningNumber})`; }
+              }
+              messageElement.className = isWin ? 'win-message' : 'lose-message'; // Optional styling
+          } catch (error) {
+              console.error("Error updating points:", error);
+              messageElement.textContent = "Error saving result. Quarters not updated.";
+              messageElement.className = 'error-message'; // Optional styling
+          } finally {
+              betAmountInput.disabled = false;
+              betTypeRadios.forEach(radio => radio.disabled = false);
+              // spinButton state managed by listener
+              betAmountInput.max = newPoints;
+          }
+      }
+
+
+      // --- Leaderboard Logic ---
+      function setupLeaderboardListener() {
+          const usersRef = ref(db, 'users');
+          // Query to get users ordered by points, limiting to the top N (last N in ascending order)
+          const topUsersQuery = query(usersRef, orderByChild('points'), limitToLast(LEADERBOARD_SIZE));
+
+          onValue(topUsersQuery, (snapshot) => {
+              const leaderboardData = [];
+              if (snapshot.exists()) {
+                  snapshot.forEach((childSnapshot) => {
+                      const userData = childSnapshot.val();
+                      // Ensure data has points and a name before adding
+                      if (userData && typeof userData.points === 'number') {
+                          leaderboardData.push({
+                              // Use displayName, fallback to email prefix or 'Unknown'
+                              displayName: userData.displayName || userData.email?.split('@')[0] || 'Unknown',
+                              points: userData.points
+                          });
+                      }
+                  });
+                  // Sort descending (since limitToLast returns ascending)
+                  leaderboardData.sort((a, b) => b.points - a.points);
+              }
+              updateLeaderboardUI(leaderboardData); // Update the HTML table
+          }, (error) => {
+              console.error("Error fetching leaderboard data:", error);
+              leaderboardList.innerHTML = '<li class="no-data">Error loading leaderboard.</li>'; // Show error in UI
+          });
+      }
+
+      function updateLeaderboardUI(data) {
+          leaderboardList.innerHTML = ''; // Clear previous entries
+
+          if (!data || data.length === 0) {
+              leaderboardList.innerHTML = '<li class="no-data">No players on leaderboard yet.</li>';
+              return;
+          }
+
+          data.forEach(user => {
+              const listItem = document.createElement('li');
+              // Sanitize display name just in case (simple example)
+              const safeDisplayName = user.displayName.replace(/</g, "<").replace(/>/g, ">");
+
+              listItem.innerHTML = `
+                  <span class="lb-name" title="${safeDisplayName}">${safeDisplayName}</span>
+                  <span class="lb-score">${user.points} Q</span>
+              `;
+              leaderboardList.appendChild(listItem);
+          });
+      }
+
+      // --- Initialize Leaderboard Listener ---
+      // Call this once after Firebase is initialized
+      setupLeaderboardListener();
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote!</title>
+    <style>
+        body {
+            background-color: #ffcc00; /* Original yellow background */
+            color: #000080; /* Original navy text */
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 40px); /* Adjust for padding */
+            text-align: center;
+        }
+        .voting-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px; /* Space between images */
+            margin-bottom: 20px;
+        }
+        .vote-option img {
+            max-width: 150px; /* Slightly smaller images */
+            height: auto;
+            border: 3px solid transparent; /* Placeholder for visual feedback */
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            background-color: rgba(255,255,255,0.5); /* Add slight background to images */
+            border-radius: 8px;
+            padding: 5px;
+        }
+        .vote-option img:hover {
+            transform: scale(1.05);
+            border-color: #000080;
+        }
+        .vote-option.disabled img {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .vote-option.disabled img:hover {
+            transform: none;
+            border-color: transparent;
+        }
+
+        /* --- Progress Bar Styles --- */
+        #results-container {
+             width: 80%; /* Make bar reasonably wide */
+             max-width: 500px; /* But not too wide on large screens */
+             margin-top: 30px; /* Space above the bar */
+        }
+
+        .progress-bar-container {
+            display: flex; /* Place bars side-by-side */
+            width: 100%;
+            height: 50px; /* Height of the bar */
+            background-color: #000000; /* Black background like example */
+            border-radius: 8px; /* Optional rounded corners */
+            overflow: hidden; /* Keep segments inside rounded corners */
+            border: 2px solid #000080; /* Navy border */
+        }
+
+        .progress-bar-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em; /* Larger percentage text */
+            font-weight: bold;
+            color: #000000; /* Black text */
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7); /* Slight white shadow for readability */
+            transition: width 0.5s ease-in-out; /* Smooth width change */
+            overflow: hidden; /* Hide text if segment is too small */
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        #progressBarLeft {
+            background-color: #ff3333; /* Red color */
+            /* Text aligned left for better look when small */
+            justify-content: center;
+            /* padding-left: 10px; */
+        }
+
+        #progressBarRight {
+            background-color: #33ccff; /* Light blue color */
+             /* Text aligned right for better look when small */
+             justify-content: center;
+            /* padding-right: 10px; */
+        }
+        /* --- End Progress Bar Styles --- */
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #cc0000; /* Error/info color */
+            height: 1.2em; /* Reserve space */
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Which one is better?</h1>
+
+    <div class="voting-container">
+        <div class="vote-option" id="option-left">
+            <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/ok.png?v=1745882219565" alt="Option Left">
+        </div>
+        <div class="vote-option" id="option-right">
+            <img src="https://cdn.glitch.global/22baf211-d194-4567-88a6-37f06d6ebe0a/%3Ba%3Ba%3B.png?v=1745882247357" alt="Option Right">
+        </div>
+    </div>
+
+    <!-- Container for the results bar -->
+    <div id="results-container">
+        <div id="results-label" style="margin-bottom: 5px; font-weight: bold;">Results:</div>
+        <div class="progress-bar-container" id="progressBar">
+             <!-- Segments will be added here by JS -->
+             <div class="progress-bar-segment" id="progressBarLeft" style="width: 50%;">...</div>
+             <div class="progress-bar-segment" id="progressBarRight" style="width: 50%;">...</div>
+        </div>
+         <!-- Raw counts can optionally be displayed below the bar -->
+         <div id="raw-counts" style="font-size: 0.9em; margin-top: 5px;">(Votes: ...)</div>
+    </div>
+
+    <div id="message"></div>
+
+    <!-- Firebase Libraries -->
+    <script type="module">
+      // Import the functions you need from the SDKs
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+      // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"; // Optional
+
+      // Your web app's Firebase configuration
+       const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg", // IMPORTANT: Secure this with rules!
+            authDomain: "quaters-5f71d.firebaseapp.com",
+            databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
+            projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.appspot.com", // Common pattern for storage bucket
+            messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626",
+            measurementId: "G-7WFJZV9JWT" // Optional for Analytics
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      // const analytics = getAnalytics(app); // Uncomment if needed
+
+      // --- Voting Logic ---
+
+      const VOTE_STORAGE_KEY = 'hasVotedOnImagePair_v1'; // Use a specific key
+
+      const optionLeftDiv = document.getElementById('option-left');
+      const optionRightDiv = document.getElementById('option-right');
+      const progressBarLeft = document.getElementById('progressBarLeft');
+      const progressBarRight = document.getElementById('progressBarRight');
+      const rawCountsDiv = document.getElementById('raw-counts');
+      const messageDiv = document.getElementById('message');
+
+      const votesRef = ref(database, 'votes'); // Reference to the parent 'votes' node
+
+      // --- Check if already voted ---
+      let hasVoted = localStorage.getItem(VOTE_STORAGE_KEY) === 'true';
+
+      function disableVoting() {
+          optionLeftDiv.classList.add('disabled');
+          optionRightDiv.classList.add('disabled');
+          messageDiv.textContent = "You have already voted.";
+      }
+
+      if (hasVoted) {
+          disableVoting();
+      }
+
+      // --- Listen for real-time vote updates ---
+      onValue(votesRef, (snapshot) => {
+          const data = snapshot.val();
+          const votesLeft = data?.imageLeft || 0; // Default to 0 if null/undefined
+          const votesRight = data?.imageRight || 0;
+          const totalVotes = votesLeft + votesRight;
+
+          let percentageLeft = 0;
+          let percentageRight = 0;
+
+          if (totalVotes > 0) {
+              percentageLeft = (votesLeft / totalVotes) * 100;
+              percentageRight = (votesRight / totalVotes) * 100;
+          }
+
+          // Update the progress bar widths
+          progressBarLeft.style.width = `${percentageLeft}%`;
+          progressBarRight.style.width = `${percentageRight}%`;
+
+          // Update the text inside the progress bar segments
+          // Use toFixed(1) for one decimal place, or Math.round() for whole numbers
+          progressBarLeft.textContent = `${percentageLeft.toFixed(0)}%`;
+          progressBarRight.textContent = `${percentageRight.toFixed(0)}%`;
+
+          // Optionally display raw counts
+           rawCountsDiv.textContent = `(Left: ${votesLeft} | Right: ${votesRight} | Total: ${totalVotes})`;
+
+
+      }, (error) => {
+          console.error("Error fetching vote data:", error);
+          // Update UI to show error state if desired
+          progressBarLeft.textContent = 'Error';
+          progressBarRight.textContent = 'Error';
+          progressBarLeft.style.width = '50%';
+          progressBarRight.style.width = '50%';
+          rawCountsDiv.textContent = "(Error loading votes)";
+      });
+
+      // --- Handle Voting Clicks ---
+      function castVote(choice) {
+          if (hasVoted) {
+              console.log("Already voted.");
+              messageDiv.textContent = "You have already voted.";
+              return;
+          }
+
+          const voteChoiceRef = ref(database, `votes/${choice === 'left' ? 'imageLeft' : 'imageRight'}`);
+
+          // Disable buttons immediately to prevent double-clicking during transaction
+          optionLeftDiv.classList.add('disabled');
+          optionRightDiv.classList.add('disabled');
+          messageDiv.textContent = "Registering vote..."; // Give feedback
+
+          runTransaction(voteChoiceRef, (currentValue) => {
+              return (currentValue || 0) + 1;
+          }).then(() => {
+              console.log(`Vote for ${choice} successful!`);
+              localStorage.setItem(VOTE_STORAGE_KEY, 'true');
+              hasVoted = true;
+              // disableVoting() is effectively already done, just update message
+              messageDiv.textContent = "Vote registered!";
+          }).catch((error) => {
+              console.error(`Transaction failed: ${error}`);
+              messageDiv.textContent = "Voting failed. Please try again.";
+              // Re-enable voting ONLY if they haven't successfully voted before
+              if (!localStorage.getItem(VOTE_STORAGE_KEY)) {
+                 optionLeftDiv.classList.remove('disabled');
+                 optionRightDiv.classList.remove('disabled');
+              }
+          });
+      }
+
+      // Add event listeners only if the user hasn't already voted
+      if (!hasVoted) {
+            optionLeftDiv.addEventListener('click', () => castVote('left'));
+            optionRightDiv.addEventListener('click', () => castVote('right'));
+      } else {
+           // Ensure event listeners aren't added if already voted (redundant but safe)
+           console.log("Voting disabled, listeners not added.");
+      }
+
+
+    </script>
+
+</body>
+</html>
