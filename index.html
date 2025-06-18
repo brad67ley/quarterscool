@@ -14,7 +14,7 @@
         text-align: center;
       }
 
-      /* Navigation Menu Styles */
+      /* --- Navigation Menu Styles --- */
       .top-nav {
         background-color: #000080; /* Navy blue background */
         padding: 10px 0;
@@ -22,16 +22,18 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Optional shadow */
         margin-bottom: 20px; /* Space below nav */
       }
-      .top-nav ul {
+      /* Use direct child selector '>' to only target the main ul */
+      .top-nav > ul {
         list-style: none;
         padding: 0;
         margin: 0;
         display: flex; /* Use flexbox for alignment */
         justify-content: center; /* Center items horizontally */
         gap: 20px; /* Space between items */
+        flex-wrap: wrap; /* Allow items to wrap on smaller screens */
       }
       .top-nav li {
-        /* No specific styling needed when using flexbox on ul */
+        /* No specific styling needed here */
       }
       .top-nav a {
         color: #ffcc00; /* Yellow text */
@@ -40,12 +42,96 @@
         padding: 8px 15px;
         border-radius: 5px;
         transition: background-color 0.2s ease, color 0.2s ease;
+        display: block; /* Make the whole area a link */
       }
       .top-nav a:hover {
         background-color: #ff0000; /* Red background on hover */
         color: #ffffff; /* White text on hover */
       }
-      /* End Navigation Menu Styles */
+      /* --- End Navigation Menu Styles --- */
+
+      /* --- Dropdown Menu Styles (CORRECTED) --- */
+      .dropdown {
+        position: relative; /* This is the anchor for the dropdown menu */
+      }
+
+      .dropdown-content {
+        display: none; /* Hide by default */
+        position: absolute; /* Position relative to the .dropdown container */
+        background-color: #000080; /* Match nav background */
+        min-width: 200px; /* Give it some space */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 100; /* Ensure it's on top */
+        list-style: none; /* Remove bullets */
+        padding: 0;
+        /* margin-top: 5px; <--- THIS WAS THE PROBLEM! REMOVED. */
+        border-radius: 5px;
+        overflow: hidden; /* Ensures child border-radius is respected */
+      }
+
+      .dropdown-content li {
+        width: 100%;
+      }
+
+      .dropdown-content a {
+        text-align: left; /* Align text to the left for a classic dropdown feel */
+        padding: 12px 16px; /* Adjust padding for dropdown items */
+      }
+
+      /* Show the dropdown menu on hover */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+      /* --- End Dropdown Menu Styles --- */
+
+      /* --- Mobile-Friendly Navigation Adjustments --- */
+      @media screen and (max-width: 768px) {
+        /* Also use direct child selector '>' here */
+        .top-nav > ul {
+          flex-direction: column; /* Stack nav items vertically */
+          gap: 5px; /* Reduce gap for vertical layout */
+        }
+
+        .top-nav li {
+          width: 90%; /* Make list items take up more width */
+          margin: 0 auto; /* Center the list items */
+        }
+
+        /* For mobile, we display dropdown content as part of the list, not a hover menu */
+        .dropdown-content {
+          display: block; /* Always show the dropdown content on mobile */
+          position: static; /* Remove absolute positioning */
+          background-color: transparent; /* Blend with the main nav */
+          box-shadow: none; /* Remove desktop shadow */
+          min-width: 100%;
+          margin-top: 5px;
+        }
+
+        .dropbtn {
+          /* Style the main dropdown button to look like a category header */
+          background-color: rgba(
+            255,
+            0,
+            0,
+            0.5
+          ) !important; /* Use !important to override hover */
+          pointer-events: none; /* Make it not clickable on mobile */
+          color: #ffffff !important;
+        }
+
+        .dropdown-content a {
+          /* Style sub-items to look indented */
+          background-color: rgba(
+            0,
+            0,
+            128,
+            0.7
+          ); /* Slightly different background */
+          font-size: 18px; /* Slightly smaller font */
+          text-align: center; /* Center the text for consistency */
+        }
+      }
+      /* --- End Mobile Styles --- */
 
       .content-wrapper {
         /* Added wrapper for main content padding */
@@ -87,9 +173,6 @@
         margin-top: 40px;
         margin-bottom: 40px;
       }
-
-      /* REMOVED .button, .party-link, .updates-link, .gambling-link, and .link-container styles */
-
       footer {
         margin-top: 60px;
         font-size: 16px;
@@ -179,6 +262,14 @@
       <ul>
         <li><a href="party.html">🎉 Party Timer! 🎉</a></li>
         <li><a href="updates.html">📰 View Updates! 📰</a></li>
+        <li class="dropdown">
+          <!-- javascript:void(0) prevents the page from jumping on click -->
+          <a href="javascript:void(0)" class="dropbtn">🤔 Fun Thingies 🤔</a>
+          <ul class="dropdown-content">
+            <li><a href="stories.html">📖 Stories</a></li>
+            <li><a href="ratingstates.html">⭐ States Rated</a></li>
+          </ul>
+        </li>
         <li><a href="gambling.html">🎰 GAMBLE!!! 🎰</a></li>
       </ul>
     </nav>
@@ -221,8 +312,6 @@
           class="quarter-img"
         />
       </div>
-
-      <!-- Links Container REMOVED -->
 
       <!-- Auth Form remains the same -->
       <div class="auth-form" id="auth-form">
