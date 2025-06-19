@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rating US States</title>
+    <style>
+      body {
+        background-color: #ffcc00; /* Bright yellow background */
+        color: #000080; /* Navy blue text */
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+      .content-wrapper {
+        max-width: 1200px; /* Wider for more columns */
+        margin: 0 auto; /* Center content */
+      }
+      h1 {
+        font-size: 48px;
+        text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
+        margin-bottom: 10px;
+        color: #000080; /* Keep h1 navy */
+      }
+      p.intro {
+        font-size: 20px;
+        line-height: 1.5;
+        max-width: 800px;
+        margin: 10px auto 40px auto;
+      }
+
+      /* The main grid container for all the state cards */
+      .states-grid {
+        display: grid;
+        /* Creates responsive columns: they are at least 320px wide,
+               and will fit as many as possible on one row. */
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 25px; /* The space between the cards */
+      }
+
+      /* Styling for each individual state card */
+      .state-card {
+        background-color: #000080; /* Navy blue background */
+        border: 4px solid #ff0000; /* Red border */
+        border-radius: 10px;
+        padding: 20px;
+        text-align: left; /* Align text left inside the card */
+        display: flex;
+        flex-direction: column;
+      }
+      .state-card h2 {
+        font-size: 28px;
+        color: #ffcc00; /* Yellow text */
+        margin: 0 0 10px 0;
+        border-bottom: 2px solid #ff0000;
+        padding-bottom: 10px;
+      }
+
+      /* --- NEW STYLES for the "Been To?" status indicator --- */
+      .state-card .status {
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin: 5px 0 0 0;
+        display: inline-block; /* Makes the background fit the text */
+        text-align: center;
+      }
+      .state-card .status.been-to {
+        background-color: #28a745; /* A nice, clear green */
+        border: 2px solid #1e7e34; /* Darker green border */
+      }
+      .state-card .status.not-been-to {
+        background-color: #dc3545; /* A good, clear red */
+        border: 2px solid #a71d2a; /* Darker red border */
+      }
+      /* --- END NEW STYLES --- */
+
+      .state-card .rating {
+        font-size: 20px;
+        font-weight: bold;
+        color: #ffffff; /* White text */
+        margin: 10px 0;
+      }
+      .state-card .description {
+        font-size: 16px;
+        color: #ffffff; /* White text */
+        line-height: 1.6;
+        margin: 5px 0 0 0;
+        flex-grow: 1; /* Allows description to fill space */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content-wrapper">
+      <h1>Rating Every US State</h1>
+      <p class="intro">Here is where I rate every state! Awesome!</p>
+
+      <div class="states-grid">
+        <!-- State Card Template -->
+        <div class="state-card">
+          <h2>Alabama</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 5/10</p>
+          <p class="description">
+            its lowkey a mid state a lot of concerts happen here for whatever
+            reason
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Alaska</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">Cold but has nice people</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Arizona</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 3/10</p>
+          <p class="description">IVE BEEN HERE ITS HOT HOT HOT</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Arkansas</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 2/10</p>
+          <p class="description">
+            I don't like Arkansas at ALL, talking from PERSONAL experience
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>California</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 9/10</p>
+          <p class="description">
+            Been here, a lot of people hate it but it's low-key a chill state,
+            one point taken off because it is SCARILY expensive
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Colorado</h2>
+          <p class="status been-to">Been to? YES</p>
+          <p class="rating"><strong>Rating:</strong> 10/10</p>
+          <p class="description">
+            AMAZING EVERYTHING, SCENERY, DANIEL LARSON, MOUNTAINS, TREES!!!
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Connecticut</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7/10</p>
+          <p class="description">
+            I barley know about Connecticut but it's ight from what I've heard
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Delaware</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 5/10</p>
+          <p class="description">mid state</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Florida</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 4/10</p>
+          <p class="description">
+            Beaches and crazy people, while I was there I encountered MANY. Nice
+            resorts tho
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Georgia</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 6/10</p>
+          <p class="description">
+            Set foot in Georgia for like an hour? Only walked around Atlanta and
+            I liked it, everywhere outside of downtown Atlanta is kinda cheeks
+            though.
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Hawaii</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">
+            I am rating it high because of the beaches but I know it is VERY
+            VERY VERY expensive
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Idaho</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 5/10</p>
+          <p class="description">ight state, Nova is creeping here tho</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Illinois</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 10/10</p>
+          <p class="description">CHICAGO VICTOR EVERYTHING YOU COULD IMAGINE</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Indiana</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 9.5/10</p>
+          <p class="description">
+            ALL THE PEOPLE WHO TELL YOU INDIANA SUCKS ARE LYING!!! INDIANA IS
+            FIRE
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Iowa</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 10/10</p>
+          <p class="description">
+            AHHH IOWA IS AMAZING AND SO QUIET I LOVE IOWA AHHH
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Kansas</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 3/10</p>
+          <p class="description">flat and sad</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Kentucky</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7/10</p>
+          <p class="description">
+            high rating for chicken, mid state in general though
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Louisiana</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 2/10</p>
+          <p class="description">only been here because of family</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Maine</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 9/10</p>
+          <p class="description">cool state, would live there</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Maryland</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">MARYLANDERS PLEASE DON'T ATTACK ME</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Massachusetts</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7.5/10</p>
+          <p class="description">taxachusetts...</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Michigan</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">Detroit is lowkey scary but those LAKES</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Minnesota</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 10/10</p>
+          <p class="description">MY DREAM VACATION, I LOVE MINNESOTA!</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Mississippi</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 2/10</p>
+          <p class="description">
+            ehhh personally i dont like mississippi but I know how to spell it
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Missouri</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 1/10</p>
+          <p class="description">St.Louis is SCARY, Missouri is misery</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Montana</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7.5/10</p>
+          <p class="description">I don't really hear about Montana</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Nebraska</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 3/10</p>
+          <p class="description">Nothing to do</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Nevada</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">
+            GAMBLING! (but everywhere out of Las Vegas is ight)
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>New Hampshire</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 5/10</p>
+          <p class="description">
+            what happens here, I forgot this state existed
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>New Jersey</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 1/10</p>
+          <p class="description">
+            New Jersey really sucks, Toxic waste and garbage dumps
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>New Mexico</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">AMAZING mountains, Walter White</p>
+        </div>
+
+        <div class="state-card">
+          <h2>New York</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 6/10</p>
+          <p class="description">
+            EVERY person from New York (Not just the city, state too) is super
+            funny
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>North Carolina</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 6.5/10</p>
+          <p class="description">
+            Its okay, nothing happens here really either
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>North Dakota</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 0/10</p>
+          <p class="description">
+            NO NORTH DAKOTA IS ICE AND SADNESS BOOOOO!!!! ALSO MG87 LIVES HERE
+            BOOOO!!!
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Ohio</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 4/10</p>
+          <p class="description">Boring state</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Oklahoma</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 2/10</p>
+          <p class="description">No.</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Oregon</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 9/10</p>
+          <p class="description">OREGON IS FIRE!!! MOUNTAINS AND STUFF!!!</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Pennsylvania</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 6/10</p>
+          <p class="description">enough said</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Rhode Island</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">
+            small, cool coast, the counties make it look like a hamburger
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>South Carolina</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7/10</p>
+          <p class="description">MrBeast</p>
+        </div>
+
+        <div class="state-card">
+          <h2>South Dakota</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 0/10</p>
+          <p class="description">
+            right up there with North Dakota, just a bit
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Tennessee</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 4/10</p>
+          <p class="description">You're the only ten I see</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Texas</h2>
+          <p class="status been-to">Been to? Yes</p>
+          <p class="rating"><strong>Rating:</strong> 6/10</p>
+          <p class="description">
+            HOT HOT HOT BUGS BUGS BUGS, but nice cities and towns.
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Utah</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 6/10</p>
+          <p class="description">my friend ben is from here shoutout to ben</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Vermont</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 8/10</p>
+          <p class="description">would go to vermont if i could</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Virginia</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 3.5/10</p>
+          <p class="description">the least boring thing here is Chris Chan</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Washington</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 10/10</p>
+          <p class="description">MOUNTAINS AND MICROSOFT</p>
+        </div>
+
+        <div class="state-card">
+          <h2>West Virginia</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 0.5/10</p>
+          <p class="description">
+            very weird shaped, the .5 is because of community
+          </p>
+        </div>
+
+        <div class="state-card">
+          <h2>Wisconsin</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 7/10</p>
+          <p class="description">boring but I do love cheese</p>
+        </div>
+
+        <div class="state-card">
+          <h2>Wyoming</h2>
+          <p class="status not-been-to">Been to? No</p>
+          <p class="rating"><strong>Rating:</strong> 2/10</p>
+          <p class="description">WYOMING DOESNT EXIST.</p>
+        </div>
+      </div>
+      <!-- End of states-grid -->
+    </div>
+    <!-- End of content-wrapper -->
+  </body>
+</html>
