@@ -27,7 +27,6 @@
         margin: 0 auto;
         padding: 20px;
       }
-
       header {
         display: flex;
         justify-content: space-between;
@@ -39,11 +38,9 @@
         box-shadow: 5px 5px 0px #ff0000;
         margin-bottom: 20px;
       }
-
       #user-display {
         font-weight: bold;
       }
-
       .header-buttons button {
         background-color: #ff0000;
         color: #fff;
@@ -55,22 +52,18 @@
         box-shadow: 3px 3px 0px #000;
         margin-left: 10px;
       }
-
       .header-buttons button:hover {
         background-color: #cc0000;
       }
-
       .header-buttons button:active {
         box-shadow: none;
         transform: translate(3px, 3px);
       }
-
       #posts-container {
         display: flex;
         flex-direction: column;
         gap: 25px;
       }
-
       .post {
         background-color: #fff;
         border: 4px solid #000080;
@@ -78,35 +71,30 @@
         box-shadow: 8px 8px 0px rgba(0, 0, 128, 0.5);
         text-align: left;
       }
-
       .post-header {
         border-bottom: 2px dashed #000080;
         padding-bottom: 10px;
         margin-bottom: 15px;
       }
-
       .post-subject {
         font-size: 24px;
         font-weight: bold;
         margin: 0;
         color: #ff0000;
       }
-
       .post-author {
         font-size: 14px;
         color: #555;
         margin-top: 5px;
       }
-
       .post-author .author-name {
         font-weight: bold;
         color: #000080;
       }
-
       .post-body {
         font-size: 18px;
         line-height: 1.6;
-        white-space: pre-wrap; /* preserves line breaks */
+        white-space: pre-wrap;
         margin-bottom: 15px;
       }
 
@@ -117,8 +105,10 @@
         padding: 10px 15px;
         margin: 15px 0;
         font-style: italic;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
-
       @keyframes rainbow-flow {
         0% {
           background-position: 0% 50%;
@@ -130,7 +120,6 @@
           background-position: 0% 50%;
         }
       }
-
       .rainbow-text {
         font-weight: bold;
         font-style: normal;
@@ -150,7 +139,6 @@
         color: transparent;
         animation: rainbow-flow 4s linear infinite;
       }
-
       .owner-controls {
         border-top: 2px dashed #ff0000;
         margin-top: 20px;
@@ -159,18 +147,15 @@
         flex-direction: column;
         gap: 10px;
       }
-
       .owner-note-form {
         display: flex;
         gap: 10px;
       }
-
       .owner-note-form input {
         flex-grow: 1;
         border: 2px solid #000080;
         padding: 5px;
       }
-
       .delete-btn {
         background-color: #ff3b30 !important;
         color: white !important;
@@ -179,8 +164,17 @@
         cursor: pointer;
         width: fit-content;
       }
-      /* --- END OWNER STYLES --- */
+      .remove-owner-note-btn {
+        background: none;
+        border: none;
+        color: #ff0000;
+        text-decoration: underline;
+        cursor: pointer;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 14px;
+      }
 
+      /* --- POST ACTIONS --- */
       .post-actions {
         margin-top: 20px;
         display: flex;
@@ -188,7 +182,6 @@
         align-items: center;
         flex-wrap: wrap;
       }
-
       .post-actions button {
         background: none;
         border: 2px solid #000080;
@@ -200,48 +193,59 @@
         align-items: center;
         gap: 8px;
       }
-
       .post-actions button.active {
         background-color: #000080;
         color: #ffcc00;
       }
-
       .post-actions .count {
         font-weight: bold;
         min-width: 20px;
         text-align: right;
       }
 
+      /* --- REPLIES SECTION --- */
       .replies-section {
         margin-top: 20px;
         padding-top: 15px;
         border-top: 1px solid #ccc;
       }
-
       .reply {
         background-color: #f0f0f0;
         padding: 10px;
         border: 2px solid #ddd;
         margin-top: 10px;
         font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
       }
-
+      .reply .reply-content {
+        flex-grow: 1;
+      }
       .reply .reply-author {
         font-weight: bold;
         color: #000080;
       }
-
+      .delete-reply-btn {
+        background: none;
+        border: none;
+        color: #ff0000;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 0 5px;
+        margin-left: 10px;
+      }
       .reply-form {
         display: flex;
         margin-top: 10px;
         gap: 10px;
       }
-
       .reply-form input {
         flex-grow: 1;
       }
 
-      /* Modal Styles */
+      /* --- MODAL STYLES --- */
       .modal {
         display: none;
         position: fixed;
@@ -339,12 +343,12 @@
         <h2>Create a New Post</h2>
         <form id="new-post-form">
           <div class="form-group">
-            <label for="post-subject">Subject:</label>
-            <input type="text" id="post-subject" required />
+            <label for="post-subject">Subject:</label
+            ><input type="text" id="post-subject" required />
           </div>
           <div class="form-group">
-            <label for="post-body">Body:</label>
-            <textarea id="post-body" required></textarea>
+            <label for="post-body">Body:</label
+            ><textarea id="post-body" required></textarea>
           </div>
           <button type="submit" id="post-submit-btn">Post It!</button>
         </form>
@@ -352,7 +356,6 @@
     </div>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
       import {
         getAuth,
@@ -371,7 +374,6 @@
         update,
       } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-      // Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
@@ -382,42 +384,27 @@
         appId: "1:895009748691:web:73dc67aee4db1143e90626",
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getDatabase(app);
 
-      // Global variables to hold current user info
       let currentUser;
-      let isOwner = false; // <-- NEW: Flag for owner status
-      const ownerEmail = "brad67ley@gmail.com"; // <-- NEW: Owner's email address
+      let isOwner = false;
+      const ownerEmail = "brad67ley@gmail.com";
 
-      // --- AUTHENTICATION ---
       onAuthStateChanged(auth, (user) => {
         if (user) {
           currentUser = user;
-          // NEW: Check if the logged-in user is the owner
           isOwner = currentUser.email === ownerEmail;
-          console.log(
-            "User logged in:",
-            currentUser.displayName,
-            "| Is Owner:",
-            isOwner
-          );
-
           let welcomeMessage = `Welcome, ${currentUser.displayName}!`;
-          if (isOwner) {
-            welcomeMessage += " (OWNER)";
-          }
+          if (isOwner) welcomeMessage += " (OWNER)";
           document.getElementById("user-display").textContent = welcomeMessage;
           loadPosts();
         } else {
-          console.log("No user is signed in. Redirecting...");
           window.location.href = "index.html";
         }
       });
 
-      // --- UI and MODAL LOGIC ---
       const newPostModal = document.getElementById("new-post-modal");
       const newPostBtn = document.getElementById("new-post-btn");
       const closeBtn = document.querySelector(".close-button");
@@ -427,14 +414,10 @@
         if (event.target == newPostModal) newPostModal.style.display = "none";
       };
 
-      // --- CORE APP LOGIC ---
-
-      // Handle Logout
       document.getElementById("logout-btn").addEventListener("click", () => {
-        signOut(auth).catch((error) => console.error("Logout Error:", error));
+        signOut(auth);
       });
 
-      // Handle New Post Submission
       document
         .getElementById("new-post-form")
         .addEventListener("submit", (e) => {
@@ -445,21 +428,18 @@
           const postData = {
             author: currentUser.displayName,
             uid: currentUser.uid,
-            subject: subject,
-            body: body,
+            subject,
+            body,
             timestamp: serverTimestamp(),
             likes: {},
             swiggles: {},
           };
-          push(ref(db, "posts"), postData)
-            .then(() => {
-              document.getElementById("new-post-form").reset();
-              newPostModal.style.display = "none";
-            })
-            .catch((error) => console.error("Error submitting post: ", error));
+          push(ref(db, "posts"), postData).then(() => {
+            document.getElementById("new-post-form").reset();
+            newPostModal.style.display = "none";
+          });
         });
 
-      // Load and display all posts in real-time
       function loadPosts() {
         const postsRef = ref(db, "posts");
         onValue(postsRef, (snapshot) => {
@@ -474,13 +454,11 @@
             posts.push({ id: childSnapshot.key, ...childSnapshot.val() });
           });
           posts.reverse().forEach((post) => {
-            const postElement = createPostElement(post);
-            postsContainer.appendChild(postElement);
+            postsContainer.appendChild(createPostElement(post));
           });
         });
       }
 
-      // Function to create the HTML for a single post (UPDATED)
       function createPostElement(post) {
         const postDiv = document.createElement("div");
         postDiv.className = "post";
@@ -494,37 +472,31 @@
         const userHasSwiggled = post.swiggles && post.swiggles[currentUser.uid];
         const formattedDate = new Date(post.timestamp).toLocaleString();
 
-        // --- NEW: Generate Owner-specific HTML ---
         let ownerNoteHTML = "";
         if (post.ownerNote) {
-          ownerNoteHTML = `
-                    <div class="owner-note-display">
-                        <span class="rainbow-text">Owner's Note:</span> ${escapeHTML(
-                          post.ownerNote
-                        )}
-                    </div>`;
+          const removeBtnHTML = isOwner
+            ? `<button class="remove-owner-note-btn">[Remove]</button>`
+            : "";
+          ownerNoteHTML = `<div class="owner-note-display"><div><span class="rainbow-text">Owner's Note:</span> ${escapeHTML(
+            post.ownerNote
+          )}</div> ${removeBtnHTML}</div>`;
         }
 
         let ownerControlsHTML = "";
         if (isOwner) {
           ownerControlsHTML = `
                 <div class="owner-controls">
-                    <form class="owner-note-form">
-                        <input type="text" class="owner-note-input" placeholder="Add/Edit Owner's Note..." required>
-                        <button type="submit">Add Note</button>
-                    </form>
+                    <form class="owner-note-form"><input type="text" class="owner-note-input" placeholder="Add/Edit Owner's Note..." required><button type="submit">Add Note</button></form>
                     <button class="delete-btn">❌ Delete Post</button>
                 </div>`;
         }
-        // --- END NEW ---
 
         postDiv.innerHTML = `
-                <div class="post-header">
-                    <h3 class="post-subject">${escapeHTML(post.subject)}</h3>
-                    <p class="post-author">by <span class="author-name">${escapeHTML(
-                      post.author
-                    )}</span> on ${formattedDate}</p>
-                </div>
+                <div class="post-header"><h3 class="post-subject">${escapeHTML(
+                  post.subject
+                )}</h3><p class="post-author">by <span class="author-name">${escapeHTML(
+          post.author
+        )}</span> on ${formattedDate}</p></div>
                 <div class="post-body">${escapeHTML(post.body)}</div>
                 ${ownerNoteHTML}
                 <div class="post-actions">
@@ -537,36 +509,41 @@
                     <button class="reply-btn">💬 Reply</button>
                 </div>
                 <div class="replies-section"></div>
-                <form class="reply-form" style="display:none;">
-                    <input type="text" class="reply-input" placeholder="Write a reply..." required>
-                    <button type="submit">Send</button>
-                </form>
-                ${ownerControlsHTML}
-            `;
+                <form class="reply-form" style="display:none;"><input type="text" class="reply-input" placeholder="Write a reply..." required><button type="submit">Send</button></form>
+                ${ownerControlsHTML}`;
 
-        // Load replies
         const repliesSection = postDiv.querySelector(".replies-section");
         if (post.replies) {
-          Object.values(post.replies).forEach((reply) => {
-            repliesSection.appendChild(createReplyElement(reply));
+          // UPDATED: Use Object.entries to get reply ID
+          Object.entries(post.replies).forEach(([replyId, replyData]) => {
+            repliesSection.appendChild(createReplyElement(replyData, replyId));
           });
         }
         return postDiv;
       }
 
-      function createReplyElement(reply) {
+      // UPDATED: Function now accepts replyId to create a delete button
+      function createReplyElement(reply, replyId) {
         const replyDiv = document.createElement("div");
         replyDiv.className = "reply";
         const formattedDate = new Date(reply.timestamp).toLocaleString();
-        replyDiv.innerHTML = `<p><span class="reply-author">${escapeHTML(
-          reply.author
-        )}:</span> ${escapeHTML(
+
+        const deleteBtnHTML = isOwner
+          ? `<button class="delete-reply-btn" data-reply-id="${replyId}">[x]</button>`
+          : "";
+
+        replyDiv.innerHTML = `
+                <div class="reply-content">
+                    <p><span class="reply-author">${escapeHTML(
+                      reply.author
+                    )}:</span> ${escapeHTML(
           reply.text
-        )}<br><small style="color:#777;">${formattedDate}</small></p>`;
+        )}<br><small style="color:#777;">${formattedDate}</small></p>
+                </div>
+                ${deleteBtnHTML}`;
         return replyDiv;
       }
 
-      // Event Delegation for all post actions (UPDATED)
       document
         .getElementById("posts-container")
         .addEventListener("click", (e) => {
@@ -585,22 +562,30 @@
               replyForm.querySelector(".reply-input").focus();
           }
 
-          // --- NEW: Handle Owner's Delete Button ---
           if (isOwner && e.target.closest(".delete-btn")) {
             if (
-              confirm(
-                "Are you sure you want to permanently delete this post? This cannot be undone."
-              )
+              confirm("Are you sure you want to PERMANENTLY DELETE this post?")
             ) {
-              const postRef = ref(db, `posts/${postId}`);
-              remove(postRef)
-                .then(() => console.log(`Post ${postId} deleted by owner.`))
-                .catch((err) => console.error("Delete failed:", err));
+              remove(ref(db, `posts/${postId}`));
+            }
+          }
+
+          // --- NEW: Handle Owner's Deletion of a Reply ---
+          if (isOwner && e.target.closest(".delete-reply-btn")) {
+            const replyId = e.target.dataset.replyId;
+            if (confirm("Are you sure you want to delete this comment?")) {
+              remove(ref(db, `posts/${postId}/replies/${replyId}`));
+            }
+          }
+
+          // --- NEW: Handle Owner's Removal of an Owner's Note ---
+          if (isOwner && e.target.closest(".remove-owner-note-btn")) {
+            if (confirm("Are you sure you want to remove the owner's note?")) {
+              update(ref(db, `posts/${postId}`), { ownerNote: null });
             }
           }
         });
 
-      // Event Delegation for all form submissions (UPDATED)
       document
         .getElementById("posts-container")
         .addEventListener("submit", (e) => {
@@ -609,7 +594,6 @@
           if (!postElement) return;
           const postId = postElement.dataset.postId;
 
-          // Handle Reply Form
           if (e.target.classList.contains("reply-form")) {
             const replyInput = e.target.querySelector(".reply-input");
             const replyText = replyInput.value;
@@ -625,33 +609,25 @@
             );
           }
 
-          // --- NEW: Handle Owner's Note Form ---
           if (isOwner && e.target.classList.contains("owner-note-form")) {
             const noteInput = e.target.querySelector(".owner-note-input");
             const noteText = noteInput.value.trim();
-            const postRef = ref(db, `posts/${postId}`);
-            update(postRef, { ownerNote: noteText || null }) // Send null to delete the note if input is empty
-              .then(() => {
-                console.log(`Owner note updated for post ${postId}.`);
-                if (noteText) noteInput.value = ""; // Only clear if text was added
-              })
-              .catch((err) => console.error("Failed to add owner note:", err));
+            update(ref(db, `posts/${postId}`), {
+              ownerNote: noteText || null,
+            }).then(() => {
+              if (noteText) noteInput.value = "";
+            });
           }
         });
 
-      // Re-usable function to handle likes and swiggles
       function toggleInteraction(postId, interactionType) {
         if (!currentUser) return;
-        const postInteractionRef = ref(
-          db,
-          `posts/${postId}/${interactionType}/${currentUser.uid}`
-        );
-        runTransaction(postInteractionRef, (currentData) =>
-          currentData ? null : true
+        runTransaction(
+          ref(db, `posts/${postId}/${interactionType}/${currentUser.uid}`),
+          (data) => (data ? null : true)
         );
       }
 
-      // Simple function to prevent HTML injection
       function escapeHTML(str) {
         const div = document.createElement("div");
         div.appendChild(document.createTextNode(str));
