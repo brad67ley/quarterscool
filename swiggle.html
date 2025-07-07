@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Swiggler</title>
+    <title>The Swiggler Feed</title>
     <style>
       /* Provided Base Style */
       body {
@@ -107,7 +107,79 @@
         font-size: 18px;
         line-height: 1.6;
         white-space: pre-wrap; /* preserves line breaks */
+        margin-bottom: 15px;
       }
+
+      /* --- OWNER'S NOTE and CONTROLS --- */
+      .owner-note-display {
+        background-color: #fffde7;
+        border-left: 5px solid #ff0000;
+        padding: 10px 15px;
+        margin: 15px 0;
+        font-style: italic;
+      }
+
+      @keyframes rainbow-flow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .rainbow-text {
+        font-weight: bold;
+        font-style: normal;
+        background: linear-gradient(
+          to right,
+          red,
+          orange,
+          yellow,
+          green,
+          blue,
+          indigo,
+          violet
+        );
+        background-size: 400% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        animation: rainbow-flow 4s linear infinite;
+      }
+
+      .owner-controls {
+        border-top: 2px dashed #ff0000;
+        margin-top: 20px;
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .owner-note-form {
+        display: flex;
+        gap: 10px;
+      }
+
+      .owner-note-form input {
+        flex-grow: 1;
+        border: 2px solid #000080;
+        padding: 5px;
+      }
+
+      .delete-btn {
+        background-color: #ff3b30 !important;
+        color: white !important;
+        border: 2px solid black !important;
+        padding: 8px 12px;
+        cursor: pointer;
+        width: fit-content;
+      }
+      /* --- END OWNER STYLES --- */
 
       .post-actions {
         margin-top: 20px;
@@ -140,7 +212,6 @@
         text-align: right;
       }
 
-      /* Replies Section */
       .replies-section {
         margin-top: 20px;
         padding-top: 15px;
@@ -172,7 +243,7 @@
 
       /* Modal Styles */
       .modal {
-        display: none; /* Hidden by default */
+        display: none;
         position: fixed;
         z-index: 100;
         left: 0;
@@ -182,7 +253,6 @@
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.6);
       }
-
       .modal-content {
         background-color: #ffcc00;
         margin: 15% auto;
@@ -193,13 +263,11 @@
         box-shadow: 10px 10px 0px #ff0000;
         text-align: left;
       }
-
       .modal-content h2 {
         color: #000080;
         border-bottom: 3px solid #ff0000;
         padding-bottom: 10px;
       }
-
       .close-button {
         color: #aaa;
         float: right;
@@ -207,22 +275,18 @@
         font-weight: bold;
         cursor: pointer;
       }
-
       .close-button:hover,
       .close-button:focus {
         color: #ff0000;
       }
-
       .form-group {
         margin-bottom: 15px;
       }
-
       .form-group label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
       }
-
       .form-group input,
       .form-group textarea {
         width: calc(100% - 20px);
@@ -231,12 +295,10 @@
         font-size: 16px;
         border: 2px solid #000080;
       }
-
       .form-group textarea {
         min-height: 120px;
         resize: vertical;
       }
-
       #post-submit-btn {
         background-color: #000080;
         color: #ffcc00;
@@ -247,7 +309,6 @@
         width: 100%;
         box-shadow: 4px 4px 0px #000;
       }
-
       #post-submit-btn:active {
         box-shadow: none;
         transform: translate(4px, 4px);
@@ -264,7 +325,7 @@
         </div>
       </header>
 
-      <h1>🌀 Swiggler Feed 🌀</h1>
+      <h1>The Swiggler Feed 🌀</h1>
 
       <div id="posts-container">
         <p>Loading posts...</p>
@@ -290,7 +351,6 @@
       </div>
     </div>
 
-    <!-- This script tag uses type="module" to allow modern 'import' syntax -->
     <script type="module">
       // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -307,9 +367,11 @@
         serverTimestamp,
         runTransaction,
         set,
+        remove,
+        update,
       } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-      // Your web app's Firebase configuration
+      // Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
@@ -318,7 +380,6 @@
         storageBucket: "quaters-5f71d.firebasestorage.app",
         messagingSenderId: "895009748691",
         appId: "1:895009748691:web:73dc67aee4db1143e90626",
-        measurementId: "G-7WFJZV9JWT",
       };
 
       // Initialize Firebase
@@ -326,22 +387,31 @@
       const auth = getAuth(app);
       const db = getDatabase(app);
 
-      // Global variable to hold current user info
+      // Global variables to hold current user info
       let currentUser;
+      let isOwner = false; // <-- NEW: Flag for owner status
+      const ownerEmail = "brad67ley@gmail.com"; // <-- NEW: Owner's email address
 
       // --- AUTHENTICATION ---
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // User is signed in
           currentUser = user;
-          console.log("User logged in:", currentUser.displayName);
-          document.getElementById(
-            "user-display"
-          ).textContent = `Welcome, ${currentUser.displayName}!`;
-          // Once we know the user is logged in, we can load the posts
+          // NEW: Check if the logged-in user is the owner
+          isOwner = currentUser.email === ownerEmail;
+          console.log(
+            "User logged in:",
+            currentUser.displayName,
+            "| Is Owner:",
+            isOwner
+          );
+
+          let welcomeMessage = `Welcome, ${currentUser.displayName}!`;
+          if (isOwner) {
+            welcomeMessage += " (OWNER)";
+          }
+          document.getElementById("user-display").textContent = welcomeMessage;
           loadPosts();
         } else {
-          // User is signed out, REDIRECT to index.html
           console.log("No user is signed in. Redirecting...");
           window.location.href = "index.html";
         }
@@ -351,13 +421,10 @@
       const newPostModal = document.getElementById("new-post-modal");
       const newPostBtn = document.getElementById("new-post-btn");
       const closeBtn = document.querySelector(".close-button");
-
       newPostBtn.onclick = () => (newPostModal.style.display = "block");
       closeBtn.onclick = () => (newPostModal.style.display = "none");
       window.onclick = (event) => {
-        if (event.target == newPostModal) {
-          newPostModal.style.display = "none";
-        }
+        if (event.target == newPostModal) newPostModal.style.display = "none";
       };
 
       // --- CORE APP LOGIC ---
@@ -374,52 +441,38 @@
           e.preventDefault();
           const subject = document.getElementById("post-subject").value;
           const body = document.getElementById("post-body").value;
-
           if (!subject.trim() || !body.trim() || !currentUser) return;
-
           const postData = {
             author: currentUser.displayName,
             uid: currentUser.uid,
             subject: subject,
             body: body,
             timestamp: serverTimestamp(),
-            // Initialize interaction objects
             likes: {},
             swiggles: {},
           };
-
-          // Push to the database
           push(ref(db, "posts"), postData)
             .then(() => {
-              console.log("Post submitted successfully!");
-              // Reset form and close modal
               document.getElementById("new-post-form").reset();
               newPostModal.style.display = "none";
             })
             .catch((error) => console.error("Error submitting post: ", error));
         });
 
-      // Function to load and display all posts in real-time
+      // Load and display all posts in real-time
       function loadPosts() {
         const postsRef = ref(db, "posts");
         onValue(postsRef, (snapshot) => {
           const postsContainer = document.getElementById("posts-container");
-          postsContainer.innerHTML = ""; // Clear existing posts
-
+          postsContainer.innerHTML = "";
           if (!snapshot.exists()) {
             postsContainer.innerHTML = "<p>No posts yet. Be the first!</p>";
             return;
           }
-
           const posts = [];
           snapshot.forEach((childSnapshot) => {
-            posts.push({
-              id: childSnapshot.key,
-              ...childSnapshot.val(),
-            });
+            posts.push({ id: childSnapshot.key, ...childSnapshot.val() });
           });
-
-          // Reverse to show newest posts first
           posts.reverse().forEach((post) => {
             const postElement = createPostElement(post);
             postsContainer.appendChild(postElement);
@@ -427,7 +480,7 @@
         });
       }
 
-      // Function to create the HTML for a single post
+      // Function to create the HTML for a single post (UPDATED)
       function createPostElement(post) {
         const postDiv = document.createElement("div");
         postDiv.className = "post";
@@ -437,12 +490,33 @@
         const swiggleCount = post.swiggles
           ? Object.keys(post.swiggles).length
           : 0;
-
-        // Check if current user has liked/swiggled
         const userHasLiked = post.likes && post.likes[currentUser.uid];
         const userHasSwiggled = post.swiggles && post.swiggles[currentUser.uid];
-
         const formattedDate = new Date(post.timestamp).toLocaleString();
+
+        // --- NEW: Generate Owner-specific HTML ---
+        let ownerNoteHTML = "";
+        if (post.ownerNote) {
+          ownerNoteHTML = `
+                    <div class="owner-note-display">
+                        <span class="rainbow-text">Owner's Note:</span> ${escapeHTML(
+                          post.ownerNote
+                        )}
+                    </div>`;
+        }
+
+        let ownerControlsHTML = "";
+        if (isOwner) {
+          ownerControlsHTML = `
+                <div class="owner-controls">
+                    <form class="owner-note-form">
+                        <input type="text" class="owner-note-input" placeholder="Add/Edit Owner's Note..." required>
+                        <button type="submit">Add Note</button>
+                    </form>
+                    <button class="delete-btn">❌ Delete Post</button>
+                </div>`;
+        }
+        // --- END NEW ---
 
         postDiv.innerHTML = `
                 <div class="post-header">
@@ -452,6 +526,7 @@
                     )}</span> on ${formattedDate}</p>
                 </div>
                 <div class="post-body">${escapeHTML(post.body)}</div>
+                ${ownerNoteHTML}
                 <div class="post-actions">
                     <button class="like-btn ${
                       userHasLiked ? "active" : ""
@@ -466,38 +541,32 @@
                     <input type="text" class="reply-input" placeholder="Write a reply..." required>
                     <button type="submit">Send</button>
                 </form>
+                ${ownerControlsHTML}
             `;
 
-        // Load and display replies for this post
+        // Load replies
         const repliesSection = postDiv.querySelector(".replies-section");
         if (post.replies) {
           Object.values(post.replies).forEach((reply) => {
-            const replyElement = createReplyElement(reply);
-            repliesSection.appendChild(replyElement);
+            repliesSection.appendChild(createReplyElement(reply));
           });
         }
-
         return postDiv;
       }
 
-      // Function to create HTML for a single reply
       function createReplyElement(reply) {
         const replyDiv = document.createElement("div");
         replyDiv.className = "reply";
         const formattedDate = new Date(reply.timestamp).toLocaleString();
-        replyDiv.innerHTML = `
-                <p>
-                    <span class="reply-author">${escapeHTML(
-                      reply.author
-                    )}:</span>
-                    ${escapeHTML(reply.text)}
-                    <br><small style="color:#777;">${formattedDate}</small>
-                </p>
-            `;
+        replyDiv.innerHTML = `<p><span class="reply-author">${escapeHTML(
+          reply.author
+        )}:</span> ${escapeHTML(
+          reply.text
+        )}<br><small style="color:#777;">${formattedDate}</small></p>`;
         return replyDiv;
       }
 
-      // Event Delegation for post actions (like, swiggle, reply)
+      // Event Delegation for all post actions (UPDATED)
       document
         .getElementById("posts-container")
         .addEventListener("click", (e) => {
@@ -505,65 +574,81 @@
           if (!postElement) return;
           const postId = postElement.dataset.postId;
 
-          // --- LIKE ---
-          if (e.target.closest(".like-btn")) {
-            toggleInteraction(postId, "likes");
-          }
-          // --- SWIGGLE ---
-          if (e.target.closest(".swiggle-btn")) {
+          if (e.target.closest(".like-btn")) toggleInteraction(postId, "likes");
+          if (e.target.closest(".swiggle-btn"))
             toggleInteraction(postId, "swiggles");
-          }
-          // --- REPLY BUTTON ---
           if (e.target.closest(".reply-btn")) {
             const replyForm = postElement.querySelector(".reply-form");
             replyForm.style.display =
               replyForm.style.display === "none" ? "flex" : "none";
-            if (replyForm.style.display === "flex") {
+            if (replyForm.style.display === "flex")
               replyForm.querySelector(".reply-input").focus();
+          }
+
+          // --- NEW: Handle Owner's Delete Button ---
+          if (isOwner && e.target.closest(".delete-btn")) {
+            if (
+              confirm(
+                "Are you sure you want to permanently delete this post? This cannot be undone."
+              )
+            ) {
+              const postRef = ref(db, `posts/${postId}`);
+              remove(postRef)
+                .then(() => console.log(`Post ${postId} deleted by owner.`))
+                .catch((err) => console.error("Delete failed:", err));
             }
           }
         });
 
-      // Event Delegation for reply form submission
+      // Event Delegation for all form submissions (UPDATED)
       document
         .getElementById("posts-container")
         .addEventListener("submit", (e) => {
           e.preventDefault();
+          const postElement = e.target.closest(".post");
+          if (!postElement) return;
+          const postId = postElement.dataset.postId;
+
+          // Handle Reply Form
           if (e.target.classList.contains("reply-form")) {
-            const postElement = e.target.closest(".post");
-            const postId = postElement.dataset.postId;
             const replyInput = e.target.querySelector(".reply-input");
             const replyText = replyInput.value;
-
             if (!replyText.trim() || !currentUser) return;
-
             const replyData = {
               author: currentUser.displayName,
               uid: currentUser.uid,
               text: replyText,
               timestamp: serverTimestamp(),
             };
+            set(push(ref(db, `posts/${postId}/replies`)), replyData).then(
+              () => (replyInput.value = "")
+            );
+          }
 
-            const newReplyRef = push(ref(db, `posts/${postId}/replies`));
-            set(newReplyRef, replyData)
-              .then(() => (replyInput.value = ""))
-              .catch((err) => console.error("Reply error:", err));
+          // --- NEW: Handle Owner's Note Form ---
+          if (isOwner && e.target.classList.contains("owner-note-form")) {
+            const noteInput = e.target.querySelector(".owner-note-input");
+            const noteText = noteInput.value.trim();
+            const postRef = ref(db, `posts/${postId}`);
+            update(postRef, { ownerNote: noteText || null }) // Send null to delete the note if input is empty
+              .then(() => {
+                console.log(`Owner note updated for post ${postId}.`);
+                if (noteText) noteInput.value = ""; // Only clear if text was added
+              })
+              .catch((err) => console.error("Failed to add owner note:", err));
           }
         });
 
-      // Re-usable function to handle likes and swiggles using a Transaction
+      // Re-usable function to handle likes and swiggles
       function toggleInteraction(postId, interactionType) {
         if (!currentUser) return;
         const postInteractionRef = ref(
           db,
           `posts/${postId}/${interactionType}/${currentUser.uid}`
         );
-
-        runTransaction(postInteractionRef, (currentData) => {
-          // If currentData is null, user hasn't interacted. Set to true.
-          // If currentData is true, user has interacted. Set to null to remove.
-          return currentData ? null : true;
-        }).catch((err) => console.error("Transaction failed: ", err));
+        runTransaction(postInteractionRef, (currentData) =>
+          currentData ? null : true
+        );
       }
 
       // Simple function to prevent HTML injection
