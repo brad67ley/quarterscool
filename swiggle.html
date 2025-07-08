@@ -1,896 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Swiggler Feed</title>
     <style>
-      /* Base Styles */
-      body {
-        background-color: #ffcc00;
-        color: #000080;
-        font-family: "Courier New", Courier, monospace;
-        margin: 0;
-        padding: 0;
-      }
-      h1 {
-        font-size: 48px;
-        text-shadow: 2px 2px #ff0000;
-        margin-bottom: 30px;
-        text-align: center;
-      }
-      .app-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-
-      /* Header */
-      header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #000080;
-        color: #ffcc00;
-        padding: 10px 20px;
-        border: 4px solid #000;
-        box-shadow: 5px 5px 0px #ff0000;
-        margin-bottom: 20px;
-      }
-      #user-display {
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-      .header-buttons button {
-        background-color: #ff0000;
-        color: #fff;
-        border: 2px solid #000;
-        padding: 10px 15px;
-        font-size: 16px;
-        cursor: pointer;
-        box-shadow: 3px 3px 0px #000;
-        margin-left: 10px;
-        margin-top: 5px;
-      }
-      .header-buttons button:hover {
-        background-color: #cc0000;
-      }
-      .header-buttons button:active {
-        box-shadow: none;
-        transform: translate(3px, 3px);
-      }
-      #social-btn {
-        background-color: #4caf50;
-      }
-      #social-btn:hover {
-        background-color: #45a049;
-      }
-
-      /* Posts Container */
-      #posts-container {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-      }
-      .post {
-        background-color: #fff;
-        border: 4px solid #000080;
-        padding: 20px;
-        box-shadow: 8px 8px 0px rgba(0, 0, 128, 0.5);
-        text-align: left;
-      }
-      .post-header {
-        border-bottom: 2px dashed #000080;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-      }
-      .post-subject {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0;
-        color: #ff0000;
-      }
-      .post-author {
-        font-size: 14px;
-        color: #555;
-        margin-top: 5px;
-      }
-      .post-author .author-name {
-        font-weight: bold;
-        color: #000080;
-      }
-      .post-body {
-        font-size: 18px;
-        line-height: 1.6;
-        white-space: pre-wrap;
-        margin-bottom: 15px;
-      }
-
-      /* Follow Button */
-      .follow-btn {
-        font-size: 12px;
-        padding: 2px 6px;
-        margin-left: 8px;
-        border: 1px solid;
-        cursor: pointer;
-      }
-      .follow-btn.following {
-        background-color: #000080;
-        color: #ffcc00;
-        border-color: #000080;
-      }
-      .follow-btn.not-following {
-        background-color: transparent;
-        color: #000080;
-        border-color: #000080;
-      }
-
-      /* Post Actions (Like, Dislike, etc.) */
-      .post-actions {
-        margin-top: 20px;
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .post-actions button {
-        background: none;
-        border: 2px solid #000080;
-        padding: 5px 10px;
-        cursor: pointer;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .post-actions button.active {
-        background-color: #000080;
-        color: #ffcc00;
-      }
-      .post-actions .count {
-        font-weight: bold;
-        min-width: 20px;
-        text-align: right;
-      }
-
-      /* Replies Section (Nested) */
-      .replies-section {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #ccc;
-      }
-      .reply {
-        background-color: #f0f0f0;
-        padding: 10px;
-        border: 2px solid #ddd;
-        margin-top: 10px;
-        font-size: 14px;
-      }
-      .nested-replies-container {
-        margin-left: 30px;
-        border-left: 2px dotted #aaa;
-        padding-left: 10px;
-      }
-      .reply-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 5px;
-      }
-      .reply-author {
-        font-weight: bold;
-        color: #000080;
-      }
-      .reply-actions {
-        margin-top: 8px;
-      }
-      .reply-actions button {
-        font-size: 12px;
-        background: none;
-        border: 1px solid #555;
-        cursor: pointer;
-        margin-right: 10px;
-      }
-      .delete-reply-btn {
-        color: #ff0000;
-        border: none !important;
-        font-weight: bold;
-      }
-      .reply-form-container {
-        margin-top: 10px;
-        display: none;
-      } /* Hidden by default */
-
-      /* Owner Styles */
-      .owner-note-display {
-        background-color: #fffde7;
-        border-left: 5px solid #ff0000;
-        padding: 10px 15px;
-        margin: 15px 0;
-        font-style: italic;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      @keyframes rainbow-flow {
-        0% {
-          background-position: 0% 50%;
+        /* Provided Base Style */
+        body {
+            background-color: #ffcc00;
+            color: #000080;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
         }
-        50% {
-          background-position: 100% 50%;
+        
+        h1 {
+            font-size: 48px;
+            text-shadow: 2px 2px #ff0000;
+            margin-bottom: 30px;
+            text-align: center;
         }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-      .rainbow-text {
-        font-weight: bold;
-        font-style: normal;
-        background: linear-gradient(
-          to right,
-          red,
-          orange,
-          yellow,
-          green,
-          blue,
-          indigo,
-          violet
-        );
-        background-size: 400% 100%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        animation: rainbow-flow 4s linear infinite;
-      }
-      .owner-controls {
-        border-top: 2px dashed #ff0000;
-        margin-top: 20px;
-        padding-top: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .delete-btn {
-        background-color: #ff3b30 !important;
-        color: white !important;
-      }
-      .remove-owner-note-btn {
-        background: none;
-        border: none;
-        color: #ff0000;
-        text-decoration: underline;
-        cursor: pointer;
-        font-size: 14px;
-      }
 
-      /* Modal Styles (for New Post and Social Page) */
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 100;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.6);
-      }
-      .modal-content {
-        background-color: #ffcc00;
-        margin: 10% auto;
-        padding: 30px;
-        border: 5px solid #000080;
-        width: 80%;
-        max-width: 600px;
-        box-shadow: 10px 10px 0px #ff0000;
-        text-align: left;
-      }
-      .modal-content h2 {
-        color: #000080;
-        border-bottom: 3px solid #ff0000;
-        padding-bottom: 10px;
-      }
-      .close-button {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .close-button:hover,
-      .close-button:focus {
-        color: #ff0000;
-      }
+        /* Custom Styles for the App */
+        .app-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; background-color: #000080; color: #ffcc00; padding: 10px 20px; border: 4px solid #000; box-shadow: 5px 5px 0px #ff0000; margin-bottom: 20px; }
+        #user-display { font-weight: bold; }
+        .header-buttons button { background-color: #ff0000; color: #fff; border: 2px solid #000; padding: 10px 15px; font-family: 'Courier New', Courier, monospace; font-size: 16px; cursor: pointer; box-shadow: 3px 3px 0px #000; margin-left: 10px; }
+        .header-buttons button:hover { background-color: #cc0000; }
+        .header-buttons button:active { box-shadow: none; transform: translate(3px, 3px); }
+        #posts-container { display: flex; flex-direction: column; gap: 25px; }
+        .post { background-color: #fff; border: 4px solid #000080; padding: 20px; box-shadow: 8px 8px 0px rgba(0, 0, 128, 0.5); text-align: left; }
+        .post-header { border-bottom: 2px dashed #000080; padding-bottom: 10px; margin-bottom: 15px; }
+        .post-subject { font-size: 24px; font-weight: bold; margin: 0; color: #ff0000; }
+        .post-author { font-size: 14px; color: #555; margin-top: 5px; }
+        .post-author .author-name { font-weight: bold; color: #000080; }
+        .post-author .follow-btn { margin-left: 8px; color: #000080; text-decoration: underline; cursor: pointer; font-weight: bold; }
+        .post-body { font-size: 18px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 15px; }
 
-      /* Social Modal Tabs */
-      .social-tabs {
-        border-bottom: 2px solid #000080;
-        margin-bottom: 15px;
-        display: flex;
-      }
-      .social-tabs button {
-        background: none;
-        border: none;
-        padding: 10px 15px;
-        cursor: pointer;
-        font-family: "Courier New", Courier, monospace;
-        font-size: 18px;
-        font-weight: bold;
-        color: #000080;
-      }
-      .social-tabs button.active {
-        border-bottom: 4px solid #ff0000;
-      }
-      .tab-content {
-        display: none;
-      }
-      .tab-content.active {
-        display: block;
-      }
-      .social-list li {
-        list-style-type: "👤";
-        padding: 8px;
-        border-bottom: 1px dashed #ccc;
-      }
-      .social-list li:last-child {
-        border-bottom: none;
-      }
+        /* --- OWNER'S NOTE and CONTROLS --- */
+        .owner-note-display { background-color: #fffde7; border-left: 5px solid #ff0000; padding: 10px 15px; margin: 15px 0; font-style: italic; display: flex; justify-content: space-between; align-items: center; }
+        @keyframes rainbow-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .rainbow-text { font-weight: bold; font-style: normal; background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); background-size: 400% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rainbow-flow 4s linear infinite; }
+        .owner-controls { border-top: 2px dashed #ff0000; margin-top: 20px; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .owner-note-form { display: flex; gap: 10px; }
+        .owner-note-form input { flex-grow: 1; border: 2px solid #000080; padding: 5px; }
+        .delete-btn { background-color: #ff3b30 !important; color: white !important; border: 2px solid black !important; padding: 8px 12px; cursor: pointer; width: fit-content; }
+        .remove-owner-note-btn { background: none; border: none; color: #ff0000; text-decoration: underline; cursor: pointer; font-family: 'Courier New', Courier, monospace; font-size: 14px; }
+        
+        /* --- POST ACTIONS --- */
+        .post-actions { margin-top: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .post-actions button { background: none; border: 2px solid #000080; padding: 5px 10px; cursor: pointer; font-family: 'Courier New', Courier, monospace; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .post-actions button.active { background-color: #000080; color: #ffcc00; }
+        .post-actions .count { font-weight: bold; min-width: 20px; text-align: right; }
+
+        /* --- REPLIES SECTION --- */
+        .replies-section { margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; }
+        .reply { background-color: #f0f0f0; padding: 10px; border: 2px solid #ddd; margin-top: 10px; font-size: 14px; }
+        .reply.nested-1 { margin-left: 20px; background-color: #e9e9e9; }
+        .reply.nested-2 { margin-left: 40px; background-color: #e2e2e2; }
+        .reply.nested-3 { margin-left: 60px; background-color: #dbdbdb; }
+        .reply-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;}
+        .reply-meta { font-size: 12px; color: #777; }
+        .reply-author { font-weight: bold; color: #000080; }
+        .reply-actions { display: flex; align-items: center; gap: 10px; }
+        .reply-actions .action-link { background: none; border: none; color: #000080; text-decoration: underline; cursor: pointer; font-size: 12px; padding: 0;}
+        .delete-reply-btn { color: #ff0000 !important; }
+        .reply-form { display: flex; margin-top: 10px; gap: 10px; }
+        .reply-form input { flex-grow: 1; border: 2px solid #000080; padding: 5px; }
+
+        /* --- MODAL STYLES --- */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #ffcc00; margin: 10% auto; padding: 30px; border: 5px solid #000080; width: 80%; max-width: 600px; box-shadow: 10px 10px 0px #ff0000; text-align: left; }
+        .modal-content h2 { color: #000080; border-bottom: 3px solid #ff0000; padding-bottom: 10px; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-button:hover, .close-button:focus { color: #ff0000; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: calc(100% - 20px); padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 16px; border: 2px solid #000080; }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        #post-submit-btn { background-color: #000080; color: #ffcc00; padding: 12px 20px; border: 2px solid #000; cursor: pointer; font-size: 18px; width: 100%; box-shadow: 4px 4px 0px #000; }
+        #post-submit-btn:active { box-shadow: none; transform: translate(4px, 4px); }
+
+        /* --- FRIENDS MODAL STYLES --- */
+        .friends-tabs { display: flex; border-bottom: 2px solid #000080; margin-bottom: 20px; }
+        .friends-tabs button { background: none; border: none; padding: 10px 20px; font-family: 'Courier New', Courier, monospace; font-size: 18px; cursor: pointer; color: #000080; }
+        .friends-tabs button.active { border-bottom: 4px solid #ff0000; font-weight: bold; }
+        #friends-list-container { max-height: 40vh; overflow-y: auto; }
+        .friend-item { padding: 10px; border-bottom: 1px dashed #000080; font-size: 18px; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+
     <div class="app-container">
-      <header>
-        <div id="user-display">Loading...</div>
-        <div class="header-buttons">
-          <button id="social-btn">My Social</button>
-          <button id="new-post-btn">+ New Post</button>
-          <button id="logout-btn">Logout</button>
+        <header>
+            <div id="user-display">Loading...</div>
+            <div class="header-buttons">
+                <button id="new-post-btn">+ New Post</button>
+                <button id="friends-btn">Friends</button>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </header>
+        
+        <h1>The Swiggler Feed 🌀</h1>
+
+        <div id="posts-container">
+            <p>Loading posts...</p>
         </div>
-      </header>
-      <h1>The Swiggler Feed 🌀</h1>
-      <div id="posts-container"><p>Loading posts...</p></div>
     </div>
 
     <!-- New Post Modal -->
     <div id="new-post-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-button" data-modal="new-post-modal">×</span>
-        <h2>Create a New Post</h2>
-        <form id="new-post-form">
-          <input
-            type="text"
-            id="post-subject"
-            placeholder="Subject..."
-            required
-            style="
-              width: 95%;
-              padding: 10px;
-              margin-bottom: 10px;
-              border: 2px solid #000080;
-            "
-          />
-          <textarea
-            id="post-body"
-            placeholder="What's on your mind?"
-            required
-            style="
-              width: 95%;
-              padding: 10px;
-              min-height: 120px;
-              border: 2px solid #000080;
-            "
-          ></textarea>
-          <button
-            type="submit"
-            style="
-              width: 100%;
-              padding: 12px;
-              margin-top: 10px;
-              background-color: #000080;
-              color: #ffcc00;
-              font-size: 18px;
-              border: 2px solid #000;
-            "
-          >
-            Post It!
-          </button>
-        </form>
-      </div>
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="new-post-modal">×</span>
+            <h2>Create a New Post</h2>
+            <form id="new-post-form">
+                <div class="form-group"><label for="post-subject">Subject:</label><input type="text" id="post-subject" required></div>
+                <div class="form-group"><label for="post-body">Body:</label><textarea id="post-body" required></textarea></div>
+                <button type="submit" id="post-submit-btn">Post It!</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Social (Following/Followers/Friends) Modal -->
-    <div id="social-modal" class="modal">
-      <div class="modal-content">
-        <span class="close-button" data-modal="social-modal">×</span>
-        <h2>Social Connections</h2>
-        <div class="social-tabs">
-          <button class="tab-btn active" data-tab="following-tab">
-            Following
-          </button>
-          <button class="tab-btn" data-tab="followers-tab">Followers</button>
-          <button class="tab-btn" data-tab="friends-tab">Friends</button>
+    <!-- Friends Modal -->
+    <div id="friends-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal-id="friends-modal">×</span>
+            <h2>Social Circle</h2>
+            <nav class="friends-tabs">
+                <button class="active" data-tab="following">Following</button>
+                <button data-tab="followers">Followers</button>
+                <button data-tab="friends">Friends</button>
+            </nav>
+            <div id="friends-list-container"><p>Loading...</p></div>
         </div>
-        <div id="following-tab" class="tab-content active">
-          <ul id="following-list" class="social-list"></ul>
-        </div>
-        <div id="followers-tab" class="tab-content">
-          <ul id="followers-list" class="social-list"></ul>
-        </div>
-        <div id="friends-tab" class="tab-content">
-          <ul id="friends-list" class="social-list"></ul>
-        </div>
-      </div>
     </div>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-      import {
-        getAuth,
-        onAuthStateChanged,
-        signOut,
-      } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-      import {
-        getDatabase,
-        ref,
-        push,
-        onValue,
-        serverTimestamp,
-        runTransaction,
-        set,
-        remove,
-        update,
-        get,
-      } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, runTransaction, set, remove, update, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
-        authDomain: "quaters-5f71d.firebaseapp.com",
-        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
-        projectId: "quaters-5f71d",
-        storageBucket: "quaters-5f71d.firebasestorage.app",
-        messagingSenderId: "895009748691",
-        appId: "1:895009748691:web:73dc67aee4db1143e90626",
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg", authDomain: "quaters-5f71d.firebaseapp.com",
+            databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com", projectId: "quaters-5f71d",
+            storageBucket: "quaters-5f71d.firebasestorage.app", messagingSenderId: "895009748691",
+            appId: "1:895009748691:web:73dc67aee4db1143e90626"
+        };
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-      let currentUser,
-        currentUserSocialData = { following: {}, followers: {} };
-      let isOwner = false;
-      const ownerEmail = "brad67ley@gmail.com";
+        let currentUser;
+        let isOwner = false;
+        const ownerEmail = "brad67ley@gmail.com";
+        let currentUserFollowing = new Set();
 
-      // --- AUTH & INITIAL DATA LOAD ---
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          currentUser = user;
-          isOwner = currentUser.email === ownerEmail;
-          document.getElementById("user-display").textContent = `Welcome, ${
-            currentUser.displayName
-          }! ${isOwner ? "(OWNER)" : ""}`;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                isOwner = currentUser.email === ownerEmail;
+                let welcomeMessage = `Welcome, ${currentUser.displayName}!`;
+                if(isOwner) welcomeMessage += ' (OWNER)';
+                document.getElementById('user-display').textContent = welcomeMessage;
 
-          // Fetch social data and all posts
-          listenToUserSocialData();
-          loadPosts();
-        } else {
-          window.location.href = "index.html";
+                // Update user profile in DB and load user-specific data
+                const userProfileRef = ref(db, `users/${currentUser.uid}/profile`);
+                set(userProfileRef, { displayName: currentUser.displayName, email: currentUser.email });
+                
+                onValue(ref(db, `users/${currentUser.uid}/following`), (snapshot) => {
+                    currentUserFollowing = new Set(snapshot.exists() ? Object.keys(snapshot.val()) : []);
+                    loadPosts(); // Reload posts to update follow buttons
+                }, { onlyOnce: false });
+
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // --- MODAL GENERIC HANDLERS ---
+        document.getElementById('new-post-btn').onclick = () => document.getElementById('new-post-modal').style.display = 'block';
+        document.getElementById('friends-btn').onclick = () => {
+            document.getElementById('friends-modal').style.display = 'block';
+            loadFriendsData('following'); // Load default tab
+        };
+
+        document.querySelectorAll('.close-button').forEach(btn => {
+            btn.onclick = () => document.getElementById(btn.dataset.modalId).style.display = 'none';
+        });
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+        };
+
+        // --- NEW POST LOGIC ---
+        document.getElementById('logout-btn').addEventListener('click', () => { signOut(auth); });
+        document.getElementById('new-post-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const subject = document.getElementById('post-subject').value;
+            const body = document.getElementById('post-body').value;
+            if (!subject.trim() || !body.trim() || !currentUser) return;
+            const postData = { author: currentUser.displayName, uid: currentUser.uid, subject, body, timestamp: serverTimestamp() };
+            push(ref(db, 'posts'), postData).then(() => {
+                document.getElementById('new-post-form').reset();
+                document.getElementById('new-post-modal').style.display = 'none';
+            });
+        });
+
+        // --- POST & REPLY RENDERING ---
+        function loadPosts() {
+            const postsRef = ref(db, 'posts');
+            onValue(postsRef, (snapshot) => {
+                const postsContainer = document.getElementById('posts-container');
+                postsContainer.innerHTML = ''; 
+                if (!snapshot.exists()) {
+                    postsContainer.innerHTML = '<p>No posts yet. Be the first!</p>';
+                    return;
+                }
+                const posts = [];
+                snapshot.forEach((childSnapshot) => {
+                    posts.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+                posts.reverse().forEach(post => {
+                    const postEl = createPostElement(post);
+                    postsContainer.appendChild(postEl);
+                    renderRepliesForPost(post.id, post.replies || {}, postEl.querySelector('.replies-section'));
+                });
+            });
         }
-      });
+        
+        function createPostElement(post) {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post';
+            postDiv.dataset.postId = post.id;
+            postDiv.dataset.authorUid = post.uid;
+            postDiv.dataset.authorName = post.author;
 
-      function listenToUserSocialData() {
-        const userSocialRef = ref(db, `users/${currentUser.uid}`);
-        onValue(userSocialRef, (snapshot) => {
-          currentUserSocialData = snapshot.val() || {
-            following: {},
-            followers: {},
-          };
-          // We might need to re-render parts of the page if follow status changes
-          // For simplicity, a full reloadPosts() can work, but can be optimized
-        });
-      }
+            const likeCount = post.likes ? Object.keys(post.likes).length : 0;
+            const swiggleCount = post.swiggles ? Object.keys(post.swiggles).length : 0;
+            const dislikeCount = post.dislikes ? Object.keys(post.dislikes).length : 0;
+            const userHasLiked = currentUser && post.likes && post.likes[currentUser.uid];
+            const userHasSwiggled = currentUser && post.swiggles && post.swiggles[currentUser.uid];
+            const userHasDisliked = currentUser && post.dislikes && post.dislikes[currentUser.uid];
+            const formattedDate = new Date(post.timestamp).toLocaleString();
 
-      function loadPosts() {
-        const postsRef = ref(db, "posts");
-        onValue(postsRef, (snapshot) => {
-          const postsContainer = document.getElementById("posts-container");
-          postsContainer.innerHTML = "";
-          if (!snapshot.exists()) {
-            postsContainer.innerHTML = "<p>No posts yet. Be the first!</p>";
-            return;
-          }
-          const posts = [];
-          snapshot.forEach((childSnapshot) =>
-            posts.push({ id: childSnapshot.key, ...childSnapshot.val() })
-          );
-          posts
-            .reverse()
-            .forEach((post) =>
-              postsContainer.appendChild(createPostElement(post))
-            );
-        });
-      }
+            let ownerNoteHTML = '';
+            if (post.ownerNote) {
+                const removeBtnHTML = isOwner ? `<button class="remove-owner-note-btn">[Remove]</button>` : '';
+                ownerNoteHTML = `<div class="owner-note-display"><div><span class="rainbow-text">Owner's Note:</span> ${escapeHTML(post.ownerNote)}</div> ${removeBtnHTML}</div>`;
+            }
 
-      // --- UI & MODAL MANAGEMENT ---
-      document.querySelectorAll(".modal").forEach((modal) => {
-        modal.addEventListener("click", (e) => {
-          if (
-            e.target.classList.contains("close-button") ||
-            e.target === modal
-          ) {
-            modal.style.display = "none";
-          }
-        });
-      });
-      document.getElementById("new-post-btn").onclick = () =>
-        (document.getElementById("new-post-modal").style.display = "block");
-      document.getElementById("social-btn").onclick = () => {
-        populateSocialModal();
-        document.getElementById("social-modal").style.display = "block";
-      };
-      document.querySelector(".social-tabs").addEventListener("click", (e) => {
-        if (e.target.tagName === "BUTTON") {
-          document
-            .querySelectorAll(".social-tabs button, .tab-content")
-            .forEach((el) => el.classList.remove("active"));
-          e.target.classList.add("active");
-          document.getElementById(e.target.dataset.tab).classList.add("active");
-        }
-      });
+            let ownerControlsHTML = '';
+            if (isOwner) {
+                ownerControlsHTML = `
+                <div class="owner-controls">
+                    <form class="owner-note-form"><input type="text" class="owner-note-input" placeholder="Add/Edit Owner's Note..." value="${post.ownerNote || ''}" required><button type="submit">Set Note</button></form>
+                    <button class="delete-btn">❌ Delete Post</button>
+                </div>`;
+            }
 
-      // --- CORE APP LOGIC ---
-      document
-        .getElementById("logout-btn")
-        .addEventListener("click", () => signOut(auth));
-
-      document
-        .getElementById("new-post-form")
-        .addEventListener("submit", (e) => {
-          e.preventDefault();
-          const subject = document.getElementById("post-subject").value.trim();
-          const body = document.getElementById("post-body").value.trim();
-          if (!subject || !body || !currentUser) return;
-          const postData = {
-            author: currentUser.displayName,
-            uid: currentUser.uid,
-            subject,
-            body,
-            timestamp: serverTimestamp(),
-            likes: {},
-            dislikes: {},
-            swiggles: {},
-          };
-          push(ref(db, "posts"), postData).then(() => {
-            document.getElementById("new-post-form").reset();
-            document.getElementById("new-post-modal").style.display = "none";
-          });
-        });
-
-      // --- ELEMENT CREATION ---
-      function createPostElement(post) {
-        const postDiv = document.createElement("div");
-        postDiv.className = "post";
-        postDiv.dataset.postId = post.id;
-
-        const likeCount = post.likes ? Object.keys(post.likes).length : 0;
-        const dislikeCount = post.dislikes
-          ? Object.keys(post.dislikes).length
-          : 0;
-        const swiggleCount = post.swiggles
-          ? Object.keys(post.swiggles).length
-          : 0;
-
-        const userHasLiked = post.likes && post.likes[currentUser.uid];
-        const userHasDisliked = post.dislikes && post.dislikes[currentUser.uid];
-        const userHasSwiggled = post.swiggles && post.swiggles[currentUser.uid];
-
-        const authorHTML = createAuthorHTML(post.uid, post.author);
-        const ownerNoteHTML = createOwnerNoteHTML(post);
-        const ownerControlsHTML = createOwnerControlsHTML();
-
-        postDiv.innerHTML = `
-                <div class="post-header"><h3 class="post-subject">${escapeHTML(
-                  post.subject
-                )}</h3><p class="post-author">${authorHTML} on ${new Date(
-          post.timestamp
-        ).toLocaleString()}</p></div>
+            let followBtnHTML = '';
+            if (currentUser && currentUser.uid !== post.uid) {
+                const isFollowing = currentUserFollowing.has(post.uid);
+                followBtnHTML = `<span class="follow-btn" data-following="${isFollowing}">${isFollowing ? '[Unfollow]' : '[+ Follow]'}</span>`;
+            }
+            
+            postDiv.innerHTML = `
+                <div class="post-header"><h3 class="post-subject">${escapeHTML(post.subject)}</h3><p class="post-author">by <span class="author-name">${escapeHTML(post.author)}</span>${followBtnHTML} on ${formattedDate}</p></div>
                 <div class="post-body">${escapeHTML(post.body)}</div>
                 ${ownerNoteHTML}
                 <div class="post-actions">
-                    <button class="like-btn ${
-                      userHasLiked ? "active" : ""
-                    }">👍 <span class="count">${likeCount}</span></button>
-                    <button class="dislike-btn ${
-                      userHasDisliked ? "active" : ""
-                    }">👎 <span class="count">${dislikeCount}</span></button>
-                    <button class="swiggle-btn ${
-                      userHasSwiggled ? "active" : ""
-                    }">🌀 <span class="count">${swiggleCount}</span></button>
+                    <button class="like-btn ${userHasLiked ? 'active' : ''}">👍 <span class="count">${likeCount}</span> Like</button>
+                    <button class="swiggle-btn ${userHasSwiggled ? 'active' : ''}">🌀 <span class="count">${swiggleCount}</span> Swiggle</button>
+                    <button class="dislike-btn ${userHasDisliked ? 'active' : ''}">👎 <span class="count">${dislikeCount}</span> Dislike</button>
+                    <button class="reply-btn">💬 Reply</button>
                 </div>
                 <div class="replies-section"></div>
-                <div class="reply-actions"><button class="show-reply-form-btn">💬 Reply to Post</button></div>
-                <div class="reply-form-container"></div>
-                ${isOwner ? ownerControlsHTML : ""}`;
+                <form class="reply-form" style="display:none;" data-parent-id=""><input type="text" class="reply-input" placeholder="Write a reply..." required><button type="submit">Send</button></form>
+                ${ownerControlsHTML}`;
+            
+            return postDiv;
+        }
+        
+        function renderRepliesForPost(postId, replies, container) {
+            if (!replies || Object.keys(replies).length === 0) return;
+            const replyMap = new Map(Object.entries(replies));
+            const childMap = new Map();
+            
+            replyMap.forEach((replyData, replyId) => {
+                const parentId = replyData.parentId || 'root';
+                if (!childMap.has(parentId)) childMap.set(parentId, []);
+                childMap.get(parentId).push(replyId);
+            });
 
-        // Render replies recursively
-        const repliesContainer = postDiv.querySelector(".replies-section");
-        renderReplies(post.replies, repliesContainer, post.id);
+            function renderReplyTree(parentId, parentElement, level) {
+                const children = childMap.get(parentId);
+                if (!children) return;
 
-        return postDiv;
-      }
+                children.sort((a, b) => replyMap.get(a).timestamp - replyMap.get(b).timestamp);
 
-      // RECURSIVE Reply Rendering Function
-      function renderReplies(
-        repliesObject,
-        containerElement,
-        postId,
-        parentReplyId = null
-      ) {
-        if (!repliesObject) return;
-        containerElement.innerHTML = "";
+                children.forEach(replyId => {
+                    const replyData = replyMap.get(replyId);
+                    const replyEl = createReplyElement(postId, replyId, replyData, level);
+                    parentElement.appendChild(replyEl);
+                    renderReplyTree(replyId, replyEl, level + 1);
+                });
+            }
+            renderReplyTree('root', container, 0);
+        }
 
-        Object.entries(repliesObject).forEach(([replyId, replyData]) => {
-          const replyDiv = document.createElement("div");
-          replyDiv.className = "reply";
-          replyDiv.dataset.replyId = replyId;
-          if (parentReplyId) replyDiv.dataset.parentReplyId = parentReplyId;
+        function createReplyElement(postId, replyId, reply, level) {
+            const replyDiv = document.createElement('div');
+            replyDiv.className = `reply nested-${level > 3 ? 3 : level}`;
+            replyDiv.dataset.replyId = replyId;
+            const formattedDate = new Date(reply.timestamp).toLocaleString();
+            
+            const deleteBtnHTML = isOwner ? `<button class="action-link delete-reply-btn">Delete</button>` : '';
 
-          const authorHTML = createAuthorHTML(replyData.uid, replyData.author);
-          const deleteBtnHTML = isOwner
-            ? `<button class="delete-reply-btn" title="Owner: Delete Comment">[x]</button>`
-            : "";
-
-          replyDiv.innerHTML = `
-                    <div class="reply-header">
-                        <span class="reply-author">${authorHTML} <small style="color:#777;"> - ${new Date(
-            replyData.timestamp
-          ).toLocaleString()}</small></span>
+            replyDiv.innerHTML = `
+                <div class="reply-header">
+                    <div>
+                        <span class="reply-author">${escapeHTML(reply.author)}:</span>
+                        <span class="reply-meta">${formattedDate}</span>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="action-link reply-to-reply-btn">Reply</button>
                         ${deleteBtnHTML}
                     </div>
-                    <div class="reply-body">${escapeHTML(replyData.text)}</div>
-                    <div class="reply-actions"><button class="show-reply-form-btn">↪ Reply</button></div>
-                    <div class="reply-form-container"></div>
-                    <div class="nested-replies-container"></div>
-                `;
-          containerElement.appendChild(replyDiv);
-
-          // The recursive call for nested replies
-          const nestedContainer = replyDiv.querySelector(
-            ".nested-replies-container"
-          );
-          if (replyData.replies) {
-            renderReplies(replyData.replies, nestedContainer, postId, replyId);
-          }
-        });
-      }
-
-      // --- HELPER HTML CREATION FUNCTIONS ---
-      function createAuthorHTML(authorId, authorName) {
-        let followBtn = "";
-        if (currentUser.uid !== authorId) {
-          const isFollowing =
-            currentUserSocialData.following &&
-            currentUserSocialData.following[authorId];
-          followBtn = `<button class="follow-btn ${
-            isFollowing ? "following" : "not-following"
-          }" data-user-id="${authorId}" data-user-name="${escapeHTML(
-            authorName
-          )}">${isFollowing ? "Unfollow" : "+ Follow"}</button>`;
+                </div>
+                <p class="reply-body">${escapeHTML(reply.text)}</p>
+                <form class="reply-form" style="display:none;" data-parent-id="${replyId}"><input type="text" class="reply-input" placeholder="Replying to ${escapeHTML(reply.author)}..." required><button type="submit">Send</button></form>
+            `;
+            return replyDiv;
         }
-        return `<span class="author-name">${escapeHTML(
-          authorName
-        )}</span>${followBtn}`;
-      }
 
-      function createOwnerNoteHTML(post) {
-        if (!post.ownerNote) return "";
-        const removeBtn = isOwner
-          ? `<button class="remove-owner-note-btn">[Remove]</button>`
-          : "";
-        return `<div class="owner-note-display"><div><span class="rainbow-text">Owner's Note:</span> ${escapeHTML(
-          post.ownerNote
-        )}</div> ${removeBtn}</div>`;
-      }
-
-      function createOwnerControlsHTML() {
-        return `<div class="owner-controls">
-                <form class="owner-note-form"><input type="text" placeholder="Add/Edit Owner's Note..." required><button type="submit">Add Note</button></form>
-                <button class="delete-btn">❌ Delete Post</button>
-            </div>`;
-      }
-
-      function createReplyFormHTML(postId, parentReplyId = null) {
-        const form = document.createElement("form");
-        form.className = "reply-form";
-        form.dataset.postId = postId;
-        if (parentReplyId) form.dataset.parentReplyId = parentReplyId;
-        form.innerHTML = `<input type="text" placeholder="Write a reply..." required><button type="submit">Send</button>`;
-        return form;
-      }
-
-      // --- EVENT DELEGATION & ACTIONS ---
-      document
-        .getElementById("posts-container")
-        .addEventListener("click", (e) => {
-          const postElement = e.target.closest(".post");
-          if (!postElement) return;
-          const postId = postElement.dataset.postId;
-
-          // Interaction buttons (Like, Dislike, Swiggle)
-          if (e.target.closest(".like-btn")) toggleInteraction(postId, "likes");
-          if (e.target.closest(".dislike-btn"))
-            toggleInteraction(postId, "dislikes");
-          if (e.target.closest(".swiggle-btn"))
-            toggleInteraction(postId, "swiggles");
-
-          // Follow button
-          if (e.target.matches(".follow-btn")) {
-            toggleFollow(e.target.dataset.userId, e.target.dataset.userName);
-          }
-
-          // Show reply form
-          if (e.target.matches(".show-reply-form-btn")) {
-            const parentReplyDiv = e.target.closest(".reply");
-            const formContainer = parentReplyDiv
-              ? parentReplyDiv.querySelector(".reply-form-container")
-              : postElement.querySelector(".reply-form-container");
-            if (formContainer.innerHTML === "") {
-              // If form isn't there, create and show it
-              const parentReplyId = parentReplyDiv
-                ? parentReplyDiv.dataset.replyId
-                : null;
-              formContainer.appendChild(
-                createReplyFormHTML(postId, parentReplyId)
-              );
-              formContainer.style.display = "block";
-              formContainer.querySelector("input").focus();
-            } else {
-              // Toggle visibility
-              formContainer.style.display =
-                formContainer.style.display === "none" ? "block" : "none";
-              if (formContainer.style.display === "block")
-                formContainer.querySelector("input").focus();
+        // --- DYNAMIC EVENT LISTENERS (posts-container) ---
+        document.getElementById('posts-container').addEventListener('click', (e) => {
+            const postElement = e.target.closest('.post');
+            if (!postElement) return;
+            const postId = postElement.dataset.postId;
+            
+            // Post Actions
+            if (e.target.closest('.like-btn')) toggleInteraction(postId, 'likes');
+            if (e.target.closest('.swiggle-btn')) toggleInteraction(postId, 'swiggles');
+            if (e.target.closest('.dislike-btn')) toggleInteraction(postId, 'dislikes');
+            if (e.target.closest('.follow-btn')) {
+                toggleFollow(postElement.dataset.authorUid, postElement.dataset.authorName);
             }
-          }
 
-          // Owner actions
-          if (isOwner) {
-            if (
-              e.target.matches(".delete-btn") &&
-              confirm("PERMANENTLY DELETE this post?")
-            )
-              remove(ref(db, `posts/${postId}`));
-            if (
-              e.target.matches(".remove-owner-note-btn") &&
-              confirm("Remove owner's note?")
-            )
-              update(ref(db, `posts/${postId}`), { ownerNote: null });
-            if (e.target.matches(".delete-reply-btn")) {
-              const replyId = e.target.closest(".reply").dataset.replyId;
-              const parentReplyId =
-                e.target.closest(".reply").dataset.parentReplyId;
-              const path = parentReplyId
-                ? `posts/${postId}/replies/${parentReplyId}/replies/${replyId}`
-                : `posts/${postId}/replies/${replyId}`;
-              if (confirm("Delete this comment?")) remove(ref(db, path));
-            }
-          }
-        });
-
-      document
-        .getElementById("posts-container")
-        .addEventListener("submit", (e) => {
-          e.preventDefault();
-          const form = e.target;
-          // Owner note form
-          if (form.matches(".owner-note-form")) {
-            const postId = form.closest(".post").dataset.postId;
-            const noteText = form.querySelector("input").value.trim();
-            update(ref(db, `posts/${postId}`), {
-              ownerNote: noteText || null,
-            }).then(() => (form.querySelector("input").value = ""));
-          }
-          // Reply form
-          if (form.matches(".reply-form")) {
-            const text = form.querySelector("input").value.trim();
-            if (!text) return;
-            const postId = form.dataset.postId;
-            const parentReplyId = form.dataset.parentReplyId;
-            const replyData = {
-              uid: currentUser.uid,
-              author: currentUser.displayName,
-              text,
-              timestamp: serverTimestamp(),
+            // Toggle Reply Forms
+            const toggleReplyForm = (form) => {
+                form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+                if(form.style.display === 'flex') form.querySelector('.reply-input').focus();
             };
-            const path = parentReplyId
-              ? `posts/${postId}/replies/${parentReplyId}/replies`
-              : `posts/${postId}/replies`;
-            push(ref(db, path), replyData).then(() => {
-              form.parentElement.innerHTML = ""; // Remove form on successful submission
-            });
-          }
+            if (e.target.closest('.reply-btn')) {
+                toggleReplyForm(postElement.querySelector('.reply-form[data-parent-id=""]'));
+            }
+            if (e.target.closest('.reply-to-reply-btn')) {
+                const replyElement = e.target.closest('.reply');
+                toggleReplyForm(replyElement.querySelector('.reply-form'));
+            }
+
+            // Owner Actions
+            if (isOwner && e.target.closest('.delete-btn')) {
+                if (confirm("Are you sure you want to PERMANENTLY DELETE this post?")) {
+                    remove(ref(db, `posts/${postId}`));
+                }
+            }
+            if (isOwner && e.target.closest('.delete-reply-btn')) {
+                const replyId = e.target.closest('.reply').dataset.replyId;
+                if (confirm("Are you sure you want to delete this comment?")) {
+                    remove(ref(db, `posts/${postId}/replies/${replyId}`));
+                }
+            }
+            if (isOwner && e.target.closest('.remove-owner-note-btn')) {
+                 if (confirm("Are you sure you want to remove the owner's note?")) {
+                    update(ref(db, `posts/${postId}`), { ownerNote: null });
+                }
+            }
+        });
+        
+        document.getElementById('posts-container').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const postElement = e.target.closest('.post');
+            if (!postElement) return;
+            const postId = postElement.dataset.postId;
+
+            if (e.target.classList.contains('reply-form')) {
+                const replyInput = e.target.querySelector('.reply-input');
+                const parentId = e.target.dataset.parentId || null;
+                const replyText = replyInput.value.trim();
+                if (!replyText || !currentUser) return;
+                
+                const replyRef = push(ref(db, `posts/${postId}/replies`));
+                const replyData = { author: currentUser.displayName, uid: currentUser.uid, text: replyText, timestamp: serverTimestamp(), parentId };
+                set(replyRef, replyData).then(() => {
+                    replyInput.value = '';
+                    if(parentId) e.target.style.display = 'none'; // Hide nested form after submit
+                });
+            }
+
+            if (isOwner && e.target.classList.contains('owner-note-form')) {
+                const noteInput = e.target.querySelector('.owner-note-input');
+                const noteText = noteInput.value.trim();
+                update(ref(db, `posts/${postId}`), { ownerNote: noteText || null });
+            }
         });
 
-      // --- ACTION FUNCTIONS ---
-      function toggleInteraction(postId, type) {
-        runTransaction(
-          ref(db, `posts/${postId}/${type}/${currentUser.uid}`),
-          (data) => (data ? null : true)
-        );
-      }
-
-      async function toggleFollow(targetId, targetName) {
-        const isFollowing =
-          currentUserSocialData.following &&
-          currentUserSocialData.following[targetId];
-        const updates = {};
-        if (isFollowing) {
-          updates[`users/${currentUser.uid}/following/${targetId}`] = null;
-          updates[`users/${targetId}/followers/${currentUser.uid}`] = null;
-        } else {
-          updates[`users/${currentUser.uid}/following/${targetId}`] = true;
-          updates[`users/${targetId}/followers/${currentUser.uid}`] = true;
+        // --- CORE LOGIC FUNCTIONS ---
+        function toggleInteraction(postId, interactionType) {
+            if (!currentUser) return;
+            const interactionRef = ref(db, `posts/${postId}/${interactionType}/${currentUser.uid}`);
+            runTransaction(interactionRef, (currentData) => currentData ? null : true);
         }
-        await update(ref(db), updates);
-        loadPosts(); // Simple way to refresh UI
-      }
 
-      async function populateSocialModal() {
-        const followingList = document.getElementById("following-list");
-        const followersList = document.getElementById("followers-list");
-        const friendsList = document.getElementById("friends-list");
-        followingList.innerHTML = "<li>Loading...</li>";
-        followersList.innerHTML = "<li>Loading...</li>";
-        friendsList.innerHTML = "<li>Loading...</li>";
+        async function toggleFollow(targetUid, targetDisplayName) {
+            if (!currentUser || currentUser.uid === targetUid) return;
+            
+            const isCurrentlyFollowing = currentUserFollowing.has(targetUid);
+            const updates = {};
+            
+            updates[`/users/${currentUser.uid}/following/${targetUid}`] = isCurrentlyFollowing ? null : true;
+            updates[`/users/${targetUid}/followers/${currentUser.uid}`] = isCurrentlyFollowing ? null : true;
+            // Ensure target user profile exists
+            updates[`/users/${targetUid}/profile/displayName`] = targetDisplayName;
 
-        const followingIds = Object.keys(currentUserSocialData.following || {});
-        const followersIds = Object.keys(currentUserSocialData.followers || {});
+            await update(ref(db), updates);
+        }
 
-        const followingPromises = followingIds.map((uid) =>
-          get(ref(db, `users/${uid}/displayName`))
-        );
-        const followersPromises = followersIds.map((uid) =>
-          get(ref(db, `users/${uid}/displayName`))
-        );
+        // --- FRIENDS MODAL LOGIC ---
+        document.querySelector('.friends-tabs').addEventListener('click', (e) => {
+            if(e.target.tagName === 'BUTTON') {
+                document.querySelectorAll('.friends-tabs button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                loadFriendsData(e.target.dataset.tab);
+            }
+        });
+        
+        async function loadFriendsData(tab) {
+            const container = document.getElementById('friends-list-container');
+            container.innerHTML = '<p>Loading...</p>';
+            if (!currentUser) return;
 
-        const followingNames = (await Promise.all(followingPromises)).map(
-          (snap) => snap.val() || "Unknown User"
-        );
-        const followersNames = (await Promise.all(followersPromises)).map(
-          (snap) => snap.val() || "Unknown User"
-        );
+            const followingRef = ref(db, `users/${currentUser.uid}/following`);
+            const followersRef = ref(db, `users/${currentUser.uid}/followers`);
 
-        followingList.innerHTML = followingNames.length
-          ? followingNames
-              .map((name) => `<li>${escapeHTML(name)}</li>`)
-              .join("")
-          : "<li>You are not following anyone.</li>";
-        followersList.innerHTML = followersNames.length
-          ? followersNames
-              .map((name) => `<li>${escapeHTML(name)}</li>`)
-              .join("")
-          : "<li>You have no followers.</li>";
+            const [followingSnap, followersSnap] = await Promise.all([get(followingRef), get(followersRef)]);
+            const followingIds = followingSnap.exists() ? Object.keys(followingSnap.val()) : [];
+            const followersIds = followersSnap.exists() ? Object.keys(followersSnap.val()) : [];
 
-        const friendIds = followingIds.filter((id) =>
-          followersIds.includes(id)
-        );
-        const friendPromises = friendIds.map((uid) =>
-          get(ref(db, `users/${uid}/displayName`))
-        );
-        const friendNames = (await Promise.all(friendPromises)).map(
-          (snap) => snap.val() || "Unknown User"
-        );
-        friendsList.innerHTML = friendNames.length
-          ? friendNames.map((name) => `<li>${escapeHTML(name)}</li>`).join("")
-          : "<li>No mutual follows yet.</li>";
-      }
+            let uidsToShow = [];
+            if (tab === 'following') {
+                uidsToShow = followingIds;
+            } else if (tab === 'followers') {
+                uidsToShow = followersIds;
+            } else if (tab === 'friends') {
+                const followingSet = new Set(followingIds);
+                uidsToShow = followersIds.filter(id => followingSet.has(id));
+            }
 
-      function escapeHTML(str) {
-        const div = document.createElement("div");
-        div.appendChild(document.createTextNode(str || ""));
-        return div.innerHTML;
-      }
+            if (uidsToShow.length === 0) {
+                container.innerHTML = `<p>No users found in this list.</p>`;
+                return;
+            }
+            
+            const profilePromises = uidsToShow.map(uid => get(ref(db, `users/${uid}/profile/displayName`)));
+            const profileSnaps = await Promise.all(profilePromises);
+            
+            container.innerHTML = '';
+            profileSnaps.forEach((snap, index) => {
+                const displayName = snap.val() || 'Unknown User';
+                const item = document.createElement('div');
+                item.className = 'friend-item';
+                item.textContent = escapeHTML(displayName);
+                container.appendChild(item);
+            });
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
     </script>
-  </body>
+</body>
 </html>
