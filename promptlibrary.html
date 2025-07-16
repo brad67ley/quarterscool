@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-M-2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BETTERgpt Operator Panel</title>
     <style>
@@ -15,7 +15,10 @@
         --button-bg: #a76eec; /* Purple */
         --button-hover-bg: #8e50d1;
         --user-message-bg: #4a4e69; /* Grey-blue */
+        --bot-reply-bg: #5f6381; /* Lighter Grey-blue */
         --image-prompt-bg: #e6b34b; /* Gold/Yellow for prompts */
+        --completed-prompt-bg: #5f6381; /* Faded color for completed prompts */
+        --selected-chat-bg: #40435f; /* Slightly darker for selected chat */
         --scroll-thumb: #666;
         --scroll-track: #333;
       }
@@ -30,15 +33,101 @@
         flex-direction: column;
         align-items: center;
         min-height: 100vh;
+        overflow-x: hidden; /* Prevent horizontal scroll */
       }
 
-      .panel-container {
+      .main-container {
         width: 100%;
-        max-width: 1200px; /* Increased max-width for better layout */
+        max-width: 1400px; /* Increased max-width for better layout with chat list */
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Two columns */
+        grid-template-columns: 250px 1fr; /* Chat list on left, panels on right */
         gap: 20px;
-        margin-bottom: 20px;
+        height: 90vh; /* Set a height for the main container */
+      }
+
+      .chat-list-panel {
+        background-color: var(--panel-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chat-list-panel .panel-header {
+        margin-bottom: 15px;
+      }
+
+      .chat-sessions {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 10px;
+        scroll-behavior: smooth;
+      }
+      .chat-sessions::-webkit-scrollbar {
+        width: 8px;
+      }
+      .chat-sessions::-webkit-scrollbar-track {
+        background: var(--scroll-track);
+        border-radius: 10px;
+      }
+      .chat-sessions::-webkit-scrollbar-thumb {
+        background: var(--scroll-thumb);
+        border-radius: 10px;
+      }
+      .chat-sessions::-webkit-scrollbar-thumb:hover {
+        background: #888;
+      }
+
+      .chat-item {
+        background-color: var(--user-message-bg);
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+      .chat-item:hover {
+        background-color: var(--selected-chat-bg);
+        transform: translateY(-2px);
+      }
+      .chat-item.selected {
+        background-color: var(--selected-chat-bg);
+        border: 1px solid var(--button-bg);
+        box-shadow: 0 0 15px rgba(167, 110, 236, 0.6);
+      }
+      .chat-item .chat-id {
+        font-weight: bold;
+        font-size: 0.9em;
+        color: var(--text-color);
+        margin-bottom: 5px;
+      }
+      .chat-item .last-active {
+        font-size: 0.75em;
+        color: #bbb;
+      }
+      .chat-item.new::before {
+        content: "NEW!";
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: #4caf50; /* Green dot */
+        color: white;
+        padding: 3px 6px;
+        border-radius: 5px;
+        font-size: 0.7em;
+        font-weight: bold;
+      }
+
+      .right-panels {
+        display: grid;
+        grid-template-rows: 1fr 1fr; /* Split right side vertically */
+        gap: 20px;
+        height: 100%; /* Take full height of main-container grid cell */
       }
 
       .panel {
@@ -50,7 +139,6 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        min-height: 70vh; /* Ensure panels have minimum height */
       }
 
       .panel-header {
@@ -66,7 +154,7 @@
         flex-grow: 1;
         overflow-y: auto;
         margin-bottom: 15px;
-        padding-right: 10px; /* Space for scrollbar */
+        padding-right: 10px;
         scroll-behavior: smooth;
       }
 
@@ -90,15 +178,26 @@
         background: #888;
       }
 
-      .user-message-item {
-        background-color: var(--user-message-bg);
+      .user-message-item,
+      .bettergpt-message-item {
         padding: 10px 15px;
         border-radius: 10px;
         margin-bottom: 10px;
         word-wrap: break-word;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
-      .user-message-item .timestamp {
+      .user-message-item {
+        background-color: var(--user-message-bg);
+      }
+      .bettergpt-message-item {
+        background-color: var(--bot-reply-bg);
+      }
+      .message-item img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-top: 5px;
+      }
+      .message-item .timestamp {
         font-size: 0.8em;
         color: #bbb;
         margin-top: 5px;
@@ -127,7 +226,9 @@
       }
       .image-prompt-item.completed {
         opacity: 0.6;
-        background-color: #5f6381; /* Faded color when completed */
+        background-color: var(
+          --completed-prompt-bg
+        ); /* Faded color when completed */
         color: var(--text-color);
         cursor: default;
       }
@@ -171,8 +272,8 @@
         color: var(--text-color);
         font-size: 1em;
         outline: none;
-        resize: vertical; /* Allow vertical resize for textarea */
-        min-height: 40px; /* Ensures input field is visible */
+        resize: vertical;
+        min-height: 40px;
       }
 
       .input-group button {
@@ -198,50 +299,89 @@
       }
 
       /* Responsive adjustments */
-      @media (max-width: 768px) {
-        .panel-container {
-          grid-template-columns: 1fr; /* Single column layout on smaller screens */
+      @media (max-width: 1024px) {
+        .main-container {
+          grid-template-columns: 1fr; /* Single column layout */
+          height: auto; /* Allow content to dictate height */
+        }
+        .right-panels {
+          grid-template-rows: auto auto; /* Auto height for panels */
+        }
+        .chat-list-panel {
+          min-height: 40vh; /* Give chat list some height */
         }
         .panel {
-          min-height: 50vh; /* Adjust height for mobile view */
+          min-height: 50vh;
+        }
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        .panel-header {
+          font-size: 1.2em;
+        }
+        .input-group {
+          flex-wrap: wrap;
+        }
+        .input-group button {
+          flex-basis: 100%;
         }
       }
     </style>
   </head>
   <body>
-    <div class="panel-container">
-      <div class="panel">
-        <h2 class="panel-header">User Messages</h2>
-        <div class="message-list" id="userMessagesList">
-          <!-- User messages will appear here -->
-        </div>
-        <div class="input-group">
-          <textarea
-            id="operatorReplyInput"
-            placeholder="Type your reply..."
-          ></textarea>
-          <button id="sendReplyButton">Send Reply</button>
+    <div class="main-container">
+      <div class="chat-list-panel">
+        <h2 class="panel-header">Active Chats</h2>
+        <div class="chat-sessions" id="chatSessionsList">
+          <!-- Chat sessions will appear here -->
         </div>
       </div>
 
-      <div class="panel">
-        <h2 class="panel-header">Image Generation Requests</h2>
-        <div class="prompt-list" id="imagePromptsList">
-          <!-- Image prompts will appear here -->
+      <div class="right-panels">
+        <div class="panel">
+          <h2 class="panel-header">
+            Messages (<span id="selectedChatIdDisplay">No Chat Selected</span>)
+          </h2>
+          <div class="message-list" id="chatMessagesList">
+            <p style="text-align: center; color: #999">
+              Select a chat from the left to view messages.
+            </p>
+          </div>
+          <div class="input-group">
+            <textarea
+              id="operatorReplyInput"
+              placeholder="Type your reply..."
+            ></textarea>
+            <button id="sendReplyButton" disabled>Send Reply</button>
+          </div>
         </div>
-        <div class="input-group">
-          <input
-            type="text"
-            id="imageURLInput"
-            placeholder="Enter image URL to send..."
-          />
-          <button id="sendImageButton">Send Image</button>
+
+        <div class="panel">
+          <h2 class="panel-header">
+            Image Generation Requests (<span id="selectedChatIdPromptDisplay"
+              >No Chat Selected</span
+            >)
+          </h2>
+          <div class="prompt-list" id="imagePromptsList">
+            <p style="text-align: center; color: #999">
+              Select a chat from the left to view image requests.
+            </p>
+          </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="imageURLInput"
+              placeholder="Enter image URL to send..."
+            />
+            <button id="sendImageButton" disabled>Send Image</button>
+          </div>
         </div>
       </div>
     </div>
 
     <script type="module">
-      // Import Firebase modules
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
       import {
         getDatabase,
@@ -250,9 +390,12 @@
         onChildAdded,
         update,
         serverTimestamp,
+        onValue,
+        off,
+        query,
+        orderByChild,
       } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
@@ -264,29 +407,36 @@
         measurementId: "G-7WFJZV9JWT",
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
 
       // Firebase Realtime Database references
-      const chatMessagesRef = ref(database, "chat/messages");
-      const imageRequestsRef = ref(database, "image_generation_requests");
+      const chatsRef = ref(database, "chats");
 
       // DOM Elements
-      const userMessagesList = document.getElementById("userMessagesList");
+      const chatSessionsList = document.getElementById("chatSessionsList");
+      const chatMessagesList = document.getElementById("chatMessagesList");
+      const imagePromptsList = document.getElementById("imagePromptsList");
       const operatorReplyInput = document.getElementById("operatorReplyInput");
       const sendReplyButton = document.getElementById("sendReplyButton");
-
-      const imagePromptsList = document.getElementById("imagePromptsList");
       const imageURLInput = document.getElementById("imageURLInput");
       const sendImageButton = document.getElementById("sendImageButton");
+      const selectedChatIdDisplay = document.getElementById(
+        "selectedChatIdDisplay"
+      );
+      const selectedChatIdPromptDisplay = document.getElementById(
+        "selectedChatIdPromptDisplay"
+      );
 
-      // To keep track of the currently selected image prompt for fulfillment
-      let currentSelectedPromptKey = null;
+      // Global state for operator panel
+      let currentSelectedChatId = null;
+      let currentSelectedPromptKey = null; // Key of the image prompt being fulfilled
+      const activeChatListeners = {}; // To store unsubscribe functions for messages and image requests
+      const chatMetadata = {}; // Cache for chat info: { chatId: { info: {}, element: div } }
 
       // Function to format timestamp for display
       function formatTimestamp(timestamp) {
-        if (!timestamp) return "Loading..."; // Handle pending serverTimestamp
+        if (!timestamp) return "...";
         const date = new Date(timestamp);
         return (
           date.toLocaleTimeString([], {
@@ -299,31 +449,204 @@
         );
       }
 
-      // --- Firebase Data Listeners ---
+      // --- Chat Session List Management ---
 
-      // Listen for new chat messages from users only
-      onChildAdded(chatMessagesRef, (snapshot) => {
-        const message = snapshot.val();
-        // Only display user messages in this panel's list
-        if (message.sender === "user" && message.type === "text") {
-          const messageItem = document.createElement("div");
-          messageItem.classList.add("user-message-item");
-          messageItem.innerHTML = `
-                    <div>${message.content}</div>
-                    <div class="timestamp">${formatTimestamp(
-                      message.timestamp
+      // Listen for new chat sessions being created or updated
+      // Use onChildAdded and onChildChanged for more granular updates
+      onChildAdded(
+        query(chatsRef, orderByChild("info/lastActive")),
+        (snapshot) => {
+          const chatId = snapshot.key;
+          const chatInfo = snapshot.val().info || {};
+
+          // Only add if not already present (prevents re-adding on full reload if using onValue)
+          if (!chatMetadata[chatId]) {
+            const chatItem = document.createElement("div");
+            chatItem.classList.add("chat-item");
+            chatItem.dataset.chatId = chatId;
+            chatItem.innerHTML = `
+                    <div class="chat-id">${chatId.substring(0, 8)}...</div>
+                    <div class="last-active">Last active: ${formatTimestamp(
+                      chatInfo.lastActive
                     )}</div>
                 `;
-          userMessagesList.appendChild(messageItem);
-          userMessagesList.scrollTop = userMessagesList.scrollHeight; // Scroll to bottom
+
+            chatItem.addEventListener("click", () => {
+              selectChat(chatId);
+              chatItem.classList.remove("new"); // Mark as seen once clicked
+            });
+
+            chatSessionsList.prepend(chatItem); // Add new chats to the top
+            chatMetadata[chatId] = { info: chatInfo, element: chatItem };
+
+            // Automatically select the newest chat if no chat is selected
+            if (!currentSelectedChatId) {
+              selectChat(chatId);
+            } else if (chatId === currentSelectedChatId) {
+              // If the currently selected chat is updated, ensure its visual state is correct
+              chatItem.classList.add("selected");
+            }
+          } else {
+            // If it's an existing chat being re-added after full reload, update its info
+            updateChatItem(chatId, chatInfo);
+          }
         }
+      );
+
+      onChildChanged(chatsRef, (snapshot) => {
+        const chatId = snapshot.key;
+        const chatInfo = snapshot.val().info || {};
+        updateChatItem(chatId, chatInfo);
       });
 
-      // Listen for new image generation requests from users
-      onChildAdded(imageRequestsRef, (snapshot) => {
-        const request = snapshot.val();
-        const requestKey = snapshot.key; // The unique key for this request
+      function updateChatItem(chatId, chatInfo) {
+        const chatMeta = chatMetadata[chatId];
+        if (chatMeta) {
+          chatMeta.info = chatInfo;
+          chatMeta.element.querySelector(
+            ".last-active"
+          ).textContent = `Last active: ${formatTimestamp(
+            chatInfo.lastActive
+          )}`;
+          // If the user sends a message to a chat not currently selected by operator, mark it as "new"
+          if (chatId !== currentSelectedChatId) {
+            chatMeta.element.classList.add("new");
+          }
+        }
+      }
 
+      // --- Chat Selection Logic ---
+
+      function selectChat(chatId) {
+        if (currentSelectedChatId === chatId) return; // Already selected
+
+        // 1. Clear previous selection highlight
+        const previouslySelected = document.querySelector(
+          ".chat-item.selected"
+        );
+        if (previouslySelected) {
+          previouslySelected.classList.remove("selected");
+        }
+
+        // 2. Add highlight to new selection
+        const newSelection = chatMetadata[chatId]
+          ? chatMetadata[chatId].element
+          : null;
+        if (newSelection) {
+          newSelection.classList.add("selected");
+          newSelection.classList.remove("new"); // Mark as seen once clicked
+        }
+
+        // 3. Update currentSelectedChatId
+        currentSelectedChatId = chatId;
+        selectedChatIdDisplay.textContent = chatId.substring(0, 8) + "...";
+        selectedChatIdPromptDisplay.textContent =
+          chatId.substring(0, 8) + "...";
+
+        // 4. Clear current chat history displays
+        chatMessagesList.innerHTML =
+          '<p style="text-align: center; color: #999;">Loading messages...</p>';
+        imagePromptsList.innerHTML =
+          '<p style="text-align: center; color: #999;">Loading image requests...</p>';
+
+        // 5. Disable input fields until history is loaded (or just enable if a chat is selected)
+        sendReplyButton.disabled = false;
+        sendImageButton.disabled = false;
+
+        // 6. Detach old Firebase listeners if any
+        if (activeChatListeners.messagesOff) {
+          activeChatListeners.messagesOff();
+          activeChatListeners.imageRequestsOff();
+        }
+
+        // 7. Attach new Firebase listeners for the selected chat
+        const messagesRef = ref(
+          database,
+          `chats/${currentSelectedChatId}/messages`
+        );
+        const imageReqsRef = ref(
+          database,
+          `chats/${currentSelectedChatId}/image_requests`
+        );
+
+        // Listen for all messages in the selected chat
+        // Clear current list content before adding new messages
+        chatMessagesList.innerHTML = ""; // Clear placeholder message
+        activeChatListeners.messagesOff = onChildAdded(
+          messagesRef,
+          (snapshot) => {
+            const message = snapshot.val();
+            addMessageToChatList(message);
+          }
+        );
+
+        // Listen for image requests in the selected chat
+        // Clear current list content before adding new requests
+        imagePromptsList.innerHTML = ""; // Clear placeholder message
+        activeChatListeners.imageRequestsOff = onChildAdded(
+          imageReqsRef,
+          (snapshot) => {
+            const request = snapshot.val();
+            request.key = snapshot.key; // Store the Firebase key for the request
+            addImagePromptToList(request);
+          }
+        );
+
+        // Also listen for changes on image requests (e.g., status change to completed)
+        activeChatListeners.imageRequestChangedOff = onValue(
+          imageReqsRef,
+          (snapshot) => {
+            // This listener ensures we update existing items without re-adding them
+            imagePromptsList.innerHTML = ""; // Clear and redraw all prompts to ensure status is correct
+            snapshot.forEach((childSnapshot) => {
+              const request = childSnapshot.val();
+              request.key = childSnapshot.key;
+              addImagePromptToList(request);
+            });
+            imagePromptsList.scrollTop = imagePromptsList.scrollHeight;
+          }
+        );
+      }
+
+      // --- Functions to Add Items to Panels ---
+
+      function addMessageToChatList(message) {
+        const messageItem = document.createElement("div");
+        messageItem.classList.add(
+          "message-item",
+          message.sender === "user"
+            ? "user-message-item"
+            : "bettergpt-message-item"
+        );
+
+        if (message.type === "text") {
+          messageItem.textContent = message.content;
+        } else if (message.type === "image") {
+          const img = document.createElement("img");
+          img.src = message.content;
+          img.alt = "Generated Image";
+          messageItem.appendChild(img);
+        } else if (message.type === "status" && message.sender === "system") {
+          messageItem.innerHTML = `<div class="loading-spinner"></div> Image creating...`;
+          messageItem.style.fontStyle = "italic";
+          messageItem.style.color = "var(--loading-color)";
+          messageItem.style.display = "flex";
+          messageItem.style.alignItems = "center";
+          messageItem.style.gap = "10px";
+          messageItem.style.backgroundColor = "var(--input-bg)";
+        }
+
+        // Add timestamp
+        const timestampDiv = document.createElement("div");
+        timestampDiv.classList.add("timestamp");
+        timestampDiv.textContent = formatTimestamp(message.timestamp);
+        messageItem.appendChild(timestampDiv);
+
+        chatMessagesList.appendChild(messageItem);
+        chatMessagesList.scrollTop = chatMessagesList.scrollHeight; // Scroll to bottom
+      }
+
+      function addImagePromptToList(request) {
         const promptItem = document.createElement("div");
         promptItem.classList.add("image-prompt-item");
         if (request.status === "completed") {
@@ -331,19 +654,20 @@
         }
         promptItem.innerHTML = `
                 <div class="prompt-text">Prompt: ${request.prompt}</div>
-                <div class="prompt-id">ID: ${requestKey}</div>
-                <div class="timestamp">${formatTimestamp(
+                <div class="prompt-id">ID: ${request.key.substring(
+                  0,
+                  8
+                )}...</div>
+                <div class="timestamp">Requested: ${formatTimestamp(
                   request.timestamp
                 )}</div>
             `;
-        promptItem.dataset.requestKey = requestKey; // Store the key for later use
-        promptItem.dataset.requesterMessageId = request.requesterMessageId; // Store the linked message ID
+        promptItem.dataset.requestKey = request.key; // Store the key for later use
+        promptItem.dataset.requesterMessageId = request.requesterMessageId; // Link to user's loading message
 
-        // Add click listener to select a prompt for fulfillment
         promptItem.addEventListener("click", () => {
           if (promptItem.classList.contains("completed")) {
-            // Do not select completed prompts for new image generation
-            return;
+            return; // Do not select completed prompts for new image generation
           }
           // Remove 'selected' class from previously selected item
           const previouslySelected = document.querySelector(
@@ -354,38 +678,53 @@
           }
           // Add 'selected' class to the clicked item
           promptItem.classList.add("selected");
-          currentSelectedPromptKey = requestKey; // Set the currently selected prompt key
+          currentSelectedPromptKey = request.key; // Set the currently selected prompt key
 
           // Pre-fill image URL input if an image was already provided for this prompt (shouldn't happen for pending)
           imageURLInput.value = request.imageUrl || "";
           imageURLInput.focus();
         });
 
-        imagePromptsList.appendChild(promptItem);
+        // Replace existing item if it's an update, otherwise append
+        const existingItem = imagePromptsList.querySelector(
+          `[data-request-key="${request.key}"]`
+        );
+        if (existingItem) {
+          imagePromptsList.replaceChild(promptItem, existingItem);
+        } else {
+          imagePromptsList.appendChild(promptItem);
+        }
         imagePromptsList.scrollTop = imagePromptsList.scrollHeight; // Scroll to bottom
-      });
+      }
 
       // --- Event Listeners for Operator Actions ---
 
-      // Send text reply from operator to user
       sendReplyButton.addEventListener("click", () => {
         const replyText = operatorReplyInput.value.trim();
-        if (replyText) {
-          push(chatMessagesRef, {
+        if (replyText && currentSelectedChatId) {
+          push(ref(database, `chats/${currentSelectedChatId}/messages`), {
             sender: "bettergpt",
             type: "text",
             content: replyText,
             timestamp: serverTimestamp(),
           });
-          operatorReplyInput.value = ""; // Clear input
+          operatorReplyInput.value = "";
+          // Update last active for the chat
+          update(ref(database, `chats/${currentSelectedChatId}/info`), {
+            lastActive: serverTimestamp(),
+          });
         }
       });
 
-      // Send image URL from operator to user
       sendImageButton.addEventListener("click", () => {
         const imageUrl = imageURLInput.value.trim();
         if (!imageUrl) {
           alert("Please enter an image URL.");
+          return;
+        }
+
+        if (!currentSelectedChatId) {
+          alert("Please select a chat from the list first.");
           return;
         }
 
@@ -396,8 +735,7 @@
           return;
         }
 
-        // Get the HTML element of the currently selected prompt item
-        const selectedPromptItem = document.querySelector(
+        const selectedPromptItem = imagePromptsList.querySelector(
           `.image-prompt-item[data-request-key="${currentSelectedPromptKey}"]`
         );
         if (
@@ -408,7 +746,6 @@
           return;
         }
 
-        // Retrieve the requesterMessageId which links back to the user's "Image creating..." message
         const requesterMessageId = selectedPromptItem
           ? selectedPromptItem.dataset.requesterMessageId
           : null;
@@ -420,41 +757,56 @@
           return;
         }
 
-        // 1. Push the generated image message to the main chat history
-        push(chatMessagesRef, {
+        // 1. Push the generated image message to the main chat history of the selected chat
+        push(ref(database, `chats/${currentSelectedChatId}/messages`), {
           sender: "bettergpt",
           type: "image",
           content: imageUrl,
           timestamp: serverTimestamp(),
-          replacingPromptId: requesterMessageId, // Crucial: This tells BETTERgpt.html which loading message to replace
+          replacingPromptId: requesterMessageId, // This tells BETTERgpt.html which loading message to replace
         });
 
         // 2. Update the status of the image request in the requests queue to 'completed'
         update(
           ref(
             database,
-            `image_generation_requests/${currentSelectedPromptKey}`
+            `chats/${currentSelectedChatId}/image_requests/${currentSelectedPromptKey}`
           ),
           {
             status: "completed",
             imageUrl: imageUrl,
-            completedTimestamp: serverTimestamp(), // Mark completion time
+            completedTimestamp: serverTimestamp(),
           }
         )
           .then(() => {
-            // Update the UI state of the prompt item in the operator panel
             if (selectedPromptItem) {
               selectedPromptItem.classList.add("completed");
-              selectedPromptItem.classList.remove("selected"); // Deselect it
+              selectedPromptItem.classList.remove("selected");
             }
-            currentSelectedPromptKey = null; // Clear the selection
-            imageURLInput.value = ""; // Clear image URL input
+            currentSelectedPromptKey = null;
+            imageURLInput.value = "";
+            // Update last active for the chat
+            update(ref(database, `chats/${currentSelectedChatId}/info`), {
+              lastActive: serverTimestamp(),
+            });
           })
           .catch((error) => {
             console.error("Error updating image request status:", error);
             alert("Failed to update image request status in Firebase.");
           });
       });
+
+      // Add Enter key listener for operator reply input
+      operatorReplyInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          // Allow shift+Enter for new line
+          e.preventDefault(); // Prevent default Enter behavior (e.g., new line)
+          sendReplyButton.click();
+        }
+      });
+
+      // Optional: Auto-select the first chat if available on load
+      // This is handled by the onChildAdded listener for chatsRef now.
     </script>
   </body>
 </html>

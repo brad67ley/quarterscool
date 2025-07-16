@@ -395,18 +395,17 @@
     </div>
 
     <script type="module">
-      // Import Firebase modules
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
       import {
         getDatabase,
         ref,
         push,
         onChildAdded,
+        update,
         serverTimestamp,
+        set,
       } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
-      // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"; // Not used in this example
 
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
@@ -418,14 +417,19 @@
         measurementId: "G-7WFJZV9JWT",
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
-      // const analytics = getAnalytics(app); // Not used in this example
 
-      // Firebase Realtime Database references
-      const chatMessagesRef = ref(database, "chat/messages");
-      const imageRequestsRef = ref(database, "image_generation_requests"); // For operator to see prompts
+      // Generate a new, unique chat ID for this session every time the page loads
+      const currentChatId = crypto.randomUUID();
+
+      // Firebase Realtime Database references for THIS chat session
+      const chatMessagesRef = ref(database, `chats/${currentChatId}/messages`);
+      const chatInfoRef = ref(database, `chats/${currentChatId}/info`);
+      const imageRequestsRef = ref(
+        database,
+        `chats/${currentChatId}/image_requests`
+      );
 
       // DOM Elements
       const chatMessagesDiv = document.getElementById("chatMessages");
@@ -443,6 +447,33 @@
 
       let currentLoadingMessageId = null; // To track the ID of the "Image creating..." message
 
+      // Initialize chat session info when the page loads
+      set(chatInfoRef, {
+        createdAt: serverTimestamp(),
+        lastActive: serverTimestamp(),
+        status: "active",
+        // You could add a user agent or IP here for the operator, but for privacy, probably not automatically.
+        // sessionId: currentChatId // Redundant as it's the key, but useful for debugging
+      })
+        .then(() => {
+          console.log(`New chat session created: ${currentChatId}`);
+          // Add a welcome message from the "bot"
+          push(chatMessagesRef, {
+            sender: "bettergpt",
+            type: "text",
+            content: "Welcome! How can BETTERgpt assist you today?",
+            timestamp: serverTimestamp(),
+          });
+        })
+        .catch((error) => {
+          console.error("Error setting chat info:", error);
+        });
+
+      // Function to update lastActive timestamp when user sends a message/request
+      function updateLastActive() {
+        update(chatInfoRef, { lastActive: serverTimestamp() });
+      }
+
       // Function to add a message bubble to the chat display
       function addMessageToChat(message) {
         const messageBubble = document.createElement("div");
@@ -454,9 +485,12 @@
           const img = document.createElement("img");
           img.src = message.content;
           img.alt = "Generated Image";
+          img.onload = () =>
+            (chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight); // Scroll after image loads
+          img.onerror = () =>
+            (messageBubble.textContent = `Error loading image: ${message.content}`);
           messageBubble.appendChild(img);
         } else if (message.type === "status" && message.sender === "system") {
-          // This is the "Image creating..." message
           messageBubble.classList.add("loading");
           const spinner = document.createElement("div");
           spinner.classList.add("loading-spinner");
@@ -482,7 +516,14 @@
         }
 
         chatMessagesDiv.appendChild(messageBubble);
-        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+        // Only scroll if it's not an image being loaded later, or if it's already near bottom
+        if (
+          message.type !== "image" ||
+          chatMessagesDiv.scrollHeight - chatMessagesDiv.scrollTop <
+            chatMessagesDiv.clientHeight + 100
+        ) {
+          chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+        }
       }
 
       // --- Event Listeners ---
@@ -495,9 +536,10 @@
             sender: "user",
             type: "text",
             content: messageText,
-            timestamp: serverTimestamp(), // Firebase server timestamp
+            timestamp: serverTimestamp(),
           });
           messageInput.value = ""; // Clear input
+          updateLastActive();
         }
       });
 
@@ -533,15 +575,17 @@
           });
 
           // 2. Add "Image creating..." loading message to chat and store its key
+          // This message is part of the regular chat history.
           const newLoadingMessageRef = push(chatMessagesRef, {
             sender: "system",
             type: "status",
             content: "Image creating...",
-            timestamp: serverTimestamp(), // Placeholder timestamp for now, will resolve on Firebase
+            timestamp: serverTimestamp(),
           });
           currentLoadingMessageId = newLoadingMessageRef.key; // Store the unique key for this message
 
-          // 3. Send the actual image prompt to the operator queue (for promptlibrary.html)
+          // 3. Send the actual image prompt to the operator queue for THIS chat
+          // This entry also needs to store the requesterMessageId so operator knows which one to replace.
           push(imageRequestsRef, {
             prompt: promptText,
             status: "pending",
@@ -552,6 +596,7 @@
           // Close modal and clear input
           imagePromptModal.classList.remove("active");
           imagePromptInput.value = "";
+          updateLastActive();
         } else {
           alert("Please enter a prompt for the image.");
         }
@@ -562,8 +607,7 @@
       // Listen for all messages in the chat
       onChildAdded(chatMessagesRef, (snapshot) => {
         const message = snapshot.val();
-        // Assign the Firebase key to the message object for internal use (e.g., for 'status' messages)
-        message.id = snapshot.key;
+        message.id = snapshot.key; // Assign the Firebase key to the message object for internal use
         addMessageToChat(message);
       });
     </script>
