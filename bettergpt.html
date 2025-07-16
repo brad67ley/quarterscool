@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BETTERgpt</title>
+    <style>
+      /* Dark Mode Variables */
+      :root {
+        --bg-color: #1a1a2e; /* Dark Purple */
+        --chat-bg: #2b2e4a; /* Slightly lighter Purple */
+        --text-color: #e0e0e0; /* Off-white */
+        --user-bubble-bg: #4a4e69; /* Grey-blue */
+        --bot-bubble-bg: #5f6381; /* Slightly lighter Grey-blue */
+        --input-bg: #3c3f58; /* Darker input background */
+        --border-color: #555;
+        --accent-color: #a76eec; /* Vibrant Purple */
+        --button-hover-bg: #8e50d1; /* Darker vibrant purple */
+        --loading-color: #e6b34b; /* Gold/Yellow for loading */
+        --scroll-thumb: #666;
+        --scroll-track: #333;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        overflow: hidden; /* Hide body scrollbar */
+      }
+
+      .chat-container {
+        width: 90%;
+        max-width: 800px;
+        height: 90vh;
+        background-color: var(--chat-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+      }
+
+      .chat-header {
+        background-color: var(--input-bg);
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .chat-header h1 {
+        margin: 0;
+        font-size: 1.8em;
+        color: var(--accent-color);
+        font-weight: 600;
+      }
+
+      .chat-header .status-indicator {
+        width: 12px;
+        height: 12px;
+        background-color: #4caf50; /* Green for online */
+        border-radius: 50%;
+        margin-left: 10px;
+        box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+      }
+
+      .chat-messages {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        scroll-behavior: smooth;
+      }
+
+      /* Custom Scrollbar */
+      .chat-messages::-webkit-scrollbar {
+        width: 8px;
+      }
+      .chat-messages::-webkit-scrollbar-track {
+        background: var(--scroll-track);
+        border-radius: 10px;
+      }
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--scroll-thumb);
+        border-radius: 10px;
+      }
+      .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #888;
+      }
+
+      .message-bubble {
+        max-width: 75%;
+        padding: 12px 18px;
+        border-radius: 20px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      .message-bubble.user {
+        align-self: flex-end;
+        background-color: var(--user-bubble-bg);
+        color: var(--text-color);
+        border-bottom-right-radius: 5px; /* Aesthetic touch */
+      }
+
+      .message-bubble.bettergpt {
+        align-self: flex-start;
+        background-color: var(--bot-bubble-bg);
+        color: var(--text-color);
+        border-bottom-left-radius: 5px; /* Aesthetic touch */
+      }
+
+      .message-bubble img {
+        max-width: 100%;
+        border-radius: 10px;
+        margin-top: 5px;
+        display: block; /* Ensure image doesn't have extra space below */
+      }
+
+      .message-bubble.loading {
+        background-color: var(--input-bg);
+        color: var(--loading-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-style: italic;
+      }
+
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid var(--loading-color);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .chat-input {
+        display: flex;
+        padding: 15px 20px;
+        gap: 10px;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--input-bg);
+        border-radius: 0 0 15px 15px;
+      }
+
+      .chat-input input[type="text"] {
+        flex-grow: 1;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 25px;
+        background-color: var(--chat-bg);
+        color: var(--text-color);
+        font-size: 1em;
+        outline: none;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .chat-input input[type="text"]::placeholder {
+        color: #999;
+      }
+
+      .chat-input input[type="text"]:focus {
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3),
+          0 0 0 2px var(--accent-color);
+      }
+
+      .chat-input button {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .chat-input button:hover {
+        background-color: var(--button-hover-bg);
+        transform: translateY(-2px);
+      }
+
+      .chat-input button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Modal for Image Prompt */
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 10; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none; /* Allows clicks through when not active */
+      }
+
+      .modal.active {
+        opacity: 1;
+        pointer-events: auto; /* Re-enable clicks when active */
+      }
+
+      .modal-content {
+        background-color: var(--chat-bg);
+        margin: auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 500px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        transform: translateY(-20px); /* Animation for modal entry */
+        transition: transform 0.3s ease;
+      }
+      .modal.active .modal-content {
+        transform: translateY(0);
+      }
+
+      .modal-content h2 {
+        margin-top: 0;
+        color: var(--accent-color);
+        text-align: center;
+      }
+
+      .modal-content textarea {
+        width: calc(100% - 24px); /* Adjust for padding */
+        height: 120px;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        font-size: 1em;
+        resize: vertical; /* Allow vertical resize for text area */
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      .modal-content textarea:focus {
+        border-color: var(--accent-color);
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 15px;
+      }
+
+      .modal-buttons button {
+        flex: 1;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-buttons button.send-prompt {
+        background-color: var(--accent-color);
+        color: white;
+      }
+
+      .modal-buttons button.send-prompt:hover {
+        background-color: var(--button-hover-bg);
+        transform: translateY(-2px);
+      }
+
+      .modal-buttons button.cancel-prompt {
+        background-color: #555;
+        color: white;
+      }
+
+      .modal-buttons button.cancel-prompt:hover {
+        background-color: #777;
+        transform: translateY(-2px);
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 600px) {
+        .chat-container {
+          width: 100%;
+          height: 100vh;
+          border-radius: 0;
+        }
+        .chat-header {
+          border-radius: 0;
+        }
+        .chat-input {
+          padding: 10px;
+          flex-wrap: wrap;
+          justify-content: center;
+          border-radius: 0;
+        }
+        .chat-input input[type="text"] {
+          flex-basis: 100%;
+          margin-bottom: 10px;
+        }
+        .chat-input button {
+          flex-basis: 48%; /* Roughly half width */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h1>
+          BETTERgpt
+          <div class="status-indicator"></div>
+        </h1>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <!-- Messages will be appended here -->
+      </div>
+      <div class="chat-input">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message..."
+        />
+        <button id="sendButton">Send</button>
+        <button id="imageButton">Create Image</button>
+      </div>
+    </div>
+
+    <!-- Image Prompt Modal -->
+    <div id="imagePromptModal" class="modal">
+      <div class="modal-content">
+        <h2>Generate an Image</h2>
+        <textarea
+          id="imagePromptInput"
+          placeholder="Describe the image you want to create..."
+        ></textarea>
+        <div class="modal-buttons">
+          <button class="send-prompt" id="sendImagePromptButton">
+            Generate
+          </button>
+          <button class="cancel-prompt" id="cancelImagePromptButton">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Import Firebase modules
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        onChildAdded,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+      // import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js"; // Not used in this example
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+        authDomain: "quaters-5f71d.firebaseapp.com",
+        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
+        projectId: "quaters-5f71d",
+        storageBucket: "quaters-5f71d.firebasestorage.app",
+        messagingSenderId: "895009748691",
+        appId: "1:895009748691:web:73dc67aee4db1143e90626",
+        measurementId: "G-7WFJZV9JWT",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      // const analytics = getAnalytics(app); // Not used in this example
+
+      // Firebase Realtime Database references
+      const chatMessagesRef = ref(database, "chat/messages");
+      const imageRequestsRef = ref(database, "image_generation_requests"); // For operator to see prompts
+
+      // DOM Elements
+      const chatMessagesDiv = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const imageButton = document.getElementById("imageButton");
+      const imagePromptModal = document.getElementById("imagePromptModal");
+      const imagePromptInput = document.getElementById("imagePromptInput");
+      const sendImagePromptButton = document.getElementById(
+        "sendImagePromptButton"
+      );
+      const cancelImagePromptButton = document.getElementById(
+        "cancelImagePromptButton"
+      );
+
+      let currentLoadingMessageId = null; // To track the ID of the "Image creating..." message
+
+      // Function to add a message bubble to the chat display
+      function addMessageToChat(message) {
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("message-bubble", message.sender);
+
+        if (message.type === "text") {
+          messageBubble.textContent = message.content;
+        } else if (message.type === "image") {
+          const img = document.createElement("img");
+          img.src = message.content;
+          img.alt = "Generated Image";
+          messageBubble.appendChild(img);
+        } else if (message.type === "status" && message.sender === "system") {
+          // This is the "Image creating..." message
+          messageBubble.classList.add("loading");
+          const spinner = document.createElement("div");
+          spinner.classList.add("loading-spinner");
+          messageBubble.appendChild(spinner);
+          messageBubble.appendChild(document.createTextNode(message.content));
+          messageBubble.dataset.messageId = message.id; // Store Firebase key for future removal
+        }
+
+        // If an incoming image message has a 'replacingPromptId' that matches our currentLoadingMessageId,
+        // remove the "Image creating..." bubble.
+        if (
+          message.type === "image" &&
+          message.replacingPromptId &&
+          message.replacingPromptId === currentLoadingMessageId
+        ) {
+          const existingLoadingBubble = document.querySelector(
+            `.message-bubble.loading[data-message-id="${currentLoadingMessageId}"]`
+          );
+          if (existingLoadingBubble) {
+            existingLoadingBubble.remove();
+            currentLoadingMessageId = null; // Reset the tracker
+          }
+        }
+
+        chatMessagesDiv.appendChild(messageBubble);
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+      }
+
+      // --- Event Listeners ---
+
+      // Send text message on button click
+      sendButton.addEventListener("click", () => {
+        const messageText = messageInput.value.trim();
+        if (messageText) {
+          push(chatMessagesRef, {
+            sender: "user",
+            type: "text",
+            content: messageText,
+            timestamp: serverTimestamp(), // Firebase server timestamp
+          });
+          messageInput.value = ""; // Clear input
+        }
+      });
+
+      // Send text message on Enter key press
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          sendButton.click();
+        }
+      });
+
+      // Show image prompt modal
+      imageButton.addEventListener("click", () => {
+        imagePromptModal.classList.add("active");
+        imagePromptInput.focus();
+      });
+
+      // Cancel image prompt and hide modal
+      cancelImagePromptButton.addEventListener("click", () => {
+        imagePromptModal.classList.remove("active");
+        imagePromptInput.value = "";
+      });
+
+      // Send image prompt (to operator)
+      sendImagePromptButton.addEventListener("click", () => {
+        const promptText = imagePromptInput.value.trim();
+        if (promptText) {
+          // 1. Add user's image request message to chat
+          push(chatMessagesRef, {
+            sender: "user",
+            type: "text",
+            content: `Image request: "${promptText}"`,
+            timestamp: serverTimestamp(),
+          });
+
+          // 2. Add "Image creating..." loading message to chat and store its key
+          const newLoadingMessageRef = push(chatMessagesRef, {
+            sender: "system",
+            type: "status",
+            content: "Image creating...",
+            timestamp: serverTimestamp(), // Placeholder timestamp for now, will resolve on Firebase
+          });
+          currentLoadingMessageId = newLoadingMessageRef.key; // Store the unique key for this message
+
+          // 3. Send the actual image prompt to the operator queue (for promptlibrary.html)
+          push(imageRequestsRef, {
+            prompt: promptText,
+            status: "pending",
+            requesterMessageId: currentLoadingMessageId, // Link to the loading message on the client side
+            timestamp: serverTimestamp(),
+          });
+
+          // Close modal and clear input
+          imagePromptModal.classList.remove("active");
+          imagePromptInput.value = "";
+        } else {
+          alert("Please enter a prompt for the image.");
+        }
+      });
+
+      // --- Firebase Data Listeners ---
+
+      // Listen for all messages in the chat
+      onChildAdded(chatMessagesRef, (snapshot) => {
+        const message = snapshot.val();
+        // Assign the Firebase key to the message object for internal use (e.g., for 'status' messages)
+        message.id = snapshot.key;
+        addMessageToChat(message);
+      });
+    </script>
+  </body>
+</html>
