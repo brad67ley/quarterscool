@@ -191,10 +191,8 @@
         background-color: var(--user-message-bg);
       }
       .gpt-messages-item {
-        /* Changed class from .bettergpt-message-item */
-        background-color: var(
-          --gpt-messages-item-bg
-        ); /* Use new variable for consistency */
+        /* Class for bot replies in operator panel */
+        background-color: var(--gpt-messages-item-bg);
       }
       .message-item img {
         max-width: 100%;
@@ -340,6 +338,9 @@
         <h2 class="panel-header">Active Chats</h2>
         <div class="chat-sessions" id="chatSessionsList">
           <!-- Chat sessions will appear here -->
+          <p style="text-align: center; color: #999">
+            Waiting for new chats...
+          </p>
         </div>
       </div>
 
@@ -459,6 +460,10 @@
       onChildAdded(
         query(chatsRef, orderByChild("info/lastActive")),
         (snapshot) => {
+          console.log(
+            "promptlibrary.html: New chat session detected:",
+            snapshot.key
+          ); // Debugging log
           const chatId = snapshot.key;
           const chatInfo = snapshot.val().info || {};
 
@@ -489,6 +494,10 @@
               // If the currently selected chat is updated, ensure its visual state is correct
               chatItem.classList.add("selected");
             }
+            // Remove initial "Waiting for new chats..." message if present
+            if (chatSessionsList.querySelector("p")) {
+              chatSessionsList.querySelector("p").remove();
+            }
           } else {
             // If it's an existing chat being re-added after full reload, update its info
             updateChatItem(chatId, chatInfo);
@@ -497,6 +506,7 @@
       );
 
       onChildChanged(chatsRef, (snapshot) => {
+        console.log("promptlibrary.html: Chat session changed:", snapshot.key); // Debugging log
         const chatId = snapshot.key;
         const chatInfo = snapshot.val().info || {};
         updateChatItem(chatId, chatInfo);
@@ -512,8 +522,6 @@
             chatInfo.lastActive
           )}`;
           // If the user sends a message to a chat not currently selected by operator, mark it as "new"
-          // Only mark as new if the last message was from the user AND it's not the currently selected chat
-          // This logic might need refinement based on exact "new" criteria. For now, just if not selected.
           if (chatId !== currentSelectedChatId) {
             chatMeta.element.classList.add("new");
           }
@@ -524,6 +532,8 @@
 
       function selectChat(chatId) {
         if (currentSelectedChatId === chatId) return; // Already selected
+
+        console.log("promptlibrary.html: Selecting chat:", chatId); // Debugging log
 
         // 1. Clear previous selection highlight
         const previouslySelected = document.querySelector(
@@ -561,6 +571,7 @@
 
         // 6. Detach old Firebase listeners if any
         if (activeChatListeners.messagesOff) {
+          console.log("promptlibrary.html: Detaching old Firebase listeners."); // Debugging log
           activeChatListeners.messagesOff();
           activeChatListeners.imageRequestsOff();
           activeChatListeners.imageRequestChangedOff(); // Also detach the onValue listener
@@ -582,7 +593,17 @@
           messagesRef,
           (snapshot) => {
             const message = snapshot.val();
+            console.log(
+              "promptlibrary.html: New message received for selected chat:",
+              message
+            ); // Debugging log
             addMessageToChatList(message);
+          },
+          (error) => {
+            console.error(
+              "promptlibrary.html: Firebase messages listener error:",
+              error
+            ); // Error logging
           }
         );
 
@@ -593,7 +614,17 @@
           (snapshot) => {
             const request = snapshot.val();
             request.key = snapshot.key; // Store the Firebase key for the request
+            console.log(
+              "promptlibrary.html: New image request received for selected chat:",
+              request
+            ); // Debugging log
             addImagePromptToList(request);
+          },
+          (error) => {
+            console.error(
+              "promptlibrary.html: Firebase image requests listener error:",
+              error
+            ); // Error logging
           }
         );
 
@@ -602,6 +633,9 @@
         activeChatListeners.imageRequestChangedOff = onValue(
           imageReqsRef,
           (snapshot) => {
+            console.log(
+              "promptlibrary.html: Image requests updated for selected chat."
+            ); // Debugging log
             imagePromptsList.innerHTML = ""; // Clear and redraw all prompts to ensure status is correct
             snapshot.forEach((childSnapshot) => {
               const request = childSnapshot.val();
@@ -609,6 +643,12 @@
               addImagePromptToList(request);
             });
             imagePromptsList.scrollTop = imagePromptsList.scrollHeight;
+          },
+          (error) => {
+            console.error(
+              "promptlibrary.html: Firebase image requests onValue error:",
+              error
+            ); // Error logging
           }
         );
       }
@@ -691,6 +731,10 @@
           // Pre-fill image URL input if an image was already provided for this prompt (shouldn't happen for pending)
           imageURLInput.value = request.imageUrl || "";
           imageURLInput.focus();
+          console.log(
+            "promptlibrary.html: Image prompt selected:",
+            request.key
+          ); // Debugging log
         });
 
         // Replace existing item if it's an update, otherwise append
@@ -711,7 +755,7 @@
         const replyText = operatorReplyInput.value.trim();
         if (replyText && currentSelectedChatId) {
           push(ref(database, `chats/${currentSelectedChatId}/messages`), {
-            sender: "bettergpt", // This is correctly set to 'bettergpt'
+            sender: "bettergpt",
             type: "text",
             content: replyText,
             timestamp: serverTimestamp(),
@@ -721,6 +765,9 @@
           update(ref(database, `chats/${currentSelectedChatId}/info`), {
             lastActive: serverTimestamp(),
           });
+          console.log(
+            `promptlibrary.html: Reply sent to chat ${currentSelectedChatId}: ${replyText}`
+          ); // Debugging log
         }
       });
 
@@ -767,12 +814,15 @@
 
         // 1. Push the generated image message to the main chat history of the selected chat
         push(ref(database, `chats/${currentSelectedChatId}/messages`), {
-          sender: "bettergpt", // This is correctly set to 'bettergpt'
+          sender: "bettergpt",
           type: "image",
           content: imageUrl,
           timestamp: serverTimestamp(),
           replacingPromptId: requesterMessageId, // This tells BETTERgpt.html which loading message to replace
         });
+        console.log(
+          `promptlibrary.html: Image sent to chat ${currentSelectedChatId} for prompt ${currentSelectedPromptKey}`
+        ); // Debugging log
 
         // 2. Update the status of the image request in the requests queue to 'completed'
         update(
@@ -797,9 +847,15 @@
             update(ref(database, `chats/${currentSelectedChatId}/info`), {
               lastActive: serverTimestamp(),
             });
+            console.log(
+              `promptlibrary.html: Image request ${currentSelectedPromptKey} marked as completed.`
+            ); // Debugging log
           })
           .catch((error) => {
-            console.error("Error updating image request status:", error);
+            console.error(
+              "promptlibrary.html: Error updating image request status:",
+              error
+            );
             alert("Failed to update image request status in Firebase.");
           });
       });

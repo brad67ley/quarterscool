@@ -130,11 +130,9 @@
       }
 
       .message-bubble.gpt-messages {
-        /* Changed class from .bettergpt */
+        /* Class for bot replies */
         align-self: flex-start;
-        background-color: var(
-          --gpt-bubble-bg
-        ); /* Use new variable for consistency */
+        background-color: var(--gpt-bubble-bg);
         color: var(--text-color);
         border-bottom-left-radius: 5px; /* Aesthetic touch */
       }
@@ -487,7 +485,9 @@
         status: "active",
       })
         .then(() => {
-          console.log(`New chat session created: ${currentChatId}`);
+          console.log(
+            `BETTERgpt.html: New chat session created: ${currentChatId}`
+          );
           // Add a welcome message from the "bot"
           push(chatMessagesRef, {
             sender: "bettergpt",
@@ -497,7 +497,7 @@
           });
         })
         .catch((error) => {
-          console.error("Error setting chat info:", error);
+          console.error("BETTERgpt.html: Error setting chat info:", error);
         });
 
       // Function to update lastActive timestamp when user sends a message/request
@@ -507,6 +507,7 @@
 
       // Function to add a message bubble to the chat display
       function addMessageToChat(message) {
+        console.log("BETTERgpt.html: Adding message to chat:", message); // Debugging log
         const messageBubble = document.createElement("div");
         messageBubble.classList.add("message-bubble");
 
@@ -526,10 +527,17 @@
           const img = document.createElement("img");
           img.src = message.content;
           img.alt = "Generated Image";
-          img.onload = () =>
-            (chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight); // Scroll after image loads
-          img.onerror = () =>
-            (messageBubble.textContent = `Error loading image: ${message.content}`);
+          img.onload = () => {
+            console.log("BETTERgpt.html: Image loaded, scrolling.");
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll after image loads
+          };
+          img.onerror = () => {
+            console.error(
+              "BETTERgpt.html: Error loading image:",
+              message.content
+            );
+            messageBubble.textContent = `Error loading image: ${message.content}`;
+          };
           messageBubble.appendChild(img);
         } else if (message.type === "status" && message.sender === "system") {
           const spinner = document.createElement("div");
@@ -546,17 +554,25 @@
           message.replacingPromptId &&
           message.replacingPromptId === currentLoadingMessageId
         ) {
+          console.log(
+            `BETTERgpt.html: Image received, attempting to replace loading message with ID: ${currentLoadingMessageId}`
+          ); // Debugging log
           const existingLoadingBubble = document.querySelector(
             `.message-bubble.loading[data-message-id="${currentLoadingMessageId}"]`
           );
           if (existingLoadingBubble) {
             existingLoadingBubble.remove();
             currentLoadingMessageId = null; // Reset the tracker
+            console.log("BETTERgpt.html: Loading message removed."); // Debugging log
+          } else {
+            console.log("BETTERgpt.html: No loading message found to remove."); // Debugging log
           }
         }
 
         chatMessagesDiv.appendChild(messageBubble);
         // Only scroll if it's not an image being loaded later, or if it's already near bottom
+        // This prevents auto-scrolling mid-way through reading if new messages come in,
+        // unless the user is already looking at the bottom of the chat.
         if (
           message.type !== "image" ||
           chatMessagesDiv.scrollHeight - chatMessagesDiv.scrollTop <
@@ -580,6 +596,7 @@
           });
           messageInput.value = ""; // Clear input
           updateLastActive();
+          console.log("BETTERgpt.html: User message sent."); // Debugging log
         }
       });
 
@@ -594,12 +611,14 @@
       imageButton.addEventListener("click", () => {
         imagePromptModal.classList.add("active");
         imagePromptInput.focus();
+        console.log("BETTERgpt.html: Image prompt modal opened."); // Debugging log
       });
 
       // Cancel image prompt and hide modal
       cancelImagePromptButton.addEventListener("click", () => {
         imagePromptModal.classList.remove("active");
         imagePromptInput.value = "";
+        console.log("BETTERgpt.html: Image prompt modal cancelled."); // Debugging log
       });
 
       // Send image prompt (to operator)
@@ -622,6 +641,9 @@
             timestamp: serverTimestamp(),
           });
           currentLoadingMessageId = newLoadingMessageRef.key; // Store the unique key for this message
+          console.log(
+            `BETTERgpt.html: Sent image request and added loading message with ID: ${currentLoadingMessageId}`
+          ); // Debugging log
 
           // 3. Send the actual image prompt to the operator queue for THIS chat
           push(imageRequestsRef, {
@@ -643,11 +665,21 @@
       // --- Firebase Data Listeners ---
 
       // Listen for all messages in the chat
-      onChildAdded(chatMessagesRef, (snapshot) => {
-        const message = snapshot.val();
-        message.id = snapshot.key; // Assign the Firebase key to the message object for internal use
-        addMessageToChat(message);
-      });
+      onChildAdded(
+        chatMessagesRef,
+        (snapshot) => {
+          console.log("BETTERgpt.html: onChildAdded fired."); // Debugging log
+          const message = snapshot.val();
+          message.id = snapshot.key; // Assign the Firebase key to the message object for internal use
+          addMessageToChat(message);
+        },
+        (error) => {
+          console.error("BETTERgpt.html: Firebase onChildAdded error:", error); // Error logging for listener itself
+        }
+      );
+      console.log(
+        `BETTERgpt.html: Firebase message listener attached for chat ID: ${currentChatId}`
+      ); // Debugging log
     </script>
   </body>
 </html>
