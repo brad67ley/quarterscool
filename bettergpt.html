@@ -11,7 +11,7 @@
         --chat-bg: #2b2e4a; /* Slightly lighter Purple */
         --text-color: #e0e0e0; /* Off-white */
         --user-bubble-bg: #4a4e69; /* Grey-blue */
-        --bot-bubble-bg: #5f6381; /* Slightly lighter Grey-blue */
+        --gpt-bubble-bg: #5f6381; /* Slightly lighter Grey-blue for BETTERgpt */
         --input-bg: #3c3f58; /* Darker input background */
         --border-color: #555;
         --accent-color: #a76eec; /* Vibrant Purple */
@@ -55,6 +55,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap; /* Allow wrapping for long chat ID */
       }
 
       .chat-header h1 {
@@ -62,6 +63,8 @@
         font-size: 1.8em;
         color: var(--accent-color);
         font-weight: 600;
+        display: flex;
+        align-items: center;
       }
 
       .chat-header .status-indicator {
@@ -71,6 +74,15 @@
         border-radius: 50%;
         margin-left: 10px;
         box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+      }
+
+      .chat-id-display {
+        font-size: 0.8em;
+        color: #ccc;
+        margin-top: 5px;
+        width: 100%; /* Take full width on next line if wrapped */
+        text-align: right;
+        opacity: 0.7;
       }
 
       .chat-messages {
@@ -117,9 +129,12 @@
         border-bottom-right-radius: 5px; /* Aesthetic touch */
       }
 
-      .message-bubble.bettergpt {
+      .message-bubble.gpt-messages {
+        /* Changed class from .bettergpt */
         align-self: flex-start;
-        background-color: var(--bot-bubble-bg);
+        background-color: var(
+          --gpt-bubble-bg
+        ); /* Use new variable for consistency */
         color: var(--text-color);
         border-bottom-left-radius: 5px; /* Aesthetic touch */
       }
@@ -336,6 +351,16 @@
         }
         .chat-header {
           border-radius: 0;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .chat-header h1 {
+          width: 100%;
+          justify-content: flex-start;
+        }
+        .chat-id-display {
+          text-align: left;
+          margin-top: 10px;
         }
         .chat-input {
           padding: 10px;
@@ -360,6 +385,7 @@
           BETTERgpt
           <div class="status-indicator"></div>
         </h1>
+        <div id="chatIdDisplay" class="chat-id-display"></div>
       </div>
       <div class="chat-messages" id="chatMessages">
         <!-- Messages will be appended here -->
@@ -422,9 +448,6 @@
 
       // Generate a new, unique chat ID for this session every time the page loads
       const currentChatId = crypto.randomUUID();
-      console.log(
-        `[BETTERgpt.html] My unique chat ID for this session: ${currentChatId}`
-      );
 
       // Firebase Realtime Database references for THIS chat session
       const chatMessagesRef = ref(database, `chats/${currentChatId}/messages`);
@@ -447,8 +470,15 @@
       const cancelImagePromptButton = document.getElementById(
         "cancelImagePromptButton"
       );
+      const chatIdDisplay = document.getElementById("chatIdDisplay"); // New DOM element
 
       let currentLoadingMessageId = null; // To track the ID of the "Image creating..." message
+
+      // Display chat ID for debugging/reference
+      chatIdDisplay.textContent = `Chat ID: ${currentChatId.substring(
+        0,
+        10
+      )}...`;
 
       // Initialize chat session info when the page loads
       set(chatInfoRef, {
@@ -457,9 +487,7 @@
         status: "active",
       })
         .then(() => {
-          console.log(
-            `[BETTERgpt.html] Chat session info created/updated for ${currentChatId}`
-          );
+          console.log(`New chat session created: ${currentChatId}`);
           // Add a welcome message from the "bot"
           push(chatMessagesRef, {
             sender: "bettergpt",
@@ -469,26 +497,28 @@
           });
         })
         .catch((error) => {
-          console.error("[BETTERgpt.html] Error setting chat info:", error);
+          console.error("Error setting chat info:", error);
         });
 
       // Function to update lastActive timestamp when user sends a message/request
       function updateLastActive() {
-        update(chatInfoRef, { lastActive: serverTimestamp() }).catch(
-          (error) => {
-            console.error(
-              "[BETTERgpt.html] Error updating last active timestamp:",
-              error
-            );
-          }
-        );
+        update(chatInfoRef, { lastActive: serverTimestamp() });
       }
 
       // Function to add a message bubble to the chat display
       function addMessageToChat(message) {
-        console.log(`[BETTERgpt.html] Adding message to chat:`, message);
         const messageBubble = document.createElement("div");
-        messageBubble.classList.add("message-bubble", message.sender);
+        messageBubble.classList.add("message-bubble");
+
+        // Apply specific class based on sender
+        if (message.sender === "user") {
+          messageBubble.classList.add("user");
+        } else if (message.sender === "bettergpt") {
+          messageBubble.classList.add("gpt-messages"); // Applied the new class here
+        } else if (message.sender === "system") {
+          // System messages (like "Image creating...")
+          messageBubble.classList.add("loading");
+        }
 
         if (message.type === "text") {
           messageBubble.textContent = message.content;
@@ -502,7 +532,6 @@
             (messageBubble.textContent = `Error loading image: ${message.content}`);
           messageBubble.appendChild(img);
         } else if (message.type === "status" && message.sender === "system") {
-          messageBubble.classList.add("loading");
           const spinner = document.createElement("div");
           spinner.classList.add("loading-spinner");
           messageBubble.appendChild(spinner);
@@ -521,9 +550,6 @@
             `.message-bubble.loading[data-message-id="${currentLoadingMessageId}"]`
           );
           if (existingLoadingBubble) {
-            console.log(
-              `[BETTERgpt.html] Removing loading message ${currentLoadingMessageId} for image.`
-            );
             existingLoadingBubble.remove();
             currentLoadingMessageId = null; // Reset the tracker
           }
@@ -546,9 +572,6 @@
       sendButton.addEventListener("click", () => {
         const messageText = messageInput.value.trim();
         if (messageText) {
-          console.log(
-            `[BETTERgpt.html] Sending user text: "${messageText}" to chat ID ${currentChatId}`
-          );
           push(chatMessagesRef, {
             sender: "user",
             type: "text",
@@ -583,9 +606,6 @@
       sendImagePromptButton.addEventListener("click", () => {
         const promptText = imagePromptInput.value.trim();
         if (promptText) {
-          console.log(
-            `[BETTERgpt.html] Sending image request: "${promptText}" to chat ID ${currentChatId}`
-          );
           // 1. Add user's image request message to chat
           push(chatMessagesRef, {
             sender: "user",
@@ -602,9 +622,6 @@
             timestamp: serverTimestamp(),
           });
           currentLoadingMessageId = newLoadingMessageRef.key; // Store the unique key for this message
-          console.log(
-            `[BETTERgpt.html] Added loading message with ID: ${currentLoadingMessageId}`
-          );
 
           // 3. Send the actual image prompt to the operator queue for THIS chat
           push(imageRequestsRef, {
@@ -629,10 +646,6 @@
       onChildAdded(chatMessagesRef, (snapshot) => {
         const message = snapshot.val();
         message.id = snapshot.key; // Assign the Firebase key to the message object for internal use
-        console.log(
-          `[BETTERgpt.html] Received new message from Firebase (for MY chat ${currentChatId}):`,
-          message
-        );
         addMessageToChat(message);
       });
     </script>
