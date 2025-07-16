@@ -422,6 +422,9 @@
 
       // Generate a new, unique chat ID for this session every time the page loads
       const currentChatId = crypto.randomUUID();
+      console.log(
+        `[BETTERgpt.html] My unique chat ID for this session: ${currentChatId}`
+      );
 
       // Firebase Realtime Database references for THIS chat session
       const chatMessagesRef = ref(database, `chats/${currentChatId}/messages`);
@@ -452,11 +455,11 @@
         createdAt: serverTimestamp(),
         lastActive: serverTimestamp(),
         status: "active",
-        // You could add a user agent or IP here for the operator, but for privacy, probably not automatically.
-        // sessionId: currentChatId // Redundant as it's the key, but useful for debugging
       })
         .then(() => {
-          console.log(`New chat session created: ${currentChatId}`);
+          console.log(
+            `[BETTERgpt.html] Chat session info created/updated for ${currentChatId}`
+          );
           // Add a welcome message from the "bot"
           push(chatMessagesRef, {
             sender: "bettergpt",
@@ -466,16 +469,24 @@
           });
         })
         .catch((error) => {
-          console.error("Error setting chat info:", error);
+          console.error("[BETTERgpt.html] Error setting chat info:", error);
         });
 
       // Function to update lastActive timestamp when user sends a message/request
       function updateLastActive() {
-        update(chatInfoRef, { lastActive: serverTimestamp() });
+        update(chatInfoRef, { lastActive: serverTimestamp() }).catch(
+          (error) => {
+            console.error(
+              "[BETTERgpt.html] Error updating last active timestamp:",
+              error
+            );
+          }
+        );
       }
 
       // Function to add a message bubble to the chat display
       function addMessageToChat(message) {
+        console.log(`[BETTERgpt.html] Adding message to chat:`, message);
         const messageBubble = document.createElement("div");
         messageBubble.classList.add("message-bubble", message.sender);
 
@@ -510,6 +521,9 @@
             `.message-bubble.loading[data-message-id="${currentLoadingMessageId}"]`
           );
           if (existingLoadingBubble) {
+            console.log(
+              `[BETTERgpt.html] Removing loading message ${currentLoadingMessageId} for image.`
+            );
             existingLoadingBubble.remove();
             currentLoadingMessageId = null; // Reset the tracker
           }
@@ -532,6 +546,9 @@
       sendButton.addEventListener("click", () => {
         const messageText = messageInput.value.trim();
         if (messageText) {
+          console.log(
+            `[BETTERgpt.html] Sending user text: "${messageText}" to chat ID ${currentChatId}`
+          );
           push(chatMessagesRef, {
             sender: "user",
             type: "text",
@@ -566,6 +583,9 @@
       sendImagePromptButton.addEventListener("click", () => {
         const promptText = imagePromptInput.value.trim();
         if (promptText) {
+          console.log(
+            `[BETTERgpt.html] Sending image request: "${promptText}" to chat ID ${currentChatId}`
+          );
           // 1. Add user's image request message to chat
           push(chatMessagesRef, {
             sender: "user",
@@ -575,7 +595,6 @@
           });
 
           // 2. Add "Image creating..." loading message to chat and store its key
-          // This message is part of the regular chat history.
           const newLoadingMessageRef = push(chatMessagesRef, {
             sender: "system",
             type: "status",
@@ -583,9 +602,11 @@
             timestamp: serverTimestamp(),
           });
           currentLoadingMessageId = newLoadingMessageRef.key; // Store the unique key for this message
+          console.log(
+            `[BETTERgpt.html] Added loading message with ID: ${currentLoadingMessageId}`
+          );
 
           // 3. Send the actual image prompt to the operator queue for THIS chat
-          // This entry also needs to store the requesterMessageId so operator knows which one to replace.
           push(imageRequestsRef, {
             prompt: promptText,
             status: "pending",
@@ -608,6 +629,10 @@
       onChildAdded(chatMessagesRef, (snapshot) => {
         const message = snapshot.val();
         message.id = snapshot.key; // Assign the Firebase key to the message object for internal use
+        console.log(
+          `[BETTERgpt.html] Received new message from Firebase (for MY chat ${currentChatId}):`,
+          message
+        );
         addMessageToChat(message);
       });
     </script>
