@@ -1,421 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QuarterNut Chat</title>
     <style>
-        body {
-            background-color: #ffcc00; /* Bright yellow background */
-            color: #000080; /* Navy blue text */
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
+      body {
+        background-color: #ffcc00; /* Bright yellow background */
+        color: #000080; /* Navy blue text */
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 48px;
+        text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
+        margin-bottom: 20px;
+      }
+      .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: left;
+      }
+      .chat-message {
+        background-color: #ffffff;
+        padding: 10px;
+        margin: 10px 0;
+        border: 2px solid #000080; /* Navy blue border */
+        border-radius: 10px;
+        position: relative;
+        word-wrap: break-word; /* Ensure long text/URLs wrap */
+      }
+      .chat-message strong {
+        color: #000000; /* Black text for username */
+      }
+      .chat-message .owner-text {
+        background: linear-gradient(
+          90deg,
+          red,
+          orange,
+          yellow,
+          green,
+          blue,
+          indigo,
+          violet
+        );
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradient-fade 5s ease infinite;
+      }
+      .chat-message .piss-man-badge {
+        color: #0000ff; /* Blue text for "piss man" badge */
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      .chat-message .anime-girl-badge {
+        color: #ff69b4; /* Pink text for "anime girl" badge */
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      .chat-message .the-real-n-badge {
+        background: linear-gradient(
+          90deg,
+          #000000,
+          #ffcc00
+        ); /* Black-yellow gradient */
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradient-fade 5s ease infinite;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      /* ADDED a new style for the "silly" badge */
+      .chat-message .silly-badge {
+        color: #ff69b4; /* Pink text for "silly" badge */
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      @keyframes gradient-fade {
+        0% {
+          background-position: 0% 50%;
         }
-        h1 {
-            font-size: 48px;
-            text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
-            margin-bottom: 20px;
+        50% {
+          background-position: 100% 50%;
         }
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: left;
+        100% {
+          background-position: 0% 50%;
         }
-        .chat-message {
-            background-color: #ffffff;
-            padding: 10px;
-            margin: 10px 0;
-            border: 2px solid #000080; /* Navy blue border */
-            border-radius: 10px;
-            position: relative;
-            word-wrap: break-word; /* Ensure long text/URLs wrap */
-        }
-        .chat-message strong {
-            color: #000000; /* Black text for username */
-        }
-        .chat-message .owner-text {
-            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-fade 5s ease infinite;
-        }
-        .chat-message .piss-man-badge {
-            color: #0000ff; /* Blue text for "piss man" badge */
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        .chat-message .anime-girl-badge {
-            color: #ff69b4; /* Pink text for "anime girl" badge */
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        .chat-message .the-real-n-badge {
-            background: linear-gradient(90deg, #000000, #ffcc00); /* Black-yellow gradient */
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-fade 5s ease infinite;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        @keyframes gradient-fade {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .chat-message .delete-button {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            background-color: #ff0000; /* Red button */
-            color: #ffffff; /* White text */
-            border: none;
-            cursor: pointer;
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 5px;
-        }
-        .chat-message .delete-button:hover {
-            background-color: #000080; /* Navy blue on hover */
-        }
-        /* Style for rendered GIFs */
-        .chat-message img {
-            max-width: 100%; /* Prevent large GIFs from breaking layout */
-            max-height: 250px; /* Limit GIF height */
-            display: block; /* Make image a block element */
-            margin-top: 5px; /* Add some space above the GIF */
-            border-radius: 5px; /* Optional: round corners */
-        }
-        .chat-input {
-            margin-top: 20px;
-        }
-        .chat-input input {
-            padding: 10px;
-            font-size: 16px;
-            width: 70%;
-            border: 2px solid #000080; /* Navy blue border */
-        }
-        .chat-input button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff0000; /* Red button */
-            color: #ffffff; /* White text */
-            border: none;
-            cursor: pointer;
-        }
-        .chat-input button:hover {
-            background-color: #000080; /* Navy blue on hover */
-        }
-        .user-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 18px;
-            color: #000080; /* Navy blue text */
-        }
-        .sign-out-link {
-            color: #000080; /* Navy blue text */
-            text-decoration: none;
-        }
-        .sign-out-link:hover {
-            text-decoration: underline;
-        }
-        .no-more-spongebobs-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff0000; /* Red button */
-            color: #ffffff; /* White text */
-            border: none;
-            cursor: pointer;
-        }
-        .no-more-spongebobs-button:hover {
-            background-color: #000080; /* Navy blue on hover */
-        }
-        .global-message-maker {
-            position: absolute;
-            top: 70px;
-            left: 20px;
-            display: none;
-        }
-        .global-message-maker input {
-            padding: 10px;
-            font-size: 16px;
-            width: 200px;
-            border: 2px solid #000080; /* Navy blue border */
-        }
-        .global-message-maker button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff0000; /* Red button */
-            color: #ffffff; /* White text */
-            border: none;
-            cursor: pointer;
-        }
-        .global-message-maker button:hover {
-            background-color: #000080; /* Navy blue on hover */
-        }
-        .global-message-text {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #ff0000; /* Red text */
-            text-shadow: 2px 2px #000080; /* Navy blue shadow */
-            z-index: 1000;
-            display: none;
-        }
+      }
+      .chat-message .delete-button {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background-color: #ff0000; /* Red button */
+        color: #ffffff; /* White text */
+        border: none;
+        cursor: pointer;
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 5px;
+      }
+      .chat-message .delete-button:hover {
+        background-color: #000080; /* Navy blue on hover */
+      }
+      /* Style for rendered GIFs */
+      .chat-message img {
+        max-width: 100%; /* Prevent large GIFs from breaking layout */
+        max-height: 250px; /* Limit GIF height */
+        display: block; /* Make image a block element */
+        margin-top: 5px; /* Add some space above the GIF */
+        border-radius: 5px; /* Optional: round corners */
+      }
+      .chat-input {
+        margin-top: 20px;
+      }
+      .chat-input input {
+        padding: 10px;
+        font-size: 16px;
+        width: 70%;
+        border: 2px solid #000080; /* Navy blue border */
+      }
+      .chat-input button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #ff0000; /* Red button */
+        color: #ffffff; /* White text */
+        border: none;
+        cursor: pointer;
+      }
+      .chat-input button:hover {
+        background-color: #000080; /* Navy blue on hover */
+      }
+      .user-info {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 18px;
+        color: #000080; /* Navy blue text */
+      }
+      .sign-out-link {
+        color: #000080; /* Navy blue text */
+        text-decoration: none;
+      }
+      .sign-out-link:hover {
+        text-decoration: underline;
+      }
+      .no-more-spongebobs-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #ff0000; /* Red button */
+        color: #ffffff; /* White text */
+        border: none;
+        cursor: pointer;
+      }
+      .no-more-spongebobs-button:hover {
+        background-color: #000080; /* Navy blue on hover */
+      }
+      .global-message-maker {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        display: none;
+      }
+      .global-message-maker input {
+        padding: 10px;
+        font-size: 16px;
+        width: 200px;
+        border: 2px solid #000080; /* Navy blue border */
+      }
+      .global-message-maker button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #ff0000; /* Red button */
+        color: #ffffff; /* White text */
+        border: none;
+        cursor: pointer;
+      }
+      .global-message-maker button:hover {
+        background-color: #000080; /* Navy blue on hover */
+      }
+      .global-message-text {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        color: #ff0000; /* Red text */
+        text-shadow: 2px 2px #000080; /* Navy blue shadow */
+        z-index: 1000;
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="user-info" id="user-info"></div>
-    <button class="no-more-spongebobs-button" id="no-more-spongebobs-button" style="display: none;">NO MORE SPONGEBOBS!</button>
+    <button
+      class="no-more-spongebobs-button"
+      id="no-more-spongebobs-button"
+      style="display: none"
+    >
+      NO MORE SPONGEBOBS!
+    </button>
     <div class="global-message-maker" id="global-message-maker">
-        <input type="text" id="global-message-input" placeholder="Type your global message...">
-        <button id="send-global-message-button">Send Global Message</button>
+      <input
+        type="text"
+        id="global-message-input"
+        placeholder="Type your global message..."
+      />
+      <button id="send-global-message-button">Send Global Message</button>
     </div>
     <div class="global-message-text" id="global-message-text"></div>
     <h1>QuarterNut Chat</h1>
     <div class="chat-container" id="chat-container">
-        <!-- Chat messages will be dynamically inserted here -->
+      <!-- Chat messages will be dynamically inserted here -->
     </div>
     <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Type your message or paste a GIF URL..."> <!-- Updated placeholder -->
-        <button id="send-button">Send</button>
+      <input
+        type="text"
+        id="chat-input"
+        placeholder="Type your message or paste a GIF URL..."
+      />
+      <!-- Updated placeholder -->
+      <button id="send-button">Send</button>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-        import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+      // Import Firebase modules
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        onValue,
+        remove,
+        set,
+      } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-        // Firebase configuration (AS PROVIDED BY USER - DO NOT REDACT)
-        const firebaseConfig = {
-            apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
-            authDomain: "quaters-5f71d.firebaseapp.com",
-            projectId: "quaters-5f71d",
-            storageBucket: "quaters-5f71d.firebasestorage.app",
-            messagingSenderId: "895009748691",
-            appId: "1:895009748691:web:73dc67aee4db1143e90626",
-            measurementId: "G-7WFJZV9JWT"
-        };
+      // Firebase configuration (AS PROVIDED BY USER - DO NOT REDACT)
+      const firebaseConfig = {
+        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
+        authDomain: "quaters-5f71d.firebaseapp.com",
+        projectId: "quaters-5f71d",
+        storageBucket: "quaters-5f71d.firebasestorage.app",
+        messagingSenderId: "895009748691",
+        appId: "1:895009748691:web:73dc67aee4db1143e90626",
+        measurementId: "G-7WFJZV9JWT",
+      };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getDatabase(app);
 
-        // DOM elements
-        const userInfo = document.getElementById('user-info');
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
-        const noMoreSpongebobsButton = document.getElementById('no-more-spongebobs-button');
-        const globalMessageMaker = document.getElementById('global-message-maker');
-        const globalMessageInput = document.getElementById('global-message-input');
-        const sendGlobalMessageButton = document.getElementById('send-global-message-button');
-        const globalMessageText = document.getElementById('global-message-text');
+      // DOM elements
+      const userInfo = document.getElementById("user-info");
+      const chatContainer = document.getElementById("chat-container");
+      const chatInput = document.getElementById("chat-input");
+      const sendButton = document.getElementById("send-button");
+      const noMoreSpongebobsButton = document.getElementById(
+        "no-more-spongebobs-button"
+      );
+      const globalMessageMaker = document.getElementById(
+        "global-message-maker"
+      );
+      const globalMessageInput = document.getElementById(
+        "global-message-input"
+      );
+      const sendGlobalMessageButton = document.getElementById(
+        "send-global-message-button"
+      );
+      const globalMessageText = document.getElementById("global-message-text");
 
-        // Auth State Listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in
-                const displayName = user.displayName || user.email;
-                userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Sign Out</a>`;
+      // Auth State Listener
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // User is signed in
+          const displayName = user.displayName || user.email;
+          userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Sign Out</a>`;
 
-                // Show "NO MORE SPONGEBOBS!" button and global message maker for brad67ley@gmail.com
-                if (user.email === 'brad67ley@gmail.com') {
-                    noMoreSpongebobsButton.style.display = 'block';
-                    globalMessageMaker.style.display = 'block';
-                } else {
-                    noMoreSpongebobsButton.style.display = 'none';
-                    globalMessageMaker.style.display = 'none';
-                }
+          // Show "NO MORE SPONGEBOBS!" button and global message maker for brad67ley@gmail.com
+          if (user.email === "brad67ley@gmail.com") {
+            noMoreSpongebobsButton.style.display = "block";
+            globalMessageMaker.style.display = "block";
+          } else {
+            noMoreSpongebobsButton.style.display = "none";
+            globalMessageMaker.style.display = "none";
+          }
 
-                // Load chat messages
-                loadChatMessages();
+          // Load chat messages
+          loadChatMessages();
 
-                // Send message function (no changes needed here for GIF sending)
-                const sendMessage = () => {
-                    const message = chatInput.value.trim();
-                    if (message) {
-                        push(ref(db, 'messages'), {
-                            text: message, // Store text or GIF URL
-                            user: displayName,
-                            email: user.email, // Store the user's email
-                            timestamp: new Date().toISOString()
-                        }).then(() => {
-                            chatInput.value = ''; // Clear input
-                        }).catch((error) => {
-                            console.error('Error sending message: ', error);
-                            alert('Error sending message: ' + error.message);
-                        });
-                    }
-                };
-
-                // Send message on button click
-                sendButton.addEventListener('click', sendMessage);
-
-                // Send message on Enter key press
-                chatInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
+          // Send message function (no changes needed here for GIF sending)
+          const sendMessage = () => {
+            const message = chatInput.value.trim();
+            if (message) {
+              push(ref(db, "messages"), {
+                text: message, // Store text or GIF URL
+                user: displayName,
+                email: user.email, // Store the user's email
+                timestamp: new Date().toISOString(),
+              })
+                .then(() => {
+                  chatInput.value = ""; // Clear input
+                })
+                .catch((error) => {
+                  console.error("Error sending message: ", error);
+                  alert("Error sending message: " + error.message);
                 });
-
-                // Add sign-out link functionality
-                // Ensure listener isn't added multiple times if auth state changes rapidly
-                const signOutLink = document.getElementById('sign-out-link');
-                if (signOutLink) {
-                     // Remove previous listener if exists to prevent duplicates
-                    const newSignOutLink = signOutLink.cloneNode(true);
-                    signOutLink.parentNode.replaceChild(newSignOutLink, signOutLink);
-                    newSignOutLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        signOut(auth).then(() => {
-                            alert('Signed out successfully!');
-                            window.location.href = 'index.html';
-                        }).catch((error) => {
-                            console.error('Error signing out: ', error);
-                            alert('Error signing out: ' + error.message);
-                        });
-                    });
-                }
-
-
-                // Add "NO MORE SPONGEBOBS!" button functionality
-                noMoreSpongebobsButton.addEventListener('click', () => {
-                    set(ref(db, 'globalMessage'), { text: 'NO MORE SPONGEBOBS!!!!', timestamp: new Date().toISOString() })
-                        .catch((error) => {
-                            console.error('Error triggering global message: ', error);
-                            alert('Error triggering global message: ' + error.message);
-                        });
-                });
-
-                // Add global message maker functionality
-                sendGlobalMessageButton.addEventListener('click', () => {
-                    const message = globalMessageInput.value.trim();
-                    if (message) {
-                        set(ref(db, 'globalMessage'), { text: message, timestamp: new Date().toISOString() })
-                            .catch((error) => {
-                                console.error('Error sending global message: ', error);
-                                alert('Error sending global message: ' + error.message);
-                            });
-                        globalMessageInput.value = ''; // Clear input
-                    }
-                });
-
-                // Listen for global messages
-                const globalMsgRef = ref(db, 'globalMessage');
-                onValue(globalMsgRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        const messageData = snapshot.val();
-                        const message = messageData.text;
-                        globalMessageText.textContent = message;
-                        globalMessageText.style.display = 'block';
-                        // Consider using timestamp difference if needed for display duration
-                        setTimeout(() => {
-                            globalMessageText.style.display = 'none';
-                        }, 3000); // Hide after 3 seconds
-                    } else {
-                         globalMessageText.style.display = 'none';
-                    }
-                }, (error) => {
-                     console.error("Error fetching global message:", error);
-                });
-
-            } else {
-                // User is signed out, redirect to main page
-                window.location.href = 'index.html';
             }
-        });
+          };
 
-        // Function to check if a string is likely a GIF URL
-        function isGifUrl(url) {
-            if (typeof url !== 'string') return false;
-            // Basic check for common image URL patterns ending in .gif (case-insensitive)
-            return url.toLowerCase().match(/^https?:\/\/.+\.(gif)(\?.*)?$/i);
-        }
+          // Send message on button click
+          sendButton.addEventListener("click", sendMessage);
 
-        // Load chat messages (MODIFIED FOR GIF DISPLAY)
-        function loadChatMessages() {
-            const messagesRef = ref(db, 'messages');
-            onValue(messagesRef, (snapshot) => {
-                const wasScrolledToBottom = chatContainer.scrollHeight - chatContainer.clientHeight <= chatContainer.scrollTop + 1; // Check if user is near the bottom
+          // Send message on Enter key press
+          chatInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          });
 
-                chatContainer.innerHTML = ''; // Clear chat container
-                snapshot.forEach((childSnapshot) => {
-                    const message = childSnapshot.val();
-                    if (!message || !message.user || !message.text) return; // Skip malformed messages
-
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('chat-message');
-
-                    let userPrefix = '';
-                    // Determine user prefix with badges/styles
-                    if (message.email === 'brad67ley@gmail.com') {
-                        userPrefix = `<strong>${message.user}</strong> <span class="owner-text">OWNER</span>: `;
-                    } else if (message.email === 'victors.realm1@gmail.com') {
-                        userPrefix = `<strong>${message.user}</strong> <span class="piss-man-badge">piss gal</span>: `;
-                    } else if (message.email === 'jagaimoanimetitties@gmail.com') {
-                        userPrefix = `<strong>${message.user}</strong> <span class="anime-girl-badge">anime girl</span>: `;
-                    } else if (message.email === 'trashcall988110@gmail.com') {
-                        userPrefix = `<strong>${message.user}</strong> <span class="the-real-n-badge">The Real N</span>: `;
-                    } else {
-                        userPrefix = `<strong>${message.user}</strong>: `;
-                    }
-
-                    // *** GIF CHECK AND RENDERING ***
-                    if (isGifUrl(message.text)) {
-                        // If it's a GIF URL, display the user prefix and an image tag
-                        messageElement.innerHTML = `${userPrefix}<img src="${message.text}" alt="${message.user}'s GIF">`;
-                    } else {
-                        // Otherwise, display the user prefix and the text content
-                        // Basic escaping to prevent simple HTML injection from text messages
-                        const textNode = document.createTextNode(message.text);
-                        const textSpan = document.createElement('span');
-                        textSpan.appendChild(textNode);
-                        messageElement.innerHTML = userPrefix; // Set prefix first
-                        messageElement.appendChild(textSpan); // Append text safely
-                    }
-
-
-                    // Add delete button for the owner (brad67ley@gmail.com)
-                    if (auth.currentUser && auth.currentUser.email === 'brad67ley@gmail.com') {
-                        const deleteButton = document.createElement('button');
-                        deleteButton.classList.add('delete-button');
-                        deleteButton.textContent = 'Delete';
-                        deleteButton.addEventListener('click', () => {
-                            remove(childSnapshot.ref).catch((error) => {
-                                console.error('Error deleting message: ', error);
-                                alert('Error deleting message: ' + error.message);
-                            });
-                        });
-                        messageElement.appendChild(deleteButton);
-                    }
-
-                    chatContainer.appendChild(messageElement);
+          // Add sign-out link functionality
+          // Ensure listener isn't added multiple times if auth state changes rapidly
+          const signOutLink = document.getElementById("sign-out-link");
+          if (signOutLink) {
+            // Remove previous listener if exists to prevent duplicates
+            const newSignOutLink = signOutLink.cloneNode(true);
+            signOutLink.parentNode.replaceChild(newSignOutLink, signOutLink);
+            newSignOutLink.addEventListener("click", (e) => {
+              e.preventDefault();
+              signOut(auth)
+                .then(() => {
+                  alert("Signed out successfully!");
+                  window.location.href = "index.html";
+                })
+                .catch((error) => {
+                  console.error("Error signing out: ", error);
+                  alert("Error signing out: " + error.message);
                 });
-
-                // Scroll to the bottom only if the user was already near the bottom
-                 if (wasScrolledToBottom) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
-
-            }, (error) => {
-                 console.error("Error fetching messages:", error);
-                 // Optionally display an error message to the user in the chat container
-                 // chatContainer.innerHTML = '<p style="color: red;">Error loading messages. Please try refreshing.</p>';
             });
+          }
+
+          // Add "NO MORE SPONGEBOBS!" button functionality
+          noMoreSpongebobsButton.addEventListener("click", () => {
+            set(ref(db, "globalMessage"), {
+              text: "NO MORE SPONGEBOBS!!!!",
+              timestamp: new Date().toISOString(),
+            }).catch((error) => {
+              console.error("Error triggering global message: ", error);
+              alert("Error triggering global message: " + error.message);
+            });
+          });
+
+          // Add global message maker functionality
+          sendGlobalMessageButton.addEventListener("click", () => {
+            const message = globalMessageInput.value.trim();
+            if (message) {
+              set(ref(db, "globalMessage"), {
+                text: message,
+                timestamp: new Date().toISOString(),
+              }).catch((error) => {
+                console.error("Error sending global message: ", error);
+                alert("Error sending global message: " + error.message);
+              });
+              globalMessageInput.value = ""; // Clear input
+            }
+          });
+
+          // Listen for global messages
+          const globalMsgRef = ref(db, "globalMessage");
+          onValue(
+            globalMsgRef,
+            (snapshot) => {
+              if (snapshot.exists()) {
+                const messageData = snapshot.val();
+                const message = messageData.text;
+                globalMessageText.textContent = message;
+                globalMessageText.style.display = "block";
+                // Consider using timestamp difference if needed for display duration
+                setTimeout(() => {
+                  globalMessageText.style.display = "none";
+                }, 3000); // Hide after 3 seconds
+              } else {
+                globalMessageText.style.display = "none";
+              }
+            },
+            (error) => {
+              console.error("Error fetching global message:", error);
+            }
+          );
+        } else {
+          // User is signed out, redirect to main page
+          window.location.href = "index.html";
         }
+      });
+
+      // Function to check if a string is likely a GIF URL
+      function isGifUrl(url) {
+        if (typeof url !== "string") return false;
+        // Basic check for common image URL patterns ending in .gif (case-insensitive)
+        return url.toLowerCase().match(/^https?:\/\/.+\.(gif)(\?.*)?$/i);
+      }
+
+      // Load chat messages (MODIFIED FOR GIF DISPLAY)
+      function loadChatMessages() {
+        const messagesRef = ref(db, "messages");
+        onValue(
+          messagesRef,
+          (snapshot) => {
+            const wasScrolledToBottom =
+              chatContainer.scrollHeight - chatContainer.clientHeight <=
+              chatContainer.scrollTop + 1; // Check if user is near the bottom
+
+            chatContainer.innerHTML = ""; // Clear chat container
+            snapshot.forEach((childSnapshot) => {
+              const message = childSnapshot.val();
+              if (!message || !message.user || !message.text) return; // Skip malformed messages
+
+              const messageElement = document.createElement("div");
+              messageElement.classList.add("chat-message");
+
+              let userPrefix = "";
+              // Determine user prefix with badges/styles
+              if (message.email === "brad67ley@gmail.com") {
+                userPrefix = `<strong>${message.user}</strong> <span class="owner-text">OWNER</span>: `;
+              } else if (message.email === "victors.realm1@gmail.com") {
+                userPrefix = `<strong>${message.user}</strong> <span class="piss-man-badge">piss gal</span>: `;
+              } else if (message.email === "jagaimoanimetitties@gmail.com") {
+                userPrefix = `<strong>${message.user}</strong> <span class="anime-girl-badge">anime girl</span>: `;
+              } else if (message.email === "trashcall988110@gmail.com") {
+                userPrefix = `<strong>${message.user}</strong> <span class="the-real-n-badge">The Real N</span>: `;
+              } else if (message.email === "felixheffley@gmail.com") {
+                // ADDED this condition for the new badge
+                userPrefix = `<strong>${message.user}</strong> <span class="silly-badge">silly</span>: `;
+              } else {
+                userPrefix = `<strong>${message.user}</strong>: `;
+              }
+
+              // *** GIF CHECK AND RENDERING ***
+              if (isGifUrl(message.text)) {
+                // If it's a GIF URL, display the user prefix and an image tag
+                messageElement.innerHTML = `${userPrefix}<img src="${message.text}" alt="${message.user}'s GIF">`;
+              } else {
+                // Otherwise, display the user prefix and the text content
+                // Basic escaping to prevent simple HTML injection from text messages
+                const textNode = document.createTextNode(message.text);
+                const textSpan = document.createElement("span");
+                textSpan.appendChild(textNode);
+                messageElement.innerHTML = userPrefix; // Set prefix first
+                messageElement.appendChild(textSpan); // Append text safely
+              }
+
+              // Add delete button for the owner (brad67ley@gmail.com)
+              if (
+                auth.currentUser &&
+                auth.currentUser.email === "brad67ley@gmail.com"
+              ) {
+                const deleteButton = document.createElement("button");
+                deleteButton.classList.add("delete-button");
+                deleteButton.textContent = "Delete";
+                deleteButton.addEventListener("click", () => {
+                  remove(childSnapshot.ref).catch((error) => {
+                    console.error("Error deleting message: ", error);
+                    alert("Error deleting message: " + error.message);
+                  });
+                });
+                messageElement.appendChild(deleteButton);
+              }
+
+              chatContainer.appendChild(messageElement);
+            });
+
+            // Scroll to the bottom only if the user was already near the bottom
+            if (wasScrolledToBottom) {
+              chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+          },
+          (error) => {
+            console.error("Error fetching messages:", error);
+            // Optionally display an error message to the user in the chat container
+            // chatContainer.innerHTML = '<p style="color: red;">Error loading messages. Please try refreshing.</p>';
+          }
+        );
+      }
     </script>
-</body>
+  </body>
 </html>
