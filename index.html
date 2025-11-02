@@ -329,16 +329,17 @@
       .captcha-footer {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
       }
       #captcha-error-msg {
         color: #dc3545;
         font-weight: 500;
         visibility: hidden;
         font-size: 14px;
+        margin: 0;
       }
       .verify-btn {
-        padding: 10px 25px;
+        padding: 10px 20px;
         border: none;
         border-radius: 5px;
         background-color: #007bff;
@@ -346,10 +347,19 @@
         font-size: 16px;
         cursor: pointer;
       }
+      .footer-branding {
+        text-align: left;
+      }
       .d33z-brand {
         font-weight: bold;
         font-style: italic;
         color: #333;
+      }
+      .captcha-credit-text {
+        display: block;
+        font-size: 10px;
+        color: #888;
+        margin-top: 2px;
       }
       /* --- D33zCaptcha CSS End --- */
     </style>
@@ -400,15 +410,12 @@
         <h2>Sign In or Create an Account</h2>
         <input type="email" id="email" placeholder="Email" required />
         <input type="password" id="password" placeholder="Password" required />
-        <!-- D33zCaptcha Honeypot Field -->
         <div class="honeypot-field">
           <label for="email_confirm">Do not fill this field</label>
           <input type="text" id="email_confirm" name="email_confirm" />
         </div>
         <button type="button" id="sign-in">Sign In</button>
-        <!-- Changed type to "button" -->
         <button type="button" id="sign-up">Sign Up</button>
-        <!-- Changed type to "button" -->
       </div>
 
       <div id="chat-link-container" style="display: none">
@@ -419,7 +426,6 @@
       </footer>
     </div>
 
-    <!-- D33zCaptcha HTML Start -->
     <div id="captcha-modal" class="captcha-modal">
       <div id="captcha-box" class="captcha-box">
         <div class="captcha-header">
@@ -430,13 +436,15 @@
         </div>
         <div id="captcha-grid" class="captcha-grid"></div>
         <div class="captcha-footer">
-          <span class="d33z-brand">D33zCaptcha</span>
+          <div class="footer-branding">
+            <span class="d33z-brand">D33zCaptcha</span>
+            <span id="captcha-credit" class="captcha-credit-text"></span>
+          </div>
           <p id="captcha-error-msg">Verification failed.</p>
           <button id="verify-btn" class="verify-btn">Verify</button>
         </div>
       </div>
     </div>
-    <!-- D33zCaptcha HTML End -->
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -470,10 +478,9 @@
       const db = getDatabase(app);
 
       // --- D33zCaptcha Integration Start ---
-
       let MOCK_SERVER;
       let currentCaptchaToken;
-      let pendingCredentials = null; // Variable to hold email/password while CAPTCHA is active
+      let pendingCredentials = null;
 
       MOCK_SERVER = {
         activeTokens: new Map(),
@@ -482,45 +489,83 @@
             name: "Sign",
             imageUrl: "https://i.imgur.com/wGkRyWe.png",
             correctIndices: [1, 4, 7],
+            owner: "D33zImg",
           },
           {
             name: "Tree Stump",
             imageUrl: "https://i.imgur.com/xqKLFum.png",
             correctIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            owner: "D33zImg",
           },
           {
             name: "Chair",
             imageUrl: "https://i.imgur.com/gVbqVKT.png",
             correctIndices: [3, 4, 6, 7],
+            owner: "D33zImg",
           },
           {
             name: "Fire Hydrant",
             imageUrl: "https://i.imgur.com/BeOwb5k.png",
             correctIndices: [0, 1, 3, 4],
+            owner: "D33zImg",
           },
           {
             name: "Sign",
             imageUrl: "https://i.imgur.com/SiOJgZb.png",
             correctIndices: [0, 1],
+            owner: "D33zImg",
           },
           {
             name: "Streetlight",
             imageUrl: "https://i.imgur.com/mzyCp7c.png",
             correctIndices: [2, 5, 8],
+            owner: "D33zImg",
           },
           {
             name: "Drain",
             imageUrl: "https://i.imgur.com/vXYfrc6.png",
             correctIndices: [1],
+            owner: "D33zImg",
+          },
+          // <<< --- NEW CHALLENGES ADDED HERE --- >>>
+          {
+            name: "Sign",
+            imageUrl: "https://i.imgur.com/zqdpG1K.png",
+            correctIndices: [4],
+            owner: "Flixheff",
+          },
+          {
+            name: "Trash can",
+            imageUrl: "https://i.imgur.com/2AlAeus.png",
+            correctIndices: [4, 5, 7, 8],
+            owner: "Flixheff",
+          },
+          {
+            name: "Bench",
+            imageUrl: "https://i.imgur.com/eKM6jUt.png",
+            correctIndices: [3, 4, 5],
+            owner: "Flixheff",
+          },
+          {
+            name: "People",
+            imageUrl: "https://i.imgur.com/Aokrp2L.png",
+            correctIndices: [3, 6],
+            owner: "Flixheff",
+          },
+          {
+            name: "Stop Sign",
+            imageUrl: "https://i.imgur.com/ZtVBhgp.png",
+            correctIndices: [1, 4, 7],
+            owner: "Flixheff",
           },
         ],
         MIN_TIME_MS: 1500,
         MIN_MOUSE_POINTS: 20,
         getCaptchaChallenge: function () {
-          /* ... function code ... */
+          /* ... */
         },
         verifyCaptcha: function (token, payload) {
-          /* ... function code ... */
+          /* ... */
         },
       };
       MOCK_SERVER.getCaptchaChallenge = function () {
@@ -528,7 +573,12 @@
           this.challenges[Math.floor(Math.random() * this.challenges.length)];
         const token = `d33z-token-${Date.now()}-${Math.random()}`;
         this.activeTokens.set(token, challenge.correctIndices);
-        return { token, name: challenge.name, imageUrl: challenge.imageUrl };
+        return {
+          token,
+          name: challenge.name,
+          imageUrl: challenge.imageUrl,
+          owner: challenge.owner,
+        };
       };
       MOCK_SERVER.verifyCaptcha = function (token, payload) {
         if (!this.activeTokens.has(token))
@@ -557,6 +607,7 @@
       const captchaBox = document.getElementById("captcha-box");
       const errorMsg = document.getElementById("captcha-error-msg");
       const captchaPrompt = document.getElementById("captcha-prompt");
+      const captchaCredit = document.getElementById("captcha-credit"); // New element
       const honeypotInput = document.getElementById("email_confirm");
 
       let captchaStartTime = 0;
@@ -570,6 +621,7 @@
         mousePath = [];
         captchaStartTime = Date.now();
         captchaPrompt.innerHTML = `Select all squares with a <strong>${challenge.name}</strong>`;
+        captchaCredit.textContent = `Image by ${challenge.owner}`; // Update credit text
         const tiles = captchaGrid.children;
         for (const tile of tiles) {
           tile.style.backgroundImage = `url('${challenge.imageUrl}')`;
@@ -607,26 +659,26 @@
         currentCaptchaToken = null;
 
         if (result.success) {
-          // CAPTCHA PASSED! NOW ATTEMPT TO LOG IN WITH FIREBASE
           captchaGrid.removeEventListener("mousemove", recordMouseMovement);
           captchaModal.classList.remove("visible");
-
           if (pendingCredentials) {
             signInWithEmailAndPassword(
               auth,
               pendingCredentials.email,
               pendingCredentials.password
             )
-              .then((userCredential) => {
+              .then(() => {
                 emailInput.value = "";
                 passwordInput.value = "";
               })
               .catch((error) => {
                 console.error("Sign in error after CAPTCHA: ", error);
                 if (
-                  error.code === "auth/invalid-credential" ||
-                  error.code === "auth/user-not-found" ||
-                  error.code === "auth/wrong-password"
+                  [
+                    "auth/invalid-credential",
+                    "auth/user-not-found",
+                    "auth/wrong-password",
+                  ].includes(error.code)
                 ) {
                   alert("Incorrect email or password. Please try again.");
                 } else {
@@ -634,7 +686,7 @@
                 }
               })
               .finally(() => {
-                pendingCredentials = null; // Clear credentials after attempt
+                pendingCredentials = null;
               });
           }
         } else {
@@ -653,7 +705,6 @@
           captchaModal.classList.remove("visible");
         }
       });
-
       // --- D33zCaptcha Integration End ---
 
       // --- Original Page Logic (Modified) ---
@@ -666,7 +717,6 @@
       const signUpButton = document.getElementById("sign-up");
 
       signUpButton.addEventListener("click", () => {
-        // Sign-up logic remains unchanged, no CAPTCHA needed
         const email = emailInput.value;
         const password = passwordInput.value;
         if (
@@ -707,23 +757,17 @@
           });
       });
 
-      // MODIFIED Sign In to trigger CAPTCHA
       signInButton.addEventListener("click", () => {
         const email = emailInput.value;
         const password = passwordInput.value;
-
         if (!email || !password) {
           alert("Please enter both email and password.");
           return;
         }
-
-        // Honeypot check
         if (honeypotInput.value !== "") {
           console.error("Honeypot triggered! Bot detected.");
-          return; // Fail silently
+          return;
         }
-
-        // Store credentials and load the CAPTCHA
         pendingCredentials = { email, password };
         loadNewCaptcha();
       });
@@ -734,7 +778,6 @@
           userInfo.innerHTML = `<a href="profile.html" title="View Profile">${displayName}</a> | <a href="#" id="sign-out-link" title="Sign Out">Sign Out</a>`;
           authForm.style.display = "none";
           chatLinkContainer.style.display = "block";
-
           const signOutLink = document.getElementById("sign-out-link");
           if (signOutLink) {
             signOutLink.addEventListener("click", (e) => {
