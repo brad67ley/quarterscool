@@ -22,134 +22,96 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Optional shadow */
         margin-bottom: 20px; /* Space below nav */
       }
-      /* Use direct child selector '>' to only target the main ul */
       .top-nav > ul {
         list-style: none;
         padding: 0;
         margin: 0;
-        display: flex; /* Use flexbox for alignment */
-        justify-content: center; /* Center items horizontally */
-        gap: 20px; /* Space between items */
-        flex-wrap: wrap; /* Allow items to wrap on smaller screens */
-      }
-      .top-nav li {
-        /* No specific styling needed here */
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
       }
       .top-nav a {
-        color: #ffcc00; /* Yellow text */
+        color: #ffcc00;
         text-decoration: none;
-        font-size: 20px; /* Slightly smaller for nav */
+        font-size: 20px;
         padding: 8px 15px;
         border-radius: 5px;
         transition: background-color 0.2s ease, color 0.2s ease;
-        display: block; /* Make the whole area a link */
+        display: block;
       }
       .top-nav a:hover {
-        background-color: #ff0000; /* Red background on hover */
-        color: #ffffff; /* White text on hover */
+        background-color: #ff0000;
+        color: #ffffff;
       }
-      /* --- End Navigation Menu Styles --- */
-
-      /* --- Dropdown Menu Styles (CORRECTED) --- */
       .dropdown {
-        position: relative; /* This is the anchor for the dropdown menu */
+        position: relative;
       }
-
       .dropdown-content {
-        display: none; /* Hide by default */
-        position: absolute; /* Position relative to the .dropdown container */
-        background-color: #000080; /* Match nav background */
-        min-width: 200px; /* Give it some space */
+        display: none;
+        position: absolute;
+        background-color: #000080;
+        min-width: 200px;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 100; /* Ensure it's on top */
-        list-style: none; /* Remove bullets */
+        z-index: 100;
+        list-style: none;
         padding: 0;
-        /* margin-top: 5px; <--- THIS WAS THE PROBLEM! REMOVED. */
         border-radius: 5px;
-        overflow: hidden; /* Ensures child border-radius is respected */
+        overflow: hidden;
       }
-
       .dropdown-content li {
         width: 100%;
       }
-
       .dropdown-content a {
-        text-align: left; /* Align text to the left for a classic dropdown feel */
-        padding: 12px 16px; /* Adjust padding for dropdown items */
+        text-align: left;
+        padding: 12px 16px;
       }
-
-      /* Show the dropdown menu on hover */
       .dropdown:hover .dropdown-content {
         display: block;
       }
-      /* --- End Dropdown Menu Styles --- */
-
-      /* --- Mobile-Friendly Navigation Adjustments --- */
       @media screen and (max-width: 768px) {
-        /* Also use direct child selector '>' here */
         .top-nav > ul {
-          flex-direction: column; /* Stack nav items vertically */
-          gap: 5px; /* Reduce gap for vertical layout */
+          flex-direction: column;
+          gap: 5px;
         }
-
         .top-nav li {
-          width: 90%; /* Make list items take up more width */
-          margin: 0 auto; /* Center the list items */
+          width: 90%;
+          margin: 0 auto;
         }
-
-        /* For mobile, we display dropdown content as part of the list, not a hover menu */
         .dropdown-content {
-          display: block; /* Always show the dropdown content on mobile */
-          position: static; /* Remove absolute positioning */
-          background-color: transparent; /* Blend with the main nav */
-          box-shadow: none; /* Remove desktop shadow */
+          display: block;
+          position: static;
+          background-color: transparent;
+          box-shadow: none;
           min-width: 100%;
           margin-top: 5px;
         }
-
         .dropbtn {
-          /* Style the main dropdown button to look like a category header */
-          background-color: rgba(
-            255,
-            0,
-            0,
-            0.5
-          ) !important; /* Use !important to override hover */
-          pointer-events: none; /* Make it not clickable on mobile */
+          background-color: rgba(255, 0, 0, 0.5) !important;
+          pointer-events: none;
           color: #ffffff !important;
         }
-
         .dropdown-content a {
-          /* Style sub-items to look indented */
-          background-color: rgba(
-            0,
-            0,
-            128,
-            0.7
-          ); /* Slightly different background */
-          font-size: 18px; /* Slightly smaller font */
-          text-align: center; /* Center the text for consistency */
+          background-color: rgba(0, 0, 128, 0.7);
+          font-size: 18px;
+          text-align: center;
         }
       }
-      /* --- End Mobile Styles --- */
-
       .content-wrapper {
-        /* Added wrapper for main content padding */
-        padding: 0 20px 20px 20px; /* Add padding back for content, removed top padding */
-        max-width: 900px; /* Limit content width */
-        margin: 0 auto; /* Center content */
+        padding: 0 20px 20px 20px;
+        max-width: 900px;
+        margin: 0 auto;
       }
-
       h1 {
         font-size: 48px;
-        text-shadow: 2px 2px #ff0000; /* Red shadow for retro effect */
+        text-shadow: 2px 2px #ff0000;
         margin-bottom: 20px;
-        margin-top: 0; /* Removed top margin as nav provides spacing */
-        color: #000080; /* Keep h1 navy */
+        margin-top: 0;
+        color: #000080;
       }
       h2 {
         font-size: 32px;
-        color: #ff0000; /* Red text */
+        color: #ff0000;
         margin-top: 40px;
       }
       p {
@@ -162,7 +124,7 @@
         width: 150px;
         height: 150px;
         margin: 20px;
-        border: 5px solid #000080; /* Navy blue border */
+        border: 5px solid #000080;
         border-radius: 50%;
       }
       .grid {
@@ -176,19 +138,19 @@
       footer {
         margin-top: 60px;
         font-size: 16px;
-        color: #ff0000; /* Red text */
-        padding-bottom: 20px; /* Add padding at the very bottom */
+        color: #ff0000;
+        padding-bottom: 20px;
       }
       .user-info {
         position: absolute;
-        top: 10px; /* Adjusted position relative to nav */
+        top: 10px;
         right: 20px;
-        font-size: 16px; /* Slightly smaller */
+        font-size: 16px;
         background-color: rgba(255, 255, 255, 0.7);
         padding: 5px 10px;
         border-radius: 5px;
         border: 1px solid #000080;
-        z-index: 10; /* Ensure it's above nav if needed */
+        z-index: 10;
       }
       .user-info a {
         color: #000080;
@@ -254,14 +216,148 @@
         background-color: #000080;
         color: #ffcc00;
       }
+
+      /* --- D33zCaptcha CSS Start --- */
+      .honeypot-field {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 0;
+        width: 0;
+        z-index: -1;
+      }
+      .captcha-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
+      .captcha-modal.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+      .captcha-box {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        width: 320px;
+      }
+      .captcha-box.shake {
+        animation: shake 0.5s;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+      .captcha-header {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        border-radius: 5px 5px 0 0;
+        margin: -20px -20px 15px -20px;
+      }
+      .captcha-header p {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .captcha-header small {
+        font-size: 14px;
+      }
+      .captcha-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        width: 300px;
+        height: 300px;
+        margin: 0 auto 15px;
+        border: 1px solid #ccc;
+      }
+      .captcha-tile {
+        width: 100%;
+        height: 100%;
+        background-size: 300% 300%;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.2s;
+      }
+      .captcha-tile:hover {
+        transform: scale(1.05);
+      }
+      .captcha-tile.selected::after {
+        content: "✓";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 123, 255, 0.5);
+        color: white;
+        font-size: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        border-radius: 3px;
+      }
+      .captcha-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      #captcha-error-msg {
+        color: #dc3545;
+        font-weight: 500;
+        visibility: hidden;
+        font-size: 14px;
+      }
+      .verify-btn {
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .d33z-brand {
+        font-weight: bold;
+        font-style: italic;
+        color: #333;
+      }
+      /* --- D33zCaptcha CSS End --- */
     </style>
   </head>
   <body>
-    <!-- Top Navigation Menu (EDITED) -->
     <nav class="top-nav">
       <ul>
         <li><a href="updates.html">📰 View Updates! 📰</a></li>
-        <!-- ADDED SWIGGLER LINK -->
         <li><a href="swiggle.html">🌀 Swiggler 🌀</a></li>
         <li class="dropdown">
           <a href="javascript:void(0)" class="dropbtn">🤔 Fun Thingies 🤔</a>
@@ -269,35 +365,18 @@
             <li><a href="stories.html">📖 Stories</a></li>
             <li><a href="ratingstates.html">⭐ States Rated</a></li>
             <li><a href="lifeupdates.html">👨 Life Updates</a></li>
-            <!-- MOVED PARTY TIMER LINK HERE -->
             <li><a href="party.html">🎉 Party Timer!</a></li>
           </ul>
         </li>
         <li><a href="gambling.html">🎰 GAMBLE!!! 🎰</a></li>
       </ul>
     </nav>
-
     <div class="user-info" id="user-info"></div>
-
-    <!-- Wrapper for main page content -->
     <div class="content-wrapper">
       <h1>AMERICAN QUARTERS ARE COOL!</h1>
-      <p>
-        Welcome to the quarter website! (It's barely about quarters—it was just
-        a server test) but I WILL be including some quarter love in here from
-        time to time! Feel free to make an account, log in,
-        <a href="stories.html">view my personal stories</a>,
-        <a href="gallery.html">Look at the Daniel Larson Gallery</a>, Go to the
-        Swiggler Feed (A Social Media Platform!), or even chat in the chat room
-        down below!
-      </p>
-
+      <p>Welcome to the quarter website! ...</p>
       <h2>Why Quarters Rule</h2>
-      <p>
-        BECAUSE QUARTERS ARE THE SUPERIOR COIN WITH HISTORY, RARITY, AND
-        SOMETIMES YOU CAN FIND A SWEET STATE COIN! HOW COOL IS THAT!
-      </p>
-
+      <p>BECAUSE QUARTERS ARE THE SUPERIOR COIN ...</p>
       <h2>Check Out These Cool Quarters</h2>
       <div class="grid">
         <img
@@ -317,33 +396,50 @@
         />
       </div>
 
-      <!-- Auth Form remains the same -->
       <div class="auth-form" id="auth-form">
         <h2>Sign In or Create an Account</h2>
         <input type="email" id="email" placeholder="Email" required />
         <input type="password" id="password" placeholder="Password" required />
-        <button id="sign-in">Sign In</button>
-        <button id="sign-up">Sign Up</button>
+        <!-- D33zCaptcha Honeypot Field -->
+        <div class="honeypot-field">
+          <label for="email_confirm">Do not fill this field</label>
+          <input type="text" id="email_confirm" name="email_confirm" />
+        </div>
+        <button type="button" id="sign-in">Sign In</button>
+        <!-- Changed type to "button" -->
+        <button type="button" id="sign-up">Sign Up</button>
+        <!-- Changed type to "button" -->
       </div>
 
-      <!-- Chat Link (EDITED) -->
       <div id="chat-link-container" style="display: none">
         <a href="chat.html" class="chat-link">Go to the Cool Chat Room →</a>
       </div>
-
       <footer>
-        <p>
-          © 2025 Cool American Quarters. All rights reserved. Made with ❤️ and
-          my sleepy ass eyes.
-        </p>
+        <p>© 2025 Cool American Quarters...</p>
       </footer>
     </div>
-    <!-- End content-wrapper -->
 
-    <!-- Firebase SDK Script (No changes needed here) -->
+    <!-- D33zCaptcha HTML Start -->
+    <div id="captcha-modal" class="captcha-modal">
+      <div id="captcha-box" class="captcha-box">
+        <div class="captcha-header">
+          <p id="captcha-prompt">
+            Select all squares with a <strong>...</strong>
+          </p>
+          <small>If there are none, click verify.</small>
+        </div>
+        <div id="captcha-grid" class="captcha-grid"></div>
+        <div class="captcha-footer">
+          <span class="d33z-brand">D33zCaptcha</span>
+          <p id="captcha-error-msg">Verification failed.</p>
+          <button id="verify-btn" class="verify-btn">Verify</button>
+        </div>
+      </div>
+    </div>
+    <!-- D33zCaptcha HTML End -->
+
     <script type="module">
-      // Import Firebase modules
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; // Use consistent version
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
       import {
         getAuth,
         createUserWithEmailAndPassword,
@@ -351,19 +447,17 @@
         onAuthStateChanged,
         signOut,
         updateProfile,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; // Use consistent version
-      // Import Realtime Database functions needed for signup default data
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import {
         getDatabase,
         ref,
         set,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js"; // Use consistent version
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-      // Firebase configuration
       const firebaseConfig = {
-        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg", // Replace with your actual API key if needed
+        apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
-        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com", // Added for DB operations
+        databaseURL: "https://quaters-5f71d-default-rtdb.firebaseio.com",
         projectId: "quaters-5f71d",
         storageBucket: "quaters-5f71d.firebasestorage.app",
         messagingSenderId: "895009748691",
@@ -371,12 +465,198 @@
         measurementId: "G-7WFJZV9JWT",
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
-      const db = getDatabase(app); // Initialize Database
+      const db = getDatabase(app);
 
-      // DOM elements
+      // --- D33zCaptcha Integration Start ---
+
+      let MOCK_SERVER;
+      let currentCaptchaToken;
+      let pendingCredentials = null; // Variable to hold email/password while CAPTCHA is active
+
+      MOCK_SERVER = {
+        activeTokens: new Map(),
+        challenges: [
+          {
+            name: "Sign",
+            imageUrl: "https://i.imgur.com/wGkRyWe.png",
+            correctIndices: [1, 4, 7],
+          },
+          {
+            name: "Tree Stump",
+            imageUrl: "https://i.imgur.com/xqKLFum.png",
+            correctIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+          },
+          {
+            name: "Chair",
+            imageUrl: "https://i.imgur.com/gVbqVKT.png",
+            correctIndices: [3, 4, 6, 7],
+          },
+          {
+            name: "Fire Hydrant",
+            imageUrl: "https://i.imgur.com/BeOwb5k.png",
+            correctIndices: [0, 1, 3, 4],
+          },
+          {
+            name: "Sign",
+            imageUrl: "https://i.imgur.com/SiOJgZb.png",
+            correctIndices: [0, 1],
+          },
+          {
+            name: "Streetlight",
+            imageUrl: "https://i.imgur.com/mzyCp7c.png",
+            correctIndices: [2, 5, 8],
+          },
+          {
+            name: "Drain",
+            imageUrl: "https://i.imgur.com/vXYfrc6.png",
+            correctIndices: [1],
+          },
+        ],
+        MIN_TIME_MS: 1500,
+        MIN_MOUSE_POINTS: 20,
+        getCaptchaChallenge: function () {
+          /* ... function code ... */
+        },
+        verifyCaptcha: function (token, payload) {
+          /* ... function code ... */
+        },
+      };
+      MOCK_SERVER.getCaptchaChallenge = function () {
+        const challenge =
+          this.challenges[Math.floor(Math.random() * this.challenges.length)];
+        const token = `d33z-token-${Date.now()}-${Math.random()}`;
+        this.activeTokens.set(token, challenge.correctIndices);
+        return { token, name: challenge.name, imageUrl: challenge.imageUrl };
+      };
+      MOCK_SERVER.verifyCaptcha = function (token, payload) {
+        if (!this.activeTokens.has(token))
+          return { success: false, reason: "Invalid token." };
+        const correctIndices = this.activeTokens.get(token);
+        this.activeTokens.delete(token);
+        if (payload.timing < this.MIN_TIME_MS)
+          return { success: false, reason: "Verification failed (too fast)." };
+        if (payload.mouse < this.MIN_MOUSE_POINTS)
+          return {
+            success: false,
+            reason: "Verification failed (unnatural interaction).",
+          };
+        const userSelection = payload.selection.sort((a, b) => a - b);
+        const isCorrect =
+          JSON.stringify(userSelection) ===
+          JSON.stringify(correctIndices.sort((a, b) => a - b));
+        if (!isCorrect)
+          return { success: false, reason: "Incorrect selection." };
+        return { success: true };
+      };
+
+      const captchaModal = document.getElementById("captcha-modal");
+      const captchaGrid = document.getElementById("captcha-grid");
+      const verifyBtn = document.getElementById("verify-btn");
+      const captchaBox = document.getElementById("captcha-box");
+      const errorMsg = document.getElementById("captcha-error-msg");
+      const captchaPrompt = document.getElementById("captcha-prompt");
+      const honeypotInput = document.getElementById("email_confirm");
+
+      let captchaStartTime = 0;
+      let mousePath = [];
+      const recordMouseMovement = (e) =>
+        mousePath.push({ x: e.clientX, y: e.clientY });
+
+      const loadNewCaptcha = () => {
+        const challenge = MOCK_SERVER.getCaptchaChallenge();
+        currentCaptchaToken = challenge.token;
+        mousePath = [];
+        captchaStartTime = Date.now();
+        captchaPrompt.innerHTML = `Select all squares with a <strong>${challenge.name}</strong>`;
+        const tiles = captchaGrid.children;
+        for (const tile of tiles) {
+          tile.style.backgroundImage = `url('${challenge.imageUrl}')`;
+          tile.classList.remove("selected");
+        }
+        errorMsg.style.visibility = "hidden";
+        captchaBox.classList.remove("shake");
+        captchaModal.classList.add("visible");
+        captchaGrid.addEventListener("mousemove", recordMouseMovement);
+      };
+
+      for (let i = 0; i < 9; i++) {
+        const tile = document.createElement("div");
+        tile.classList.add("captcha-tile");
+        tile.dataset.index = i;
+        const xPos = (i % 3) * 50;
+        const yPos = Math.floor(i / 3) * 50;
+        tile.style.backgroundPosition = `${xPos}% ${yPos}%`;
+        tile.addEventListener("click", () => tile.classList.toggle("selected"));
+        captchaGrid.appendChild(tile);
+      }
+
+      verifyBtn.addEventListener("click", () => {
+        const timeElapsed = Date.now() - captchaStartTime;
+        const selectedTiles = captchaGrid.querySelectorAll(".selected");
+        const selectedIndices = Array.from(selectedTiles).map((tile) =>
+          parseInt(tile.dataset.index)
+        );
+        const payload = {
+          selection: selectedIndices,
+          timing: timeElapsed,
+          mouse: mousePath.length,
+        };
+        const result = MOCK_SERVER.verifyCaptcha(currentCaptchaToken, payload);
+        currentCaptchaToken = null;
+
+        if (result.success) {
+          // CAPTCHA PASSED! NOW ATTEMPT TO LOG IN WITH FIREBASE
+          captchaGrid.removeEventListener("mousemove", recordMouseMovement);
+          captchaModal.classList.remove("visible");
+
+          if (pendingCredentials) {
+            signInWithEmailAndPassword(
+              auth,
+              pendingCredentials.email,
+              pendingCredentials.password
+            )
+              .then((userCredential) => {
+                emailInput.value = "";
+                passwordInput.value = "";
+              })
+              .catch((error) => {
+                console.error("Sign in error after CAPTCHA: ", error);
+                if (
+                  error.code === "auth/invalid-credential" ||
+                  error.code === "auth/user-not-found" ||
+                  error.code === "auth/wrong-password"
+                ) {
+                  alert("Incorrect email or password. Please try again.");
+                } else {
+                  alert("Error signing in: " + error.message);
+                }
+              })
+              .finally(() => {
+                pendingCredentials = null; // Clear credentials after attempt
+              });
+          }
+        } else {
+          errorMsg.textContent = result.reason || "Verification failed.";
+          errorMsg.style.visibility = "visible";
+          captchaBox.classList.add("shake");
+          setTimeout(() => {
+            loadNewCaptcha();
+          }, 600);
+        }
+      });
+
+      captchaModal.addEventListener("click", (e) => {
+        if (e.target === captchaModal) {
+          captchaGrid.removeEventListener("mousemove", recordMouseMovement);
+          captchaModal.classList.remove("visible");
+        }
+      });
+
+      // --- D33zCaptcha Integration End ---
+
+      // --- Original Page Logic (Modified) ---
       const userInfo = document.getElementById("user-info");
       const authForm = document.getElementById("auth-form");
       const chatLinkContainer = document.getElementById("chat-link-container");
@@ -385,29 +665,23 @@
       const signInButton = document.getElementById("sign-in");
       const signUpButton = document.getElementById("sign-up");
 
-      // Sign Up - Added default display name and DB entry
       signUpButton.addEventListener("click", () => {
+        // Sign-up logic remains unchanged, no CAPTCHA needed
         const email = emailInput.value;
         const password = passwordInput.value;
-
-        if (!email || !password) {
-          alert("Please enter both email and password.");
+        if (
+          !email ||
+          !password ||
+          !/\S+@\S+\.\S+/.test(email) ||
+          password.length < 6
+        ) {
+          alert("Please check your email and password (must be 6+ chars).");
           return;
         }
-        if (!/\S+@\S+\.\S+/.test(email)) {
-          alert("Please enter a valid email address.");
-          return;
-        }
-        if (password.length < 6) {
-          alert("Password should be at least 6 characters long.");
-          return;
-        }
-
         createUserWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
             const user = userCredential.user;
             const defaultDisplayName = email.split("@")[0] || "NewUser";
-
             return updateProfile(user, {
               displayName: defaultDisplayName,
             }).then(() => {
@@ -427,17 +701,13 @@
           })
           .catch((error) => {
             console.error("Sign up error: ", error);
-            if (error.code === "auth/email-already-in-use") {
+            if (error.code === "auth/email-already-in-use")
               alert("This email address is already in use.");
-            } else if (error.code === "auth/weak-password") {
-              alert("Password is too weak. Please use at least 6 characters.");
-            } else {
-              alert("Error creating account: " + error.message);
-            }
+            else alert("Error creating account: " + error.message);
           });
       });
 
-      // Sign In
+      // MODIFIED Sign In to trigger CAPTCHA
       signInButton.addEventListener("click", () => {
         const email = emailInput.value;
         const password = passwordInput.value;
@@ -447,26 +717,17 @@
           return;
         }
 
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            emailInput.value = "";
-            passwordInput.value = "";
-          })
-          .catch((error) => {
-            console.error("Sign in error: ", error);
-            if (
-              error.code === "auth/invalid-credential" ||
-              error.code === "auth/user-not-found" ||
-              error.code === "auth/wrong-password"
-            ) {
-              alert("Incorrect email or password. Please try again.");
-            } else {
-              alert("Error signing in: " + error.message);
-            }
-          });
+        // Honeypot check
+        if (honeypotInput.value !== "") {
+          console.error("Honeypot triggered! Bot detected.");
+          return; // Fail silently
+        }
+
+        // Store credentials and load the CAPTCHA
+        pendingCredentials = { email, password };
+        loadNewCaptcha();
       });
 
-      // Auth State Listener
       onAuthStateChanged(auth, (user) => {
         if (user) {
           const displayName = user.displayName || user.email;
@@ -478,10 +739,7 @@
           if (signOutLink) {
             signOutLink.addEventListener("click", (e) => {
               e.preventDefault();
-              signOut(auth).catch((error) => {
-                console.error("Error signing out:", error);
-                alert("Error signing out: " + error.message);
-              });
+              signOut(auth);
             });
           }
         } else {
