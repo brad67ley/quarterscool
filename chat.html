@@ -14,7 +14,6 @@
         text-align: center;
         transition: background-color 0.5s ease;
       }
-      /* New Rainbow Mode style */
       body.rainbow-mode {
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
@@ -169,6 +168,7 @@
         border-radius: 5px;
         display: none; /* Hidden by default */
         text-align: left;
+        max-width: 250px;
       }
       .admin-controls button {
         display: block;
@@ -178,19 +178,23 @@
         color: #ffffff;
         border: none;
         cursor: pointer;
+        width: 100%;
       }
       .admin-controls button:hover {
         background-color: #000080;
       }
-      .badge-maker {
+      .admin-section {
         margin-top: 10px;
         border-top: 1px solid #000080;
         padding-top: 10px;
       }
-      .badge-maker input {
+      .admin-section h4 {
+        margin: 0 0 5px 0;
+      }
+      .admin-section input {
         display: block;
         margin-bottom: 5px;
-        width: 150px;
+        width: calc(100% - 10px); /* Adjust for padding */
       }
       .global-message-text {
         position: fixed;
@@ -203,7 +207,6 @@
         z-index: 1000;
         display: none;
       }
-      /* NEW: Global Image Flash Overlay */
       .global-flash-overlay {
         position: fixed;
         top: 0;
@@ -222,7 +225,6 @@
         border: 5px solid white;
         border-radius: 15px;
       }
-      /* NEW: Joyous Cat Button */
       .joyous-cat-button {
         position: fixed;
         bottom: 15px;
@@ -238,19 +240,42 @@
     </style>
   </head>
   <body>
-    <!-- NEW: Admin controls container -->
     <div class="admin-controls" id="admin-controls">
       <button id="rainbow-toggle-button">Activate Rainbow</button>
       <button id="apple-flash-button">Flash Apple</button>
       <button id="wipe-chat-button">WIPE ALL MESSAGES</button>
-      <div class="badge-maker">
+
+      <!-- RESTORED: Global Announcement -->
+      <div class="admin-section">
+        <h4>Global Announcement</h4>
+        <input
+          type="text"
+          id="global-message-input"
+          placeholder="Global Text..."
+        />
+        <button id="send-global-message-button">Send Announcement</button>
+      </div>
+
+      <!-- NEW: Impersonation Tool -->
+      <div class="admin-section">
+        <h4>Send As User</h4>
+        <input type="text" id="impersonate-user-input" placeholder="Username" />
+        <input
+          type="text"
+          id="impersonate-message-input"
+          placeholder="Message"
+        />
+        <button id="impersonate-send-button">Send Impersonated</button>
+      </div>
+
+      <div class="admin-section">
         <h4>Badge Maker</h4>
         <input type="email" id="badge-user-email" placeholder="User Email" />
         <input type="text" id="badge-text" placeholder="Badge Text" />
         <input
           type="text"
           id="badge-color"
-          placeholder="Badge Color (e.g. #FF0000)"
+          placeholder="Color (e.g. #FF0000)"
         />
         <button id="set-badge-button">Set Badge</button>
       </div>
@@ -258,7 +283,6 @@
 
     <div class="user-info" id="user-info"></div>
     <div class="global-message-text" id="global-message-text"></div>
-    <!-- NEW: Global Flash Overlay element -->
     <div class="global-flash-overlay" id="global-flash-overlay">
       <img id="global-flash-image" src="" alt="Global Image Flash" />
     </div>
@@ -276,7 +300,6 @@
       <button id="send-button">Send</button>
     </div>
 
-    <!-- NEW: Joyous Cat button -->
     <img
       src="https://i.imgur.com/JI3tDkJ.jpeg"
       class="joyous-cat-button"
@@ -284,9 +307,11 @@
       alt="Joyous Cat"
     />
 
+    <!-- NEW: Hidden audio player for global sounds -->
+    <audio id="global-audio-player" preload="auto"></audio>
+
     <!-- Firebase SDK -->
     <script type="module">
-      // Import Firebase modules
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
       import {
         getAuth,
@@ -325,13 +350,28 @@
       const sendButton = document.getElementById("send-button");
       const globalMessageText = document.getElementById("global-message-text");
 
-      // NEW Admin/Special DOM elements
+      // Admin/Special DOM elements
       const adminControls = document.getElementById("admin-controls");
       const rainbowToggleButton = document.getElementById(
         "rainbow-toggle-button"
       );
       const appleFlashButton = document.getElementById("apple-flash-button");
       const wipeChatButton = document.getElementById("wipe-chat-button");
+      const globalMessageInput = document.getElementById(
+        "global-message-input"
+      );
+      const sendGlobalMessageButton = document.getElementById(
+        "send-global-message-button"
+      );
+      const impersonateUserInput = document.getElementById(
+        "impersonate-user-input"
+      );
+      const impersonateMessageInput = document.getElementById(
+        "impersonate-message-input"
+      );
+      const impersonateSendButton = document.getElementById(
+        "impersonate-send-button"
+      );
       const badgeUserEmail = document.getElementById("badge-user-email");
       const badgeText = document.getElementById("badge-text");
       const badgeColor = document.getElementById("badge-color");
@@ -341,6 +381,17 @@
       );
       const globalFlashImage = document.getElementById("global-flash-image");
       const joyousCatButton = document.getElementById("joyous-cat-button");
+      const globalAudioPlayer = document.getElementById("global-audio-player");
+
+      // --- Audio Unlock Hack ---
+      // Modern browsers prevent audio from playing without user interaction.
+      // This listener "unlocks" audio on the first click anywhere on the page.
+      function unlockAudio() {
+        globalAudioPlayer.play().catch(() => {}); // Attempt to play
+        globalAudioPlayer.pause(); // Immediately pause
+        globalAudioPlayer.currentTime = 0;
+      }
+      document.addEventListener("click", unlockAudio, { once: true });
 
       let userBadges = {}; // Cache for custom user badges
 
@@ -358,21 +409,55 @@
         }
       });
 
-      // Listen for Global Flash messages
+      // Listen for Global Flash messages (Image + Sound)
       const globalFlashRef = ref(db, "globalFlash");
       onValue(globalFlashRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          // Only trigger if timestamp is recent (e.g., within last 5s) to avoid re-trigger on load
           if (Date.now() - data.timestamp < 5000) {
-            globalFlashImage.src = data.url;
+            globalFlashImage.src = data.imageUrl;
             globalFlashOverlay.style.display = "flex";
+
+            if (data.soundUrl) {
+              globalAudioPlayer.src = data.soundUrl;
+              globalAudioPlayer
+                .play()
+                .catch((e) =>
+                  console.warn(
+                    "Audio play failed. User may not have interacted with the page yet.",
+                    e
+                  )
+                );
+            }
+
             setTimeout(() => {
               globalFlashOverlay.style.display = "none";
-            }, 2000); // Hide after 2 seconds
+            }, 2000);
           }
         }
       });
+
+      // RESTORED: Listen for global text announcements
+      const globalMsgRef = ref(db, "globalMessage");
+      onValue(
+        globalMsgRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const messageData = snapshot.val();
+            // Check timestamp to avoid showing old messages on page load
+            if (Date.now() - new Date(messageData.timestamp).getTime() < 5000) {
+              globalMessageText.textContent = messageData.text;
+              globalMessageText.style.display = "block";
+              setTimeout(() => {
+                globalMessageText.style.display = "none";
+              }, 3000); // Hide after 3 seconds
+            }
+          }
+        },
+        (error) => {
+          console.error("Error fetching global message:", error);
+        }
+      );
 
       // Listen for custom badge changes
       const badgesRef = ref(db, "userBadges");
@@ -383,26 +468,14 @@
       // Auth State Listener
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          // User is signed in
           const displayName = user.displayName || user.email;
           userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Sign Out</a>`;
 
           const isAdmin = user.email === "brad67ley@gmail.com";
           const isFelix = user.email === "felixheffley@gmail.com";
 
-          // Show admin controls for the owner
-          if (isAdmin) {
-            adminControls.style.display = "block";
-          } else {
-            adminControls.style.display = "none";
-          }
-
-          // Show joyous cat button for admin OR Felix
-          if (isAdmin || isFelix) {
-            joyousCatButton.style.display = "block";
-          } else {
-            joyousCatButton.style.display = "none";
-          }
+          adminControls.style.display = isAdmin ? "block" : "none";
+          joyousCatButton.style.display = isAdmin || isFelix ? "block" : "none";
 
           loadChatMessages();
 
@@ -444,65 +517,101 @@
           }
 
           // --- Admin Button Functionality ---
-          rainbowToggleButton.addEventListener("click", () => {
-            const currentStatus =
-              document.body.classList.contains("rainbow-mode");
-            set(rainbowRef, !currentStatus);
-          });
-
-          appleFlashButton.addEventListener("click", () => {
-            set(globalFlashRef, {
-              url: "https://img.freepik.com/free-psd/close-up-delicious-apple_23-2151868338.jpg",
-              timestamp: Date.now(),
+          if (isAdmin) {
+            rainbowToggleButton.addEventListener("click", () => {
+              const currentStatus =
+                document.body.classList.contains("rainbow-mode");
+              set(rainbowRef, !currentStatus);
             });
-          });
 
-          wipeChatButton.addEventListener("click", () => {
-            if (
-              confirm(
-                "ARE YOU SURE you want to delete ALL messages? This cannot be undone!"
-              )
-            ) {
-              remove(ref(db, "messages")).catch((err) =>
-                alert("Error wiping chat: " + err.message)
-              );
-            }
-          });
+            appleFlashButton.addEventListener("click", () => {
+              set(globalFlashRef, {
+                imageUrl:
+                  "https://img.freepik.com/free-psd/close-up-delicious-apple_23-2151868338.jpg",
+                soundUrl: "https://files.catbox.moe/suh6r3.mp3",
+                timestamp: Date.now(),
+              });
+            });
 
-          setBadgeButton.addEventListener("click", () => {
-            const email = badgeUserEmail.value.trim();
-            const text = badgeText.value.trim();
-            const color = badgeColor.value.trim();
-            if (email && text && color) {
-              const sanitizedEmail = email.replace(/\./g, ","); // Firebase keys can't have '.'
-              const badgeRef = ref(db, `userBadges/${sanitizedEmail}`);
-              set(badgeRef, { text, color })
-                .then(() => {
-                  alert(`Badge set for ${email}!`);
-                  badgeUserEmail.value =
-                    badgeText.value =
-                    badgeColor.value =
-                      "";
+            wipeChatButton.addEventListener("click", () => {
+              if (
+                confirm(
+                  "ARE YOU SURE you want to delete ALL messages? This cannot be undone!"
+                )
+              ) {
+                remove(ref(db, "messages")).catch((err) =>
+                  alert("Error wiping chat: " + err.message)
+                );
+              }
+            });
+
+            sendGlobalMessageButton.addEventListener("click", () => {
+              const message = globalMessageInput.value.trim();
+              if (message) {
+                set(ref(db, "globalMessage"), {
+                  text: message,
+                  timestamp: new Date().toISOString(),
+                }).catch((error) =>
+                  alert("Error sending global message: " + error.message)
+                );
+                globalMessageInput.value = "";
+              }
+            });
+
+            impersonateSendButton.addEventListener("click", () => {
+              const fakeUser = impersonateUserInput.value.trim();
+              const message = impersonateMessageInput.value.trim();
+              if (fakeUser && message) {
+                push(ref(db, "messages"), {
+                  text: message,
+                  user: fakeUser, // Use the fake username
+                  email: "impersonated@system.local", // Use a fake email to avoid triggering real badges
+                  timestamp: new Date().toISOString(),
                 })
-                .catch((err) => alert("Error setting badge: " + err.message));
-            } else {
-              alert("Please fill out all fields for the badge.");
-            }
-          });
+                  .then(() => {
+                    impersonateMessageInput.value = ""; // Only clear message field
+                  })
+                  .catch((err) =>
+                    alert("Error sending impersonated message: " + err.message)
+                  );
+              } else {
+                alert("Please provide both a username and a message.");
+              }
+            });
 
-          // --- Special Button Functionality ---
+            setBadgeButton.addEventListener("click", () => {
+              const email = badgeUserEmail.value.trim();
+              const text = badgeText.value.trim();
+              const color = badgeColor.value.trim();
+              if (email && text && color) {
+                const sanitizedEmail = email.replace(/\./g, ","); // Firebase keys can't have '.'
+                const badgeRef = ref(db, `userBadges/${sanitizedEmail}`);
+                set(badgeRef, { text, color })
+                  .then(() => {
+                    alert(`Badge set for ${email}!`);
+                    badgeUserEmail.value =
+                      badgeText.value =
+                      badgeColor.value =
+                        "";
+                  })
+                  .catch((err) => alert("Error setting badge: " + err.message));
+              } else {
+                alert("Please fill out all fields for the badge.");
+              }
+            });
+          }
+
           joyousCatButton.addEventListener("click", () => {
             push(ref(db, "messages"), {
               text: "joyous cat",
-              user: "flixheff", // Use known username
-              email: "felixheffley@gmail.com", // Post as Felix
+              user: "flixheff",
+              email: "felixheffley@gmail.com",
               timestamp: new Date().toISOString(),
             }).catch((error) =>
               console.error("Error sending joyous cat message: ", error)
             );
           });
         } else {
-          // User is signed out, redirect to main page
           window.location.href = "index.html";
         }
       });
@@ -520,7 +629,7 @@
             const wasScrolledToBottom =
               chatContainer.scrollHeight - chatContainer.clientHeight <=
               chatContainer.scrollTop + 5;
-            chatContainer.innerHTML = ""; // Clear chat container
+            chatContainer.innerHTML = "";
             snapshot.forEach((childSnapshot) => {
               const message = childSnapshot.val();
               if (!message || !message.user || !message.text) return;
@@ -534,12 +643,9 @@
                 : "";
               const customBadge = userBadges[sanitizedEmail];
 
-              // 1. Check for a custom badge from the badge maker
               if (customBadge) {
                 userPrefix = `<strong>${message.user}</strong> <span style="color: ${customBadge.color}; font-weight: bold; margin-left: 5px;">${customBadge.text}</span>: `;
-              }
-              // 2. Fallback to hardcoded badges
-              else if (message.email === "brad67ley@gmail.com") {
+              } else if (message.email === "brad67ley@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="owner-text">OWNER</span>: `;
               } else if (message.email === "victors.realm1@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="piss-man-badge">piss gal</span>: `;
@@ -549,9 +655,7 @@
                 userPrefix = `<strong>${message.user}</strong> <span class="the-real-n-badge">The Real N</span>: `;
               } else if (message.email === "felixheffley@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="silly-badge">silly</span>: `;
-              }
-              // 3. Default user prefix
-              else {
+              } else {
                 userPrefix = `<strong>${message.user}</strong>: `;
               }
 
