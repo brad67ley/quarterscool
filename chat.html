@@ -12,6 +12,13 @@
         margin: 0;
         padding: 20px;
         text-align: center;
+        transition: background-color 0.5s ease;
+      }
+      /* New Rainbow Mode style */
+      body.rainbow-mode {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradient-fade 15s ease infinite;
       }
       h1 {
         font-size: 48px;
@@ -22,6 +29,12 @@
         max-width: 800px;
         margin: 0 auto;
         text-align: left;
+        height: 65vh; /* Give chat a fixed height */
+        overflow-y: auto; /* Allow scrolling */
+        border: 2px solid #000080;
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: 10px;
+        border-radius: 10px;
       }
       .chat-message {
         background-color: #ffffff;
@@ -74,7 +87,6 @@
         font-weight: bold;
         margin-left: 5px;
       }
-      /* ADDED a new style for the "silly" badge */
       .chat-message .silly-badge {
         color: #ff69b4; /* Pink text for "silly" badge */
         font-weight: bold;
@@ -106,13 +118,12 @@
       .chat-message .delete-button:hover {
         background-color: #000080; /* Navy blue on hover */
       }
-      /* Style for rendered GIFs */
       .chat-message img {
-        max-width: 100%; /* Prevent large GIFs from breaking layout */
-        max-height: 250px; /* Limit GIF height */
-        display: block; /* Make image a block element */
-        margin-top: 5px; /* Add some space above the GIF */
-        border-radius: 5px; /* Optional: round corners */
+        max-width: 100%;
+        max-height: 250px;
+        display: block;
+        margin-top: 5px;
+        border-radius: 5px;
       }
       .chat-input {
         margin-top: 20px;
@@ -121,69 +132,65 @@
         padding: 10px;
         font-size: 16px;
         width: 70%;
-        border: 2px solid #000080; /* Navy blue border */
+        border: 2px solid #000080;
       }
       .chat-input button {
         padding: 10px 20px;
         font-size: 16px;
-        background-color: #ff0000; /* Red button */
-        color: #ffffff; /* White text */
+        background-color: #ff0000;
+        color: #ffffff;
         border: none;
         cursor: pointer;
       }
       .chat-input button:hover {
-        background-color: #000080; /* Navy blue on hover */
+        background-color: #000080;
       }
       .user-info {
         position: absolute;
         top: 20px;
         right: 20px;
         font-size: 18px;
-        color: #000080; /* Navy blue text */
+        color: #000080;
       }
       .sign-out-link {
-        color: #000080; /* Navy blue text */
+        color: #000080;
         text-decoration: none;
       }
       .sign-out-link:hover {
         text-decoration: underline;
       }
-      .no-more-spongebobs-button {
+      .admin-controls {
         position: absolute;
         top: 20px;
         left: 20px;
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #ff0000; /* Red button */
-        color: #ffffff; /* White text */
-        border: none;
-        cursor: pointer;
-      }
-      .no-more-spongebobs-button:hover {
-        background-color: #000080; /* Navy blue on hover */
-      }
-      .global-message-maker {
-        position: absolute;
-        top: 70px;
-        left: 20px;
-        display: none;
-      }
-      .global-message-maker input {
+        background: rgba(255, 255, 255, 0.8);
         padding: 10px;
-        font-size: 16px;
-        width: 200px;
-        border: 2px solid #000080; /* Navy blue border */
+        border: 2px solid #000080;
+        border-radius: 5px;
+        display: none; /* Hidden by default */
+        text-align: left;
       }
-      .global-message-maker button {
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: #ff0000; /* Red button */
-        color: #ffffff; /* White text */
+      .admin-controls button {
+        display: block;
+        margin: 5px 0;
+        padding: 5px 10px;
+        background-color: #ff0000;
+        color: #ffffff;
         border: none;
         cursor: pointer;
       }
-      .global-message-maker button:hover {
-        background-color: #000080; /* Navy blue on hover */
+      .admin-controls button:hover {
+        background-color: #000080;
+      }
+      .badge-maker {
+        margin-top: 10px;
+        border-top: 1px solid #000080;
+        padding-top: 10px;
+      }
+      .badge-maker input {
+        display: block;
+        margin-bottom: 5px;
+        width: 150px;
       }
       .global-message-text {
         position: fixed;
@@ -191,31 +198,71 @@
         left: 50%;
         transform: translate(-50%, -50%);
         font-size: 48px;
-        color: #ff0000; /* Red text */
-        text-shadow: 2px 2px #000080; /* Navy blue shadow */
+        color: #ff0000;
+        text-shadow: 2px 2px #000080;
         z-index: 1000;
         display: none;
+      }
+      /* NEW: Global Image Flash Overlay */
+      .global-flash-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        display: none; /* Hidden by default */
+        justify-content: center;
+        align-items: center;
+      }
+      .global-flash-overlay img {
+        max-width: 90%;
+        max-height: 90%;
+        border: 5px solid white;
+        border-radius: 15px;
+      }
+      /* NEW: Joyous Cat Button */
+      .joyous-cat-button {
+        position: fixed;
+        bottom: 15px;
+        left: 15px;
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+        border-radius: 10px;
+        border: 3px solid #000080;
+        display: none; /* Hidden by default */
+        z-index: 100;
       }
     </style>
   </head>
   <body>
-    <div class="user-info" id="user-info"></div>
-    <button
-      class="no-more-spongebobs-button"
-      id="no-more-spongebobs-button"
-      style="display: none"
-    >
-      NO MORE SPONGEBOBS!
-    </button>
-    <div class="global-message-maker" id="global-message-maker">
-      <input
-        type="text"
-        id="global-message-input"
-        placeholder="Type your global message..."
-      />
-      <button id="send-global-message-button">Send Global Message</button>
+    <!-- NEW: Admin controls container -->
+    <div class="admin-controls" id="admin-controls">
+      <button id="rainbow-toggle-button">Activate Rainbow</button>
+      <button id="apple-flash-button">Flash Apple</button>
+      <button id="wipe-chat-button">WIPE ALL MESSAGES</button>
+      <div class="badge-maker">
+        <h4>Badge Maker</h4>
+        <input type="email" id="badge-user-email" placeholder="User Email" />
+        <input type="text" id="badge-text" placeholder="Badge Text" />
+        <input
+          type="text"
+          id="badge-color"
+          placeholder="Badge Color (e.g. #FF0000)"
+        />
+        <button id="set-badge-button">Set Badge</button>
+      </div>
     </div>
+
+    <div class="user-info" id="user-info"></div>
     <div class="global-message-text" id="global-message-text"></div>
+    <!-- NEW: Global Flash Overlay element -->
+    <div class="global-flash-overlay" id="global-flash-overlay">
+      <img id="global-flash-image" src="" alt="Global Image Flash" />
+    </div>
+
     <h1>QuarterNut Chat</h1>
     <div class="chat-container" id="chat-container">
       <!-- Chat messages will be dynamically inserted here -->
@@ -226,9 +273,16 @@
         id="chat-input"
         placeholder="Type your message or paste a GIF URL..."
       />
-      <!-- Updated placeholder -->
       <button id="send-button">Send</button>
     </div>
+
+    <!-- NEW: Joyous Cat button -->
+    <img
+      src="https://i.imgur.com/JI3tDkJ.jpeg"
+      class="joyous-cat-button"
+      id="joyous-cat-button"
+      alt="Joyous Cat"
+    />
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -248,7 +302,7 @@
         set,
       } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-      // Firebase configuration (AS PROVIDED BY USER - DO NOT REDACT)
+      // Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyChEepZh_3VrEDCiZQcR3Q6q8__f7p2mjg",
         authDomain: "quaters-5f71d.firebaseapp.com",
@@ -269,19 +323,62 @@
       const chatContainer = document.getElementById("chat-container");
       const chatInput = document.getElementById("chat-input");
       const sendButton = document.getElementById("send-button");
-      const noMoreSpongebobsButton = document.getElementById(
-        "no-more-spongebobs-button"
-      );
-      const globalMessageMaker = document.getElementById(
-        "global-message-maker"
-      );
-      const globalMessageInput = document.getElementById(
-        "global-message-input"
-      );
-      const sendGlobalMessageButton = document.getElementById(
-        "send-global-message-button"
-      );
       const globalMessageText = document.getElementById("global-message-text");
+
+      // NEW Admin/Special DOM elements
+      const adminControls = document.getElementById("admin-controls");
+      const rainbowToggleButton = document.getElementById(
+        "rainbow-toggle-button"
+      );
+      const appleFlashButton = document.getElementById("apple-flash-button");
+      const wipeChatButton = document.getElementById("wipe-chat-button");
+      const badgeUserEmail = document.getElementById("badge-user-email");
+      const badgeText = document.getElementById("badge-text");
+      const badgeColor = document.getElementById("badge-color");
+      const setBadgeButton = document.getElementById("set-badge-button");
+      const globalFlashOverlay = document.getElementById(
+        "global-flash-overlay"
+      );
+      const globalFlashImage = document.getElementById("global-flash-image");
+      const joyousCatButton = document.getElementById("joyous-cat-button");
+
+      let userBadges = {}; // Cache for custom user badges
+
+      // --- Global Listeners ---
+
+      // Listen for Rainbow Mode state
+      const rainbowRef = ref(db, "siteState/rainbowMode");
+      onValue(rainbowRef, (snapshot) => {
+        const isEnabled = snapshot.val() === true;
+        document.body.classList.toggle("rainbow-mode", isEnabled);
+        if (rainbowToggleButton) {
+          rainbowToggleButton.textContent = isEnabled
+            ? "Deactivate Rainbow"
+            : "Activate Rainbow";
+        }
+      });
+
+      // Listen for Global Flash messages
+      const globalFlashRef = ref(db, "globalFlash");
+      onValue(globalFlashRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          // Only trigger if timestamp is recent (e.g., within last 5s) to avoid re-trigger on load
+          if (Date.now() - data.timestamp < 5000) {
+            globalFlashImage.src = data.url;
+            globalFlashOverlay.style.display = "flex";
+            setTimeout(() => {
+              globalFlashOverlay.style.display = "none";
+            }, 2000); // Hide after 2 seconds
+          }
+        }
+      });
+
+      // Listen for custom badge changes
+      const badgesRef = ref(db, "userBadges");
+      onValue(badgesRef, (snapshot) => {
+        userBadges = snapshot.val() || {};
+      });
 
       // Auth State Listener
       onAuthStateChanged(auth, (user) => {
@@ -290,131 +387,131 @@
           const displayName = user.displayName || user.email;
           userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Sign Out</a>`;
 
-          // Show "NO MORE SPONGEBOBS!" button and global message maker for brad67ley@gmail.com
-          if (user.email === "brad67ley@gmail.com") {
-            noMoreSpongebobsButton.style.display = "block";
-            globalMessageMaker.style.display = "block";
+          const isAdmin = user.email === "brad67ley@gmail.com";
+          const isFelix = user.email === "felixheffley@gmail.com";
+
+          // Show admin controls for the owner
+          if (isAdmin) {
+            adminControls.style.display = "block";
           } else {
-            noMoreSpongebobsButton.style.display = "none";
-            globalMessageMaker.style.display = "none";
+            adminControls.style.display = "none";
           }
 
-          // Load chat messages
+          // Show joyous cat button for admin OR Felix
+          if (isAdmin || isFelix) {
+            joyousCatButton.style.display = "block";
+          } else {
+            joyousCatButton.style.display = "none";
+          }
+
           loadChatMessages();
 
-          // Send message function (no changes needed here for GIF sending)
           const sendMessage = () => {
             const message = chatInput.value.trim();
             if (message) {
               push(ref(db, "messages"), {
-                text: message, // Store text or GIF URL
+                text: message,
                 user: displayName,
-                email: user.email, // Store the user's email
+                email: user.email,
                 timestamp: new Date().toISOString(),
               })
                 .then(() => {
-                  chatInput.value = ""; // Clear input
+                  chatInput.value = "";
                 })
-                .catch((error) => {
-                  console.error("Error sending message: ", error);
-                  alert("Error sending message: " + error.message);
-                });
+                .catch((error) =>
+                  console.error("Error sending message: ", error)
+                );
             }
           };
 
-          // Send message on button click
           sendButton.addEventListener("click", sendMessage);
-
-          // Send message on Enter key press
           chatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-              sendMessage();
-            }
+            if (e.key === "Enter") sendMessage();
           });
 
-          // Add sign-out link functionality
-          // Ensure listener isn't added multiple times if auth state changes rapidly
           const signOutLink = document.getElementById("sign-out-link");
           if (signOutLink) {
-            // Remove previous listener if exists to prevent duplicates
             const newSignOutLink = signOutLink.cloneNode(true);
             signOutLink.parentNode.replaceChild(newSignOutLink, signOutLink);
             newSignOutLink.addEventListener("click", (e) => {
               e.preventDefault();
               signOut(auth)
                 .then(() => {
-                  alert("Signed out successfully!");
                   window.location.href = "index.html";
                 })
-                .catch((error) => {
-                  console.error("Error signing out: ", error);
-                  alert("Error signing out: " + error.message);
-                });
+                .catch((error) => console.error("Error signing out: ", error));
             });
           }
 
-          // Add "NO MORE SPONGEBOBS!" button functionality
-          noMoreSpongebobsButton.addEventListener("click", () => {
-            set(ref(db, "globalMessage"), {
-              text: "NO MORE SPONGEBOBS!!!!",
-              timestamp: new Date().toISOString(),
-            }).catch((error) => {
-              console.error("Error triggering global message: ", error);
-              alert("Error triggering global message: " + error.message);
+          // --- Admin Button Functionality ---
+          rainbowToggleButton.addEventListener("click", () => {
+            const currentStatus =
+              document.body.classList.contains("rainbow-mode");
+            set(rainbowRef, !currentStatus);
+          });
+
+          appleFlashButton.addEventListener("click", () => {
+            set(globalFlashRef, {
+              url: "https://img.freepik.com/free-psd/close-up-delicious-apple_23-2151868338.jpg",
+              timestamp: Date.now(),
             });
           });
 
-          // Add global message maker functionality
-          sendGlobalMessageButton.addEventListener("click", () => {
-            const message = globalMessageInput.value.trim();
-            if (message) {
-              set(ref(db, "globalMessage"), {
-                text: message,
-                timestamp: new Date().toISOString(),
-              }).catch((error) => {
-                console.error("Error sending global message: ", error);
-                alert("Error sending global message: " + error.message);
-              });
-              globalMessageInput.value = ""; // Clear input
+          wipeChatButton.addEventListener("click", () => {
+            if (
+              confirm(
+                "ARE YOU SURE you want to delete ALL messages? This cannot be undone!"
+              )
+            ) {
+              remove(ref(db, "messages")).catch((err) =>
+                alert("Error wiping chat: " + err.message)
+              );
             }
           });
 
-          // Listen for global messages
-          const globalMsgRef = ref(db, "globalMessage");
-          onValue(
-            globalMsgRef,
-            (snapshot) => {
-              if (snapshot.exists()) {
-                const messageData = snapshot.val();
-                const message = messageData.text;
-                globalMessageText.textContent = message;
-                globalMessageText.style.display = "block";
-                // Consider using timestamp difference if needed for display duration
-                setTimeout(() => {
-                  globalMessageText.style.display = "none";
-                }, 3000); // Hide after 3 seconds
-              } else {
-                globalMessageText.style.display = "none";
-              }
-            },
-            (error) => {
-              console.error("Error fetching global message:", error);
+          setBadgeButton.addEventListener("click", () => {
+            const email = badgeUserEmail.value.trim();
+            const text = badgeText.value.trim();
+            const color = badgeColor.value.trim();
+            if (email && text && color) {
+              const sanitizedEmail = email.replace(/\./g, ","); // Firebase keys can't have '.'
+              const badgeRef = ref(db, `userBadges/${sanitizedEmail}`);
+              set(badgeRef, { text, color })
+                .then(() => {
+                  alert(`Badge set for ${email}!`);
+                  badgeUserEmail.value =
+                    badgeText.value =
+                    badgeColor.value =
+                      "";
+                })
+                .catch((err) => alert("Error setting badge: " + err.message));
+            } else {
+              alert("Please fill out all fields for the badge.");
             }
-          );
+          });
+
+          // --- Special Button Functionality ---
+          joyousCatButton.addEventListener("click", () => {
+            push(ref(db, "messages"), {
+              text: "joyous cat",
+              user: "flixheff", // Use known username
+              email: "felixheffley@gmail.com", // Post as Felix
+              timestamp: new Date().toISOString(),
+            }).catch((error) =>
+              console.error("Error sending joyous cat message: ", error)
+            );
+          });
         } else {
           // User is signed out, redirect to main page
           window.location.href = "index.html";
         }
       });
 
-      // Function to check if a string is likely a GIF URL
       function isGifUrl(url) {
         if (typeof url !== "string") return false;
-        // Basic check for common image URL patterns ending in .gif (case-insensitive)
         return url.toLowerCase().match(/^https?:\/\/.+\.(gif)(\?.*)?$/i);
       }
 
-      // Load chat messages (MODIFIED FOR GIF DISPLAY)
       function loadChatMessages() {
         const messagesRef = ref(db, "messages");
         onValue(
@@ -422,19 +519,27 @@
           (snapshot) => {
             const wasScrolledToBottom =
               chatContainer.scrollHeight - chatContainer.clientHeight <=
-              chatContainer.scrollTop + 1; // Check if user is near the bottom
-
+              chatContainer.scrollTop + 5;
             chatContainer.innerHTML = ""; // Clear chat container
             snapshot.forEach((childSnapshot) => {
               const message = childSnapshot.val();
-              if (!message || !message.user || !message.text) return; // Skip malformed messages
+              if (!message || !message.user || !message.text) return;
 
               const messageElement = document.createElement("div");
               messageElement.classList.add("chat-message");
 
               let userPrefix = "";
-              // Determine user prefix with badges/styles
-              if (message.email === "brad67ley@gmail.com") {
+              const sanitizedEmail = message.email
+                ? message.email.replace(/\./g, ",")
+                : "";
+              const customBadge = userBadges[sanitizedEmail];
+
+              // 1. Check for a custom badge from the badge maker
+              if (customBadge) {
+                userPrefix = `<strong>${message.user}</strong> <span style="color: ${customBadge.color}; font-weight: bold; margin-left: 5px;">${customBadge.text}</span>: `;
+              }
+              // 2. Fallback to hardcoded badges
+              else if (message.email === "brad67ley@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="owner-text">OWNER</span>: `;
               } else if (message.email === "victors.realm1@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="piss-man-badge">piss gal</span>: `;
@@ -443,27 +548,23 @@
               } else if (message.email === "trashcall988110@gmail.com") {
                 userPrefix = `<strong>${message.user}</strong> <span class="the-real-n-badge">The Real N</span>: `;
               } else if (message.email === "felixheffley@gmail.com") {
-                // ADDED this condition for the new badge
                 userPrefix = `<strong>${message.user}</strong> <span class="silly-badge">silly</span>: `;
-              } else {
+              }
+              // 3. Default user prefix
+              else {
                 userPrefix = `<strong>${message.user}</strong>: `;
               }
 
-              // *** GIF CHECK AND RENDERING ***
               if (isGifUrl(message.text)) {
-                // If it's a GIF URL, display the user prefix and an image tag
                 messageElement.innerHTML = `${userPrefix}<img src="${message.text}" alt="${message.user}'s GIF">`;
               } else {
-                // Otherwise, display the user prefix and the text content
-                // Basic escaping to prevent simple HTML injection from text messages
                 const textNode = document.createTextNode(message.text);
                 const textSpan = document.createElement("span");
                 textSpan.appendChild(textNode);
-                messageElement.innerHTML = userPrefix; // Set prefix first
-                messageElement.appendChild(textSpan); // Append text safely
+                messageElement.innerHTML = userPrefix;
+                messageElement.appendChild(textSpan);
               }
 
-              // Add delete button for the owner (brad67ley@gmail.com)
               if (
                 auth.currentUser &&
                 auth.currentUser.email === "brad67ley@gmail.com"
@@ -472,10 +573,9 @@
                 deleteButton.classList.add("delete-button");
                 deleteButton.textContent = "Delete";
                 deleteButton.addEventListener("click", () => {
-                  remove(childSnapshot.ref).catch((error) => {
-                    console.error("Error deleting message: ", error);
-                    alert("Error deleting message: " + error.message);
-                  });
+                  remove(childSnapshot.ref).catch((error) =>
+                    console.error("Error deleting message: ", error)
+                  );
                 });
                 messageElement.appendChild(deleteButton);
               }
@@ -483,15 +583,12 @@
               chatContainer.appendChild(messageElement);
             });
 
-            // Scroll to the bottom only if the user was already near the bottom
             if (wasScrolledToBottom) {
               chatContainer.scrollTop = chatContainer.scrollHeight;
             }
           },
           (error) => {
             console.error("Error fetching messages:", error);
-            // Optionally display an error message to the user in the chat container
-            // chatContainer.innerHTML = '<p style="color: red;">Error loading messages. Please try refreshing.</p>';
           }
         );
       }
