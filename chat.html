@@ -237,6 +237,24 @@
         display: none; /* Hidden by default */
         z-index: 100;
       }
+      /* NEW: Muted user overlay */
+      .muted-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(20, 0, 0, 0.85);
+        color: #ff0000;
+        font-size: 72px;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: 3px 3px #000;
+        z-index: 10000;
+        display: none; /* Hidden by default */
+        justify-content: center;
+        align-items: center;
+      }
     </style>
   </head>
   <body>
@@ -245,7 +263,6 @@
       <button id="apple-flash-button">Flash Apple</button>
       <button id="wipe-chat-button">WIPE ALL MESSAGES</button>
 
-      <!-- RESTORED: Global Announcement -->
       <div class="admin-section">
         <h4>Global Announcement</h4>
         <input
@@ -256,7 +273,6 @@
         <button id="send-global-message-button">Send Announcement</button>
       </div>
 
-      <!-- NEW: Impersonation Tool -->
       <div class="admin-section">
         <h4>Send As User</h4>
         <input type="text" id="impersonate-user-input" placeholder="Username" />
@@ -279,6 +295,14 @@
         />
         <button id="set-badge-button">Set Badge</button>
       </div>
+
+      <!-- NEW: Mute Tool -->
+      <div class="admin-section">
+        <h4>Mute User</h4>
+        <input type="text" id="mute-user-input" placeholder="Display Name" />
+        <button id="shut-mouth-button">Shut Mouth</button>
+        <button id="unshut-mouth-button">Unshut Mouth</button>
+      </div>
     </div>
 
     <div class="user-info" id="user-info"></div>
@@ -286,6 +310,9 @@
     <div class="global-flash-overlay" id="global-flash-overlay">
       <img id="global-flash-image" src="" alt="Global Image Flash" />
     </div>
+
+    <!-- NEW: Muted overlay div -->
+    <div class="muted-overlay" id="muted-overlay">YOUR MOUTH IS SHUT!</div>
 
     <h1>QuarterNut Chat</h1>
     <div class="chat-container" id="chat-container">
@@ -307,7 +334,6 @@
       alt="Joyous Cat"
     />
 
-    <!-- NEW: Hidden audio player for global sounds -->
     <audio id="global-audio-player" preload="auto"></audio>
 
     <!-- Firebase SDK -->
@@ -338,7 +364,6 @@
         measurementId: "G-7WFJZV9JWT",
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getDatabase(app);
@@ -382,22 +407,22 @@
       const globalFlashImage = document.getElementById("global-flash-image");
       const joyousCatButton = document.getElementById("joyous-cat-button");
       const globalAudioPlayer = document.getElementById("global-audio-player");
+      const muteUserInput = document.getElementById("mute-user-input");
+      const shutMouthButton = document.getElementById("shut-mouth-button");
+      const unshutMouthButton = document.getElementById("unshut-mouth-button");
+      const mutedOverlay = document.getElementById("muted-overlay");
 
-      // --- Audio Unlock Hack ---
-      // Modern browsers prevent audio from playing without user interaction.
-      // This listener "unlocks" audio on the first click anywhere on the page.
       function unlockAudio() {
-        globalAudioPlayer.play().catch(() => {}); // Attempt to play
-        globalAudioPlayer.pause(); // Immediately pause
+        globalAudioPlayer.play().catch(() => {});
+        globalAudioPlayer.pause();
         globalAudioPlayer.currentTime = 0;
       }
       document.addEventListener("click", unlockAudio, { once: true });
 
-      let userBadges = {}; // Cache for custom user badges
+      let userBadges = {};
+      let mutedUsers = {};
 
       // --- Global Listeners ---
-
-      // Listen for Rainbow Mode state
       const rainbowRef = ref(db, "siteState/rainbowMode");
       onValue(rainbowRef, (snapshot) => {
         const isEnabled = snapshot.val() === true;
@@ -409,7 +434,6 @@
         }
       });
 
-      // Listen for Global Flash messages (Image + Sound)
       const globalFlashRef = ref(db, "globalFlash");
       onValue(globalFlashRef, (snapshot) => {
         if (snapshot.exists()) {
@@ -417,19 +441,12 @@
           if (Date.now() - data.timestamp < 5000) {
             globalFlashImage.src = data.imageUrl;
             globalFlashOverlay.style.display = "flex";
-
             if (data.soundUrl) {
               globalAudioPlayer.src = data.soundUrl;
               globalAudioPlayer
                 .play()
-                .catch((e) =>
-                  console.warn(
-                    "Audio play failed. User may not have interacted with the page yet.",
-                    e
-                  )
-                );
+                .catch((e) => console.warn("Audio play failed.", e));
             }
-
             setTimeout(() => {
               globalFlashOverlay.style.display = "none";
             }, 2000);
@@ -437,20 +454,18 @@
         }
       });
 
-      // RESTORED: Listen for global text announcements
       const globalMsgRef = ref(db, "globalMessage");
       onValue(
         globalMsgRef,
         (snapshot) => {
           if (snapshot.exists()) {
             const messageData = snapshot.val();
-            // Check timestamp to avoid showing old messages on page load
             if (Date.now() - new Date(messageData.timestamp).getTime() < 5000) {
               globalMessageText.textContent = messageData.text;
               globalMessageText.style.display = "block";
               setTimeout(() => {
                 globalMessageText.style.display = "none";
-              }, 3000); // Hide after 3 seconds
+              }, 3000);
             }
           }
         },
@@ -459,17 +474,46 @@
         }
       );
 
-      // Listen for custom badge changes
       const badgesRef = ref(db, "userBadges");
       onValue(badgesRef, (snapshot) => {
         userBadges = snapshot.val() || {};
       });
+
+      // NEW: Listener for muted users list
+      const mutedUsersRef = ref(db, "mutedUsers");
+      onValue(mutedUsersRef, (snapshot) => {
+        mutedUsers = snapshot.val() || {};
+        // Re-check the current user's status whenever the list changes
+        checkMuteStatus(auth.currentUser);
+      });
+
+      // NEW: Function to check and apply mute status
+      function checkMuteStatus(user) {
+        if (!user || !user.displayName) return; // Need a logged-in user with a display name
+
+        // Firebase keys cannot contain '.', '#', '$', '[', or ']'
+        // We must sanitize the display name before checking if it's a key in the object
+        const sanitizedDisplayName = user.displayName.replace(/[.#$[\]]/g, "_");
+        const isMuted = mutedUsers[sanitizedDisplayName];
+
+        if (isMuted) {
+          mutedOverlay.style.display = "flex";
+          chatInput.disabled = true;
+          sendButton.disabled = true;
+        } else {
+          mutedOverlay.style.display = "none";
+          chatInput.disabled = false;
+          sendButton.disabled = false;
+        }
+      }
 
       // Auth State Listener
       onAuthStateChanged(auth, (user) => {
         if (user) {
           const displayName = user.displayName || user.email;
           userInfo.innerHTML = `<a href="profile.html">${displayName}</a> | <a href="#" id="sign-out-link">Sign Out</a>`;
+
+          checkMuteStatus(user); // Initial check on login
 
           const isAdmin = user.email === "brad67ley@gmail.com";
           const isFelix = user.email === "felixheffley@gmail.com";
@@ -516,7 +560,6 @@
             });
           }
 
-          // --- Admin Button Functionality ---
           if (isAdmin) {
             rainbowToggleButton.addEventListener("click", () => {
               const currentStatus =
@@ -564,12 +607,12 @@
               if (fakeUser && message) {
                 push(ref(db, "messages"), {
                   text: message,
-                  user: fakeUser, // Use the fake username
-                  email: "impersonated@system.local", // Use a fake email to avoid triggering real badges
+                  user: fakeUser,
+                  email: "impersonated@system.local",
                   timestamp: new Date().toISOString(),
                 })
                   .then(() => {
-                    impersonateMessageInput.value = ""; // Only clear message field
+                    impersonateMessageInput.value = "";
                   })
                   .catch((err) =>
                     alert("Error sending impersonated message: " + err.message)
@@ -584,9 +627,8 @@
               const text = badgeText.value.trim();
               const color = badgeColor.value.trim();
               if (email && text && color) {
-                const sanitizedEmail = email.replace(/\./g, ","); // Firebase keys can't have '.'
-                const badgeRef = ref(db, `userBadges/${sanitizedEmail}`);
-                set(badgeRef, { text, color })
+                const sanitizedEmail = email.replace(/\./g, ",");
+                set(ref(db, `userBadges/${sanitizedEmail}`), { text, color })
                   .then(() => {
                     alert(`Badge set for ${email}!`);
                     badgeUserEmail.value =
@@ -599,9 +641,37 @@
                 alert("Please fill out all fields for the badge.");
               }
             });
+
+            // NEW: Mute button listeners
+            shutMouthButton.addEventListener("click", () => {
+              const nameToMute = muteUserInput.value.trim();
+              if (nameToMute) {
+                const sanitizedName = nameToMute.replace(/[.#$[\]]/g, "_");
+                set(ref(db, `mutedUsers/${sanitizedName}`), true)
+                  .then(() => {
+                    alert(`${nameToMute}'s mouth is now shut.`);
+                    muteUserInput.value = "";
+                  })
+                  .catch((err) => alert("Error muting user: " + err.message));
+              }
+            });
+
+            unshutMouthButton.addEventListener("click", () => {
+              const nameToUnmute = muteUserInput.value.trim();
+              if (nameToUnmute) {
+                const sanitizedName = nameToUnmute.replace(/[.#$[\]]/g, "_");
+                remove(ref(db, `mutedUsers/${sanitizedName}`))
+                  .then(() => {
+                    alert(`${nameToUnmute} can speak again.`);
+                    muteUserInput.value = "";
+                  })
+                  .catch((err) => alert("Error unmuting user: " + err.message));
+              }
+            });
           }
 
           joyousCatButton.addEventListener("click", () => {
+            // CHANGED username to "flixheff"
             push(ref(db, "messages"), {
               text: "joyous cat",
               user: "flixheff",
